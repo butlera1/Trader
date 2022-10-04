@@ -1,0 +1,28 @@
+{
+  "name": "Trader",
+  "private": true,
+  "scripts": {
+    "preparNpm": "nvm install 6.14",
+    "start": "MONGO_URL=mongodb:\"//localhost:27017/trader\" meteor run",
+    "test": "meteor test --once --driver-package meteortesting:mocha",
+    "test-app": "TEST_WATCH=1 meteor test --full-app --driver-package meteortesting:mocha",
+    "visualize": "meteor --production --extra-packages bundle-visualizer"
+  },
+  "dependencies": {
+    "@babel/runtime": "^7.17.9",
+    "@marknokes/tdameritrade": "^1.2.12",
+    "@polygon.io/client-js": "^6.0.4",
+    "dayjs": "^1.11.5",
+    "meteor-node-stubs": "^1.2.1",
+    "react": "^17.0.2",
+    "react-dom": "^17.0.2",
+    "write-csv": "^1.0.0"
+  },
+  "meteor": {
+    "mainModule": {
+      "client": "client/main.jsx",
+      "server": "server/main.js"
+    },
+    "testModule": "tests/main.js"
+  }
+}

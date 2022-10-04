@@ -1,0 +1,10 @@
+{
+  "compilerOptions": {
+    "lib": [
+      "es6",
+      "es2017.string",
+      "dom"
+    ],
+    "allowSyntheticDefaultImports": true
+  },
+}
