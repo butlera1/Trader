@@ -1,9 +1,15 @@
+import {Meteor} from 'meteor/meteor';
 import React from 'react';
-import { Hello } from './Hello.jsx';
+import {useTracker} from 'meteor/react-meteor-data';
+import {LoginForm} from './LoginForm';
+import {MainScreen} from './MainScreen';
 
-export const App = () => (
-  <div>
-    <h1>Welcome to Meteor!</h1>
-    <Hello/>
-  </div>
-);
+export const App = () => {
+  const user = useTracker(() => Meteor.user());
+
+  return (
+    <div className="main">
+      {user ? <MainScreen/> : <LoginForm/>}
+    </div>
+  );
+};

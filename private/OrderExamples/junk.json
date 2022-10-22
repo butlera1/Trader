@@ -1,0 +1,44 @@
+{
+  "session": "NORMAL",
+  "duration": "DAY",
+  "orderType": "STOP",
+  "complexOrderStrategyType": "IRON_CONDOR",
+  "quantity": 1,
+  "orderStrategyType": "SINGLE",
+  "orderLegCollection": [
+    {
+      "instruction": "BUY_TO_CLOSE",
+      "quantity": 1,
+      "instrument": {
+        "assetType": "OPTION",
+        "symbol": "SPY_101722C362"
+      }
+    },
+    {
+      "instruction": "SELL_TO_CLOSE",
+      "quantity": 1,
+      "instrument": {
+        "assetType": "OPTION",
+        "symbol": "SPY_101722C367"
+      }
+    },
+    {
+      "instruction": "BUY_TO_CLOSE",
+      "quantity": 1,
+      "instrument": {
+        "assetType": "OPTION",
+        "symbol": "SPY_101722C352"
+      }
+    },
+    {
+      "instruction": "SELL_TO_CLOSE",
+      "quantity": 1,
+      "instrument": {
+        "assetType": "OPTION",
+        "symbol": "SPY_101722P347"
+      }
+    }
+  ],
+  "stopType": "MARK",
+  "stopPrice": "1.54"
+}

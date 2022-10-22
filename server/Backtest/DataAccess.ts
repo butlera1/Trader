@@ -10,13 +10,22 @@ const rest = restClient('CYBLK7kpM0FSCqMVn7auHmAdpFeuvm5s');
 let straddleCache = null;
 let stockCache = null;
 
-function cacheData(){
+/**
+ * Loads stock data and options data into RAM-based cache for faster processing later.
+ */
+function cacheData() {
   if (straddleCache) return;
+  console.log(`Loading cache...`);
   straddleCache = {};
-  StraddleData.find().forEach(record => straddleCache[record._id] = record.straddles);
+  let cursor = StraddleData.find();
+  let straddleCount = cursor.count();
+  cursor.forEach(record => straddleCache[record._id] = record.straddles);
   if (stockCache) return;
   stockCache = {};
-  StockData.find().forEach(record => stockCache[record._id] = record.stocks);
+  cursor = StockData.find();
+  let stockCount = cursor.count();
+  cursor.forEach(record => stockCache[record._id] = record.stocks);
+  console.log(`Finished loading cache with ${straddleCount} straddle and ${stockCount} stock records loaded.`);
 }
 
 /**
@@ -80,7 +89,7 @@ function MergePutsAndCallsInterpolated(putData: IAggs, callData: IAggs) {
         // Remove previously created element to recreate it with the newer put & call.
         results.pop();
       } else {
-        console.log(time.format('hh:mm:ss'));
+        // console.log(time.format('hh:mm:ss'));
       }
       // Must interpolate the missing data.
       results.push({time: time.valueOf(), call: call.vw, put: put.vw, straddle: call.vw + put.vw});
@@ -115,7 +124,25 @@ export function ConsoleLogStraddleData(straddleData) {
   }
 }
 
-export async function GetDaysStraddleValues(ticker = 'QQQ', date: Dayjs = dayjs('2022-09-29')) {
+/**
+ * Get strike price based on the stock at the time of entry (taking minutesDelay into account).
+ */
+function getOpeningStrikePrice(minutesDelay, isUseDelay, prices) {
+  let price = prices[0].vw;
+  const startTime = dayjs(prices[0].t).add(minutesDelay, 'minute');
+  if (isUseDelay && minutesDelay > 0) {
+    for (let i = 1; i < prices.length; i++) {
+      const now = dayjs(prices[i].t);
+      if (now.isAfter(startTime)) {
+        break;
+      }
+      price = prices[i].vw;
+    }
+  }
+  return price;
+}
+
+export async function GetDaysStraddleValues(ticker = 'QQQ', date: Dayjs = dayjs('2022-09-29'), minutesDelay, isUseDelay) {
   try {
     cacheData(); // Preload the DB into cache RAM for speed.
     const dateStr = date.format('YYYY-MM-DD');
@@ -123,14 +150,64 @@ export async function GetDaysStraddleValues(ticker = 'QQQ', date: Dayjs = dayjs(
     const stockId = `${ticker}${dateStr}`;
     let result = stockCache[stockId];
     if (!result) {
-      result = await rest.stocks.aggregates(ticker, 1, 'minute', dateStr, dateStr, {sort: 'asc', limit: 1});
+      result = await rest.stocks.aggregates(ticker, 1, 'minute', dateStr, dateStr, {sort: 'asc'});
       stockCache[stockId] = result;
       StockData.upsert({_id: stockId}, {stocks: result});
     }
     if (!result?.results || result.results.length === 0) {
       return null;
     }
-    const temp = String(result.results[0].vw.toFixed(0)) + '000';
+    const price = getOpeningStrikePrice(minutesDelay, isUseDelay, result.results);
+    const temp = String(price.toFixed(0)) + '000';
+    const strikePrice = temp.padStart(8, '0');
+    const from = dateStr;
+    const to = dateStr;
+    // Create options ticker to look like 'O:QQQ221003P00274000'
+    const optionDate = getBestOptionClosingDate(date);
+    const optionsTicker = `O:${ticker}${optionDate.format('YYMMDD')}P${strikePrice}`;
+    // See if this data has already been obtained and if so return it immediately.
+    if (straddleCache && straddleCache[optionsTicker]) {
+      return straddleCache[optionsTicker];
+    }
+    const puts = await rest.options.aggregates(optionsTicker, 1, 'minute', from, to, {sort: 'asc', limit: 1000});
+    const calls = await rest.options.aggregates(optionsTicker.replace('P0', 'C0'), 1, 'minute', from, to, {
+      sort: 'asc',
+      limit: 1000
+    });
+    if (puts.resultsCount === 0 || calls.resultsCount === 0) {
+      // Cache no straddle data for a holiday.
+      StraddleData.upsert({_id: optionsTicker}, {straddles: null});
+      straddleCache[optionsTicker] = null;
+      return null;
+    }
+    const firstPutTime = dayjs(puts.results[0].t).format('hh:mm:ss');
+    const firstCallTime = dayjs(calls.results[0].t).format('hh:mm:ss');
+    const mergedResults = MergePutsAndCalls(puts, calls);
+    StraddleData.upsert({_id: optionsTicker}, {straddles: mergedResults});
+    straddleCache[optionsTicker] = mergedResults;
+    return mergedResults;
+  } catch (ex) {
+    console.error(ex);
+  }
+}
+
+export async function GetDaysOptionValues(ticker = 'QQQ', optionType, date: Dayjs = dayjs('2022-09-29'), minutesDelay, isUseDelay) {
+  try {
+    cacheData(); // Preload the DB into cache RAM for speed.
+    const dateStr = date.format('YYYY-MM-DD');
+    // Get underlying strike price first and use it to get options data.
+    const stockId = `${ticker}${dateStr}`;
+    let result = stockCache[stockId];
+    if (!result) {
+      result = await rest.stocks.aggregates(ticker, 1, 'minute', dateStr, dateStr, {sort: 'asc'});
+      stockCache[stockId] = result;
+      StockData.upsert({_id: stockId}, {stocks: result});
+    }
+    if (!result?.results || result.results.length === 0) {
+      return null;
+    }
+    const price = getOpeningStrikePrice(minutesDelay, isUseDelay, result.results);
+    const temp = String(price.toFixed(0)) + '000';
     const strikePrice = temp.padStart(8, '0');
     const from = dateStr;
     const to = dateStr;

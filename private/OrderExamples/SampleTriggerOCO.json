@@ -1,0 +1,56 @@
+{
+  "session": "NORMAL",
+  "duration": "GOOD_TILL_CANCEL",
+  "orderType": "LIMIT",
+  "price": "1310.00",
+  "orderLegCollection": [
+    {
+      "instruction": "BUY",
+      "instrument": {
+        "assetType": "EQUITY",
+        "symbol": "GOOG"
+      },
+      "quantity": 1
+    }
+  ],
+  "orderStrategyType": "TRIGGER",
+  "childOrderStrategies": [
+    {
+      "orderStrategyType": "OCO",
+      "childOrderStrategies": [
+        {
+          "session": "NORMAL",
+          "duration": "GOOD_TILL_CANCEL",
+          "orderType": "LIMIT",
+          "price": "1400.00",
+          "orderLegCollection": [
+            {
+              "instruction": "SELL",
+              "instrument": {
+                "assetType": "EQUITY",
+                "symbol": "GOOG"
+              },
+              "quantity": 1
+            }
+          ]
+        },
+        {
+          "session": "NORMAL",
+          "duration": "GOOD_TILL_CANCEL",
+          "orderType": "STOP_LIMIT",
+          "stopPrice": "1250.00",
+          "orderLegCollection": [
+            {
+              "instruction": "SELL",
+              "instrument": {
+                "assetType": "EQUITY",
+                "symbol": "GOOG"
+              },
+              "quantity": 1
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

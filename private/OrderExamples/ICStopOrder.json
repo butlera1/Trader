@@ -1,0 +1,88 @@
+{
+  "session": "NORMAL",
+  "duration": "DAY",
+  "orderType": "STOP",
+  "complexOrderStrategyType": "IRON_CONDOR",
+  "quantity": 1,
+  "filledQuantity": 0,
+  "remainingQuantity": 1,
+  "requestedDestination": "AUTO",
+  "destinationLinkName": "AutoRoute",
+  "releaseTime": "2022-10-17T16:00:00+0000",
+  "stopPrice": 2,
+  "stopType": "MARK",
+  "orderLegCollection": [
+    {
+      "orderLegType": "OPTION",
+      "legId": 1,
+      "instrument": {
+        "assetType": "OPTION",
+        "cusip": "0SPY..JH20362000",
+        "symbol": "SPY_101722C362",
+        "description": "SPY Oct 17 2022 362.0 Call",
+        "type": "VANILLA",
+        "putCall": "CALL",
+        "underlyingSymbol": "SPY"
+      },
+      "instruction": "BUY_TO_OPEN",
+      "positionEffect": "OPENING",
+      "quantity": 1
+    },
+    {
+      "orderLegType": "OPTION",
+      "legId": 2,
+      "instrument": {
+        "assetType": "OPTION",
+        "cusip": "0SPY..JH20367000",
+        "symbol": "SPY_101722C367",
+        "description": "SPY Oct 17 2022 367.0 Call",
+        "type": "VANILLA",
+        "putCall": "CALL",
+        "underlyingSymbol": "SPY"
+      },
+      "instruction": "SELL_TO_OPEN",
+      "positionEffect": "OPENING",
+      "quantity": 1
+    },
+    {
+      "orderLegType": "OPTION",
+      "legId": 3,
+      "instrument": {
+        "assetType": "OPTION",
+        "cusip": "0SPY..VH20352000",
+        "symbol": "SPY_101722P352",
+        "description": "SPY Oct 17 2022 352.0 Put",
+        "type": "VANILLA",
+        "putCall": "PUT",
+        "underlyingSymbol": "SPY"
+      },
+      "instruction": "BUY_TO_OPEN",
+      "positionEffect": "OPENING",
+      "quantity": 1
+    },
+    {
+      "orderLegType": "OPTION",
+      "legId": 4,
+      "instrument": {
+        "assetType": "OPTION",
+        "cusip": "0SPY..VH20347000",
+        "symbol": "SPY_101722P347",
+        "description": "SPY Oct 17 2022 347.0 Put",
+        "type": "VANILLA",
+        "putCall": "PUT",
+        "underlyingSymbol": "SPY"
+      },
+      "instruction": "SELL_TO_OPEN",
+      "positionEffect": "OPENING",
+      "quantity": 1
+    }
+  ],
+  "orderStrategyType": "SINGLE",
+  "orderId": 9584139673,
+  "cancelable": true,
+  "editable": true,
+  "status": "AWAITING_CONDITION",
+  "enteredTime": "2022-10-15T19:28:49+0000",
+  "tag": "API_TOS:TRADE_ALL",
+  "accountId": 755541528
+}

@@ -6,7 +6,6 @@ const options = {
     mode: 'no-cors'
 };
 export const LoginToTda = () => {
-
     const [code, setCode] = useState('');
     React.useEffect(() => {
         fetch(tdaLoginUrl, options)

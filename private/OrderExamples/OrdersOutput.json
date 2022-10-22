@@ -1,0 +1,4291 @@
+[
+  {
+    "session": "NORMAL",
+    "duration": "DAY",
+    "orderType": "MARKET",
+    "complexOrderStrategyType": "IRON_CONDOR",
+    "quantity": 1,
+    "filledQuantity": 1,
+    "remainingQuantity": 0,
+    "requestedDestination": "AUTO",
+    "destinationLinkName": "DFIN",
+    "orderLegCollection": [
+      {
+        "orderLegType": "OPTION",
+        "legId": 1,
+        "instrument": {
+          "assetType": "OPTION",
+          "cusip": "0SPY..JH20369000",
+          "symbol": "SPY_101722C369",
+          "description": "SPY Oct 17 2022 369.0 Call",
+          "type": "VANILLA",
+          "putCall": "CALL",
+          "underlyingSymbol": "SPY"
+        },
+        "instruction": "BUY_TO_CLOSE",
+        "positionEffect": "CLOSING",
+        "quantity": 1
+      },
+      {
+        "orderLegType": "OPTION",
+        "legId": 2,
+        "instrument": {
+          "assetType": "OPTION",
+          "cusip": "0SPY..JH20372000",
+          "symbol": "SPY_101722C372",
+          "description": "SPY Oct 17 2022 372.0 Call",
+          "type": "VANILLA",
+          "putCall": "CALL",
+          "underlyingSymbol": "SPY"
+        },
+        "instruction": "SELL_TO_CLOSE",
+        "positionEffect": "CLOSING",
+        "quantity": 1
+      },
+      {
+        "orderLegType": "OPTION",
+        "legId": 3,
+        "instrument": {
+          "assetType": "OPTION",
+          "cusip": "0SPY..VH20364000",
+          "symbol": "SPY_101722P364",
+          "description": "SPY Oct 17 2022 364.0 Put",
+          "type": "VANILLA",
+          "putCall": "PUT",
+          "underlyingSymbol": "SPY"
+        },
+        "instruction": "BUY_TO_CLOSE",
+        "positionEffect": "CLOSING",
+        "quantity": 1
+      },
+      {
+        "orderLegType": "OPTION",
+        "legId": 4,
+        "instrument": {
+          "assetType": "OPTION",
+          "cusip": "0SPY..VH20355000",
+          "symbol": "SPY_101722P355",
+          "description": "SPY Oct 17 2022 355.0 Put",
+          "type": "VANILLA",
+          "putCall": "PUT",
+          "underlyingSymbol": "SPY"
+        },
+        "instruction": "SELL_TO_CLOSE",
+        "positionEffect": "CLOSING",
+        "quantity": 1
+      }
+    ],
+    "orderStrategyType": "SINGLE",
+    "orderId": 9590139354,
+    "cancelable": false,
+    "editable": false,
+    "status": "FILLED",
+    "enteredTime": "2022-10-17T17:09:47+0000",
+    "closeTime": "2022-10-17T17:10:06+0000",
+    "tag": "API_TOS:POS_STMT",
+    "accountId": 755541528,
+    "orderActivityCollection": [
+      {
+        "activityType": "EXECUTION",
+        "activityId": 48385561002,
+        "executionType": "FILL",
+        "quantity": 1,
+        "orderRemainingQuantity": 0,
+        "executionLegs": [
+          {
+            "legId": 1,
+            "quantity": 1,
+            "mismarkedQuantity": 0,
+            "price": 0.34,
+            "time": "2022-10-17T17:10:06+0000"
+          },
+          {
+            "legId": 2,
+            "quantity": 1,
+            "mismarkedQuantity": 0,
+            "price": 0.03,
+            "time": "2022-10-17T17:10:06+0000"
+          },
+          {
+            "legId": 3,
+            "quantity": 1,
+            "mismarkedQuantity": 0,
+            "price": 0.43,
+            "time": "2022-10-17T17:10:06+0000"
+          },
+          {
+            "legId": 4,
+            "quantity": 1,
+            "mismarkedQuantity": 0,
+            "price": 0.02,
+            "time": "2022-10-17T17:10:06+0000"
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "session": "NORMAL",
+    "duration": "DAY",
+    "orderType": "MARKET",
+    "complexOrderStrategyType": "IRON_CONDOR",
+    "quantity": 1,
+    "filledQuantity": 1,
+    "remainingQuantity": 0,
+    "requestedDestination": "AUTO",
+    "destinationLinkName": "CDRG",
+    "orderLegCollection": [
+      {
+        "orderLegType": "OPTION",
+        "legId": 1,
+        "instrument": {
+          "assetType": "OPTION",
+          "cusip": "0SPY..JH20372000",
+          "symbol": "SPY_101722C372",
+          "description": "SPY Oct 17 2022 372.0 Call",
+          "type": "VANILLA",
+          "putCall": "CALL",
+          "underlyingSymbol": "SPY"
+        },
+        "instruction": "BUY_TO_OPEN",
+        "positionEffect": "OPENING",
+        "quantity": 1
+      },
+      {
+        "orderLegType": "OPTION",
+        "legId": 2,
+        "instrument": {
+          "assetType": "OPTION",
+          "cusip": "0SPY..JH20369000",
+          "symbol": "SPY_101722C369",
+          "description": "SPY Oct 17 2022 369.0 Call",
+          "type": "VANILLA",
+          "putCall": "CALL",
+          "underlyingSymbol": "SPY"
+        },
+        "instruction": "SELL_TO_OPEN",
+        "positionEffect": "OPENING",
+        "quantity": 1
+      },
+      {
+        "orderLegType": "OPTION",
+        "legId": 3,
+        "instrument": {
+          "assetType": "OPTION",
+          "cusip": "0SPY..VH20355000",
+          "symbol": "SPY_101722P355",
+          "description": "SPY Oct 17 2022 355.0 Put",
+          "type": "VANILLA",
+          "putCall": "PUT",
+          "underlyingSymbol": "SPY"
+        },
+        "instruction": "BUY_TO_OPEN",
+        "positionEffect": "OPENING",
+        "quantity": 1
+      },
+      {
+        "orderLegType": "OPTION",
+        "legId": 4,
+        "instrument": {
+          "assetType": "OPTION",
+          "cusip": "0SPY..VH20364000",
+          "symbol": "SPY_101722P364",
+          "description": "SPY Oct 17 2022 364.0 Put",
+          "type": "VANILLA",
+          "putCall": "PUT",
+          "underlyingSymbol": "SPY"
+        },
+        "instruction": "SELL_TO_OPEN",
+        "positionEffect": "OPENING",
+        "quantity": 1
+      }
+    ],
+    "orderStrategyType": "SINGLE",
+    "orderId": 9590139296,
+    "cancelable": false,
+    "editable": false,
+    "status": "FILLED",
+    "enteredTime": "2022-10-17T17:07:14+0000",
+    "closeTime": "2022-10-17T17:07:15+0000",
+    "tag": "AA_butlera1",
+    "accountId": 755541528,
+    "orderActivityCollection": [
+      {
+        "activityType": "EXECUTION",
+        "activityId": 48385560514,
+        "executionType": "FILL",
+        "quantity": 1,
+        "orderRemainingQuantity": 0,
+        "executionLegs": [
+          {
+            "legId": 1,
+            "quantity": 1,
+            "mismarkedQuantity": 0,
+            "price": 0.05,
+            "time": "2022-10-17T17:07:15+0000"
+          },
+          {
+            "legId": 2,
+            "quantity": 1,
+            "mismarkedQuantity": 0,
+            "price": 0.31,
+            "time": "2022-10-17T17:07:15+0000"
+          },
+          {
+            "legId": 3,
+            "quantity": 1,
+            "mismarkedQuantity": 0,
+            "price": 0.03,
+            "time": "2022-10-17T17:07:15+0000"
+          },
+          {
+            "legId": 4,
+            "quantity": 1,
+            "mismarkedQuantity": 0,
+            "price": 0.42,
+            "time": "2022-10-17T17:07:15+0000"
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "session": "NORMAL",
+    "duration": "DAY",
+    "orderType": "NET_DEBIT",
+    "complexOrderStrategyType": "CUSTOM",
+    "quantity": 1,
+    "filledQuantity": 1,
+    "remainingQuantity": 0,
+    "requestedDestination": "AUTO",
+    "destinationLinkName": "WEXM",
+    "price": 18.43,
+    "orderLegCollection": [
+      {
+        "orderLegType": "OPTION",
+        "legId": 1,
+        "instrument": {
+          "assetType": "OPTION",
+          "cusip": "0SPY..JH20352000",
+          "symbol": "SPY_101722C352",
+          "description": "SPY Oct 17 2022 352.0 Call",
+          "type": "VANILLA",
+          "putCall": "CALL",
+          "underlyingSymbol": "SPY"
+        },
+        "instruction": "BUY_TO_CLOSE",
+        "positionEffect": "CLOSING",
+        "quantity": 1
+      },
+      {
+        "orderLegType": "OPTION",
+        "legId": 2,
+        "instrument": {
+          "assetType": "OPTION",
+          "cusip": "0SPY..JH20362000",
+          "symbol": "SPY_101722C362",
+          "description": "SPY Oct 17 2022 362.0 Call",
+          "type": "VANILLA",
+          "putCall": "CALL",
+          "underlyingSymbol": "SPY"
+        },
+        "instruction": "BUY_TO_CLOSE",
+        "positionEffect": "CLOSING",
+        "quantity": 1
+      },
+      {
+        "orderLegType": "OPTION",
+        "legId": 3,
+        "instrument": {
+          "assetType": "OPTION",
+          "cusip": "0SPY..JH20367000",
+          "symbol": "SPY_101722C367",
+          "description": "SPY Oct 17 2022 367.0 Call",
+          "type": "VANILLA",
+          "putCall": "CALL",
+          "underlyingSymbol": "SPY"
+        },
+        "instruction": "SELL_TO_CLOSE",
+        "positionEffect": "CLOSING",
+        "quantity": 1
+      },
+      {
+        "orderLegType": "OPTION",
+        "legId": 4,
+        "instrument": {
+          "assetType": "OPTION",
+          "cusip": "0SPY..VH20347000",
+          "symbol": "SPY_101722P347",
+          "description": "SPY Oct 17 2022 347.0 Put",
+          "type": "VANILLA",
+          "putCall": "PUT",
+          "underlyingSymbol": "SPY"
+        },
+        "instruction": "SELL_TO_CLOSE",
+        "positionEffect": "CLOSING",
+        "quantity": 1
+      }
+    ],
+    "orderStrategyType": "SINGLE",
+    "orderId": 9590139127,
+    "cancelable": false,
+    "editable": false,
+    "status": "FILLED",
+    "enteredTime": "2022-10-17T17:00:57+0000",
+    "closeTime": "2022-10-17T17:01:01+0000",
+    "tag": "API_TOS:POS_STMT",
+    "accountId": 755541528,
+    "orderActivityCollection": [
+      {
+        "activityType": "EXECUTION",
+        "activityId": 48385559272,
+        "executionType": "FILL",
+        "quantity": 1,
+        "orderRemainingQuantity": 0,
+        "executionLegs": [
+          {
+            "legId": 4,
+            "quantity": 1,
+            "mismarkedQuantity": 0,
+            "price": 0.01,
+            "time": "2022-10-17T17:01:01+0000"
+          },
+          {
+            "legId": 1,
+            "quantity": 1,
+            "mismarkedQuantity": 0,
+            "price": 14.63,
+            "time": "2022-10-17T17:01:01+0000"
+          },
+          {
+            "legId": 2,
+            "quantity": 1,
+            "mismarkedQuantity": 0,
+            "price": 4.8,
+            "time": "2022-10-17T17:01:01+0000"
+          },
+          {
+            "legId": 3,
+            "quantity": 1,
+            "mismarkedQuantity": 0,
+            "price": 1.01,
+            "time": "2022-10-17T17:01:01+0000"
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "session": "NORMAL",
+    "duration": "DAY",
+    "orderType": "MARKET",
+    "complexOrderStrategyType": "IRON_CONDOR",
+    "quantity": 1,
+    "filledQuantity": 1,
+    "remainingQuantity": 0,
+    "requestedDestination": "AUTO",
+    "destinationLinkName": "CDRG",
+    "orderLegCollection": [
+      {
+        "orderLegType": "OPTION",
+        "legId": 1,
+        "instrument": {
+          "assetType": "OPTION",
+          "cusip": "0SPY..JH20367000",
+          "symbol": "SPY_101722C367",
+          "description": "SPY Oct 17 2022 367.0 Call",
+          "type": "VANILLA",
+          "putCall": "CALL",
+          "underlyingSymbol": "SPY"
+        },
+        "instruction": "BUY_TO_OPEN",
+        "positionEffect": "OPENING",
+        "quantity": 1
+      },
+      {
+        "orderLegType": "OPTION",
+        "legId": 2,
+        "instrument": {
+          "assetType": "OPTION",
+          "cusip": "0SPY..JH20362000",
+          "symbol": "SPY_101722C362",
+          "description": "SPY Oct 17 2022 362.0 Call",
+          "type": "VANILLA",
+          "putCall": "CALL",
+          "underlyingSymbol": "SPY"
+        },
+        "instruction": "SELL_TO_OPEN",
+        "positionEffect": "OPENING",
+        "quantity": 1
+      },
+      {
+        "orderLegType": "OPTION",
+        "legId": 3,
+        "instrument": {
+          "assetType": "OPTION",
+          "cusip": "0SPY..VH20347000",
+          "symbol": "SPY_101722P347",
+          "description": "SPY Oct 17 2022 347.0 Put",
+          "type": "VANILLA",
+          "putCall": "PUT",
+          "underlyingSymbol": "SPY"
+        },
+        "instruction": "BUY_TO_OPEN",
+        "positionEffect": "OPENING",
+        "quantity": 1
+      },
+      {
+        "orderLegType": "OPTION",
+        "legId": 4,
+        "instrument": {
+          "assetType": "OPTION",
+          "cusip": "0SPY..JH20352000",
+          "symbol": "SPY_101722C352",
+          "description": "SPY Oct 17 2022 352.0 Call",
+          "type": "VANILLA",
+          "putCall": "CALL",
+          "underlyingSymbol": "SPY"
+        },
+        "instruction": "SELL_TO_OPEN",
+        "positionEffect": "OPENING",
+        "quantity": 1
+      }
+    ],
+    "orderStrategyType": "SINGLE",
+    "orderId": 9590139105,
+    "cancelable": false,
+    "editable": false,
+    "status": "FILLED",
+    "enteredTime": "2022-10-17T17:00:04+0000",
+    "closeTime": "2022-10-17T17:00:04+0000",
+    "tag": "AA_butlera1",
+    "accountId": 755541528,
+    "orderActivityCollection": [
+      {
+        "activityType": "EXECUTION",
+        "activityId": 48385559169,
+        "executionType": "FILL",
+        "quantity": 1,
+        "orderRemainingQuantity": 0,
+        "executionLegs": [
+          {
+            "legId": 1,
+            "quantity": 1,
+            "mismarkedQuantity": 0,
+            "price": 0.99,
+            "time": "2022-10-17T17:00:04+0000"
+          },
+          {
+            "legId": 2,
+            "quantity": 1,
+            "mismarkedQuantity": 0,
+            "price": 4.57,
+            "time": "2022-10-17T17:00:04+0000"
+          },
+          {
+            "legId": 3,
+            "quantity": 1,
+            "mismarkedQuantity": 0,
+            "price": 0.01,
+            "time": "2022-10-17T17:00:04+0000"
+          },
+          {
+            "legId": 4,
+            "quantity": 1,
+            "mismarkedQuantity": 0,
+            "price": 14.58,
+            "time": "2022-10-17T17:00:04+0000"
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "orderStrategyType": "OCO",
+    "orderId": 9585839476,
+    "cancelable": false,
+    "editable": false,
+    "status": "FILLED",
+    "enteredTime": "2022-10-17T13:42:46+0000",
+    "closeTime": "2022-10-17T14:23:03+0000",
+    "accountId": 755541528,
+    "childOrderStrategies": [
+      {
+        "session": "NORMAL",
+        "duration": "DAY",
+        "orderType": "STOP",
+        "complexOrderStrategyType": "STRANGLE",
+        "quantity": 10,
+        "filledQuantity": 0,
+        "remainingQuantity": 0,
+        "requestedDestination": "AUTO",
+        "destinationLinkName": "AutoRoute",
+        "stopPrice": 1.8,
+        "stopType": "MARK",
+        "orderLegCollection": [
+          {
+            "orderLegType": "OPTION",
+            "legId": 1,
+            "instrument": {
+              "assetType": "OPTION",
+              "cusip": "0SPY..JH20370000",
+              "symbol": "SPY_101722C370",
+              "description": "SPY Oct 17 2022 370.0 Call",
+              "type": "VANILLA",
+              "putCall": "CALL",
+              "underlyingSymbol": "SPY"
+            },
+            "instruction": "BUY_TO_CLOSE",
+            "positionEffect": "CLOSING",
+            "quantity": 10
+          },
+          {
+            "orderLegType": "OPTION",
+            "legId": 2,
+            "instrument": {
+              "assetType": "OPTION",
+              "cusip": "0SPY..VH20362000",
+              "symbol": "SPY_101722P362",
+              "description": "SPY Oct 17 2022 362.0 Put",
+              "type": "VANILLA",
+              "putCall": "PUT",
+              "underlyingSymbol": "SPY"
+            },
+            "instruction": "BUY_TO_CLOSE",
+            "positionEffect": "CLOSING",
+            "quantity": 10
+          }
+        ],
+        "orderStrategyType": "SINGLE",
+        "orderId": 9585839478,
+        "cancelable": false,
+        "editable": false,
+        "status": "CANCELED",
+        "enteredTime": "2022-10-17T13:42:46+0000",
+        "closeTime": "2022-10-17T14:23:03+0000",
+        "tag": "API_TOS:TRADE_ALL",
+        "accountId": 755541528
+      },
+      {
+        "session": "NORMAL",
+        "duration": "DAY",
+        "orderType": "MARKET",
+        "complexOrderStrategyType": "STRANGLE",
+        "quantity": 10,
+        "filledQuantity": 0,
+        "remainingQuantity": 0,
+        "requestedDestination": "AUTO",
+        "destinationLinkName": "AutoRoute",
+        "releaseTime": "2022-10-17T16:30:00+0000",
+        "orderLegCollection": [
+          {
+            "orderLegType": "OPTION",
+            "legId": 1,
+            "instrument": {
+              "assetType": "OPTION",
+              "cusip": "0SPY..JH20370000",
+              "symbol": "SPY_101722C370",
+              "description": "SPY Oct 17 2022 370.0 Call",
+              "type": "VANILLA",
+              "putCall": "CALL",
+              "underlyingSymbol": "SPY"
+            },
+            "instruction": "BUY_TO_CLOSE",
+            "positionEffect": "CLOSING",
+            "quantity": 10
+          },
+          {
+            "orderLegType": "OPTION",
+            "legId": 2,
+            "instrument": {
+              "assetType": "OPTION",
+              "cusip": "0SPY..VH20362000",
+              "symbol": "SPY_101722P362",
+              "description": "SPY Oct 17 2022 362.0 Put",
+              "type": "VANILLA",
+              "putCall": "PUT",
+              "underlyingSymbol": "SPY"
+            },
+            "instruction": "BUY_TO_CLOSE",
+            "positionEffect": "CLOSING",
+            "quantity": 10
+          }
+        ],
+        "orderStrategyType": "SINGLE",
+        "orderId": 9585839479,
+        "cancelable": false,
+        "editable": false,
+        "status": "CANCELED",
+        "enteredTime": "2022-10-17T13:42:46+0000",
+        "closeTime": "2022-10-17T14:23:03+0000",
+        "tag": "API_TOS:TRADE_ALL",
+        "accountId": 755541528
+      }
+    ]
+  },
+  {
+    "session": "NORMAL",
+    "duration": "DAY",
+    "orderType": "MARKET",
+    "complexOrderStrategyType": "STRANGLE",
+    "quantity": 10,
+    "filledQuantity": 10,
+    "remainingQuantity": 0,
+    "requestedDestination": "AUTO",
+    "destinationLinkName": "CDRG",
+    "orderLegCollection": [
+      {
+        "orderLegType": "OPTION",
+        "legId": 1,
+        "instrument": {
+          "assetType": "OPTION",
+          "cusip": "0SPY..JH20370000",
+          "symbol": "SPY_101722C370",
+          "description": "SPY Oct 17 2022 370.0 Call",
+          "type": "VANILLA",
+          "putCall": "CALL",
+          "underlyingSymbol": "SPY"
+        },
+        "instruction": "SELL_TO_OPEN",
+        "positionEffect": "OPENING",
+        "quantity": 10
+      },
+      {
+        "orderLegType": "OPTION",
+        "legId": 2,
+        "instrument": {
+          "assetType": "OPTION",
+          "cusip": "0SPY..VH20362000",
+          "symbol": "SPY_101722P362",
+          "description": "SPY Oct 17 2022 362.0 Put",
+          "type": "VANILLA",
+          "putCall": "PUT",
+          "underlyingSymbol": "SPY"
+        },
+        "instruction": "SELL_TO_OPEN",
+        "positionEffect": "OPENING",
+        "quantity": 10
+      }
+    ],
+    "orderStrategyType": "SINGLE",
+    "orderId": 9585178944,
+    "cancelable": false,
+    "editable": false,
+    "status": "FILLED",
+    "enteredTime": "2022-10-17T13:39:25+0000",
+    "closeTime": "2022-10-17T13:39:25+0000",
+    "tag": "API_TOS:TRADE_ALL",
+    "accountId": 755541528,
+    "orderActivityCollection": [
+      {
+        "activityType": "EXECUTION",
+        "activityId": 48365361569,
+        "executionType": "FILL",
+        "quantity": 10,
+        "orderRemainingQuantity": 0,
+        "executionLegs": [
+          {
+            "legId": 1,
+            "quantity": 10,
+            "mismarkedQuantity": 0,
+            "price": 0.56,
+            "time": "2022-10-17T13:39:25+0000"
+          },
+          {
+            "legId": 2,
+            "quantity": 10,
+            "mismarkedQuantity": 0,
+            "price": 0.63,
+            "time": "2022-10-17T13:39:25+0000"
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "session": "NORMAL",
+    "duration": "DAY",
+    "orderType": "MARKET",
+    "complexOrderStrategyType": "IRON_CONDOR",
+    "quantity": 1,
+    "filledQuantity": 0,
+    "remainingQuantity": 0,
+    "requestedDestination": "AUTO",
+    "destinationLinkName": "AutoRoute",
+    "orderLegCollection": [
+      {
+        "orderLegType": "OPTION",
+        "legId": 1,
+        "instrument": {
+          "assetType": "OPTION",
+          "cusip": "0SPY..JH20367000",
+          "symbol": "SPY_101722C367",
+          "description": "SPY Oct 17 2022 367.0 Call",
+          "type": "VANILLA",
+          "putCall": "CALL",
+          "underlyingSymbol": "SPY"
+        },
+        "instruction": "BUY_TO_OPEN",
+        "positionEffect": "OPENING",
+        "quantity": 1
+      },
+      {
+        "orderLegType": "OPTION",
+        "legId": 2,
+        "instrument": {
+          "assetType": "OPTION",
+          "cusip": "0SPY..JH20362000",
+          "symbol": "SPY_101722C362",
+          "description": "SPY Oct 17 2022 362.0 Call",
+          "type": "VANILLA",
+          "putCall": "CALL",
+          "underlyingSymbol": "SPY"
+        },
+        "instruction": "SELL_TO_OPEN",
+        "positionEffect": "OPENING",
+        "quantity": 1
+      },
+      {
+        "orderLegType": "OPTION",
+        "legId": 3,
+        "instrument": {
+          "assetType": "OPTION",
+          "cusip": "0SPY..VH20347000",
+          "symbol": "SPY_101722P347",
+          "description": "SPY Oct 17 2022 347.0 Put",
+          "type": "VANILLA",
+          "putCall": "PUT",
+          "underlyingSymbol": "SPY"
+        },
+        "instruction": "BUY_TO_OPEN",
+        "positionEffect": "OPENING",
+        "quantity": 1
+      },
+      {
+        "orderLegType": "OPTION",
+        "legId": 4,
+        "instrument": {
+          "assetType": "OPTION",
+          "cusip": "0SPY..JH20352000",
+          "symbol": "SPY_101722C352",
+          "description": "SPY Oct 17 2022 352.0 Call",
+          "type": "VANILLA",
+          "putCall": "CALL",
+          "underlyingSymbol": "SPY"
+        },
+        "instruction": "SELL_TO_OPEN",
+        "positionEffect": "OPENING",
+        "quantity": 1
+      }
+    ],
+    "orderStrategyType": "TRIGGER",
+    "orderId": 9584139714,
+    "cancelable": false,
+    "editable": false,
+    "status": "REJECTED",
+    "enteredTime": "2022-10-15T21:00:44+0000",
+    "closeTime": "2022-10-15T21:00:44+0000",
+    "tag": "AA_butlera1",
+    "accountId": 755541528,
+    "childOrderStrategies": [
+      {
+        "session": "NORMAL",
+        "duration": "DAY",
+        "orderType": "NET_DEBIT",
+        "complexOrderStrategyType": "IRON_CONDOR",
+        "quantity": 1,
+        "filledQuantity": 0,
+        "remainingQuantity": 0,
+        "requestedDestination": "AUTO",
+        "destinationLinkName": "AutoRoute",
+        "price": 1.32,
+        "orderLegCollection": [
+          {
+            "orderLegType": "OPTION",
+            "legId": 1,
+            "instrument": {
+              "assetType": "OPTION",
+              "cusip": "0SPY..JH20362000",
+              "symbol": "SPY_101722C362",
+              "description": "SPY Oct 17 2022 362.0 Call",
+              "type": "VANILLA",
+              "putCall": "CALL",
+              "underlyingSymbol": "SPY"
+            },
+            "instruction": "BUY_TO_CLOSE",
+            "positionEffect": "CLOSING",
+            "quantity": 1
+          },
+          {
+            "orderLegType": "OPTION",
+            "legId": 2,
+            "instrument": {
+              "assetType": "OPTION",
+              "cusip": "0SPY..JH20367000",
+              "symbol": "SPY_101722C367",
+              "description": "SPY Oct 17 2022 367.0 Call",
+              "type": "VANILLA",
+              "putCall": "CALL",
+              "underlyingSymbol": "SPY"
+            },
+            "instruction": "SELL_TO_CLOSE",
+            "positionEffect": "CLOSING",
+            "quantity": 1
+          },
+          {
+            "orderLegType": "OPTION",
+            "legId": 3,
+            "instrument": {
+              "assetType": "OPTION",
+              "cusip": "0SPY..JH20352000",
+              "symbol": "SPY_101722C352",
+              "description": "SPY Oct 17 2022 352.0 Call",
+              "type": "VANILLA",
+              "putCall": "CALL",
+              "underlyingSymbol": "SPY"
+            },
+            "instruction": "BUY_TO_CLOSE",
+            "positionEffect": "CLOSING",
+            "quantity": 1
+          },
+          {
+            "orderLegType": "OPTION",
+            "legId": 4,
+            "instrument": {
+              "assetType": "OPTION",
+              "cusip": "0SPY..VH20347000",
+              "symbol": "SPY_101722P347",
+              "description": "SPY Oct 17 2022 347.0 Put",
+              "type": "VANILLA",
+              "putCall": "PUT",
+              "underlyingSymbol": "SPY"
+            },
+            "instruction": "SELL_TO_CLOSE",
+            "positionEffect": "CLOSING",
+            "quantity": 1
+          }
+        ],
+        "orderStrategyType": "SINGLE",
+        "orderId": 9584139715,
+        "cancelable": false,
+        "editable": false,
+        "status": "REJECTED",
+        "enteredTime": "2022-10-15T21:00:44+0000",
+        "closeTime": "2022-10-15T21:00:44+0000",
+        "tag": "AA_butlera1",
+        "accountId": 755541528,
+        "statusDescription": "Outside of regular market hours, market option orders for opening transactions are not permitted. TD Ameritrade accepts market, limit, stop and stop-limit option orders during regular market hours.; Order Rejected due to Order: 9584139714"
+      }
+    ],
+    "statusDescription": "Outside of regular market hours, market option orders for opening transactions are not permitted. TD Ameritrade accepts market, limit, stop and stop-limit option orders during regular market hours."
+  },
+  {
+    "session": "NORMAL",
+    "duration": "DAY",
+    "orderType": "NET_DEBIT",
+    "complexOrderStrategyType": "IRON_CONDOR",
+    "quantity": 1,
+    "filledQuantity": 0,
+    "remainingQuantity": 0,
+    "requestedDestination": "AUTO",
+    "destinationLinkName": "AutoRoute",
+    "price": 1.32,
+    "orderLegCollection": [
+      {
+        "orderLegType": "OPTION",
+        "legId": 1,
+        "instrument": {
+          "assetType": "OPTION",
+          "cusip": "0SPY..JH20362000",
+          "symbol": "SPY_101722C362",
+          "description": "SPY Oct 17 2022 362.0 Call",
+          "type": "VANILLA",
+          "putCall": "CALL",
+          "underlyingSymbol": "SPY"
+        },
+        "instruction": "BUY_TO_OPEN",
+        "positionEffect": "OPENING",
+        "quantity": 1
+      },
+      {
+        "orderLegType": "OPTION",
+        "legId": 2,
+        "instrument": {
+          "assetType": "OPTION",
+          "cusip": "0SPY..JH20367000",
+          "symbol": "SPY_101722C367",
+          "description": "SPY Oct 17 2022 367.0 Call",
+          "type": "VANILLA",
+          "putCall": "CALL",
+          "underlyingSymbol": "SPY"
+        },
+        "instruction": "SELL_TO_OPEN",
+        "positionEffect": "OPENING",
+        "quantity": 1
+      },
+      {
+        "orderLegType": "OPTION",
+        "legId": 3,
+        "instrument": {
+          "assetType": "OPTION",
+          "cusip": "0SPY..JH20352000",
+          "symbol": "SPY_101722C352",
+          "description": "SPY Oct 17 2022 352.0 Call",
+          "type": "VANILLA",
+          "putCall": "CALL",
+          "underlyingSymbol": "SPY"
+        },
+        "instruction": "BUY_TO_OPEN",
+        "positionEffect": "OPENING",
+        "quantity": 1
+      },
+      {
+        "orderLegType": "OPTION",
+        "legId": 4,
+        "instrument": {
+          "assetType": "OPTION",
+          "cusip": "0SPY..VH20347000",
+          "symbol": "SPY_101722P347",
+          "description": "SPY Oct 17 2022 347.0 Put",
+          "type": "VANILLA",
+          "putCall": "PUT",
+          "underlyingSymbol": "SPY"
+        },
+        "instruction": "SELL_TO_OPEN",
+        "positionEffect": "OPENING",
+        "quantity": 1
+      }
+    ],
+    "orderStrategyType": "SINGLE",
+    "orderId": 9584139713,
+    "cancelable": false,
+    "editable": false,
+    "status": "CANCELED",
+    "enteredTime": "2022-10-15T21:00:43+0000",
+    "closeTime": "2022-10-15T21:00:44+0000",
+    "tag": "AA_butlera1",
+    "accountId": 755541528
+  },
+  {
+    "session": "NORMAL",
+    "duration": "DAY",
+    "orderType": "MARKET",
+    "complexOrderStrategyType": "IRON_CONDOR",
+    "quantity": 1,
+    "filledQuantity": 0,
+    "remainingQuantity": 0,
+    "requestedDestination": "AUTO",
+    "destinationLinkName": "AutoRoute",
+    "orderLegCollection": [
+      {
+        "orderLegType": "OPTION",
+        "legId": 1,
+        "instrument": {
+          "assetType": "OPTION",
+          "cusip": "0SPY..JH20367000",
+          "symbol": "SPY_101722C367",
+          "description": "SPY Oct 17 2022 367.0 Call",
+          "type": "VANILLA",
+          "putCall": "CALL",
+          "underlyingSymbol": "SPY"
+        },
+        "instruction": "BUY_TO_OPEN",
+        "positionEffect": "OPENING",
+        "quantity": 1
+      },
+      {
+        "orderLegType": "OPTION",
+        "legId": 2,
+        "instrument": {
+          "assetType": "OPTION",
+          "cusip": "0SPY..JH20362000",
+          "symbol": "SPY_101722C362",
+          "description": "SPY Oct 17 2022 362.0 Call",
+          "type": "VANILLA",
+          "putCall": "CALL",
+          "underlyingSymbol": "SPY"
+        },
+        "instruction": "SELL_TO_OPEN",
+        "positionEffect": "OPENING",
+        "quantity": 1
+      },
+      {
+        "orderLegType": "OPTION",
+        "legId": 3,
+        "instrument": {
+          "assetType": "OPTION",
+          "cusip": "0SPY..VH20347000",
+          "symbol": "SPY_101722P347",
+          "description": "SPY Oct 17 2022 347.0 Put",
+          "type": "VANILLA",
+          "putCall": "PUT",
+          "underlyingSymbol": "SPY"
+        },
+        "instruction": "BUY_TO_OPEN",
+        "positionEffect": "OPENING",
+        "quantity": 1
+      },
+      {
+        "orderLegType": "OPTION",
+        "legId": 4,
+        "instrument": {
+          "assetType": "OPTION",
+          "cusip": "0SPY..JH20352000",
+          "symbol": "SPY_101722C352",
+          "description": "SPY Oct 17 2022 352.0 Call",
+          "type": "VANILLA",
+          "putCall": "CALL",
+          "underlyingSymbol": "SPY"
+        },
+        "instruction": "SELL_TO_OPEN",
+        "positionEffect": "OPENING",
+        "quantity": 1
+      }
+    ],
+    "orderStrategyType": "SINGLE",
+    "orderId": 9584139711,
+    "cancelable": false,
+    "editable": false,
+    "status": "REJECTED",
+    "enteredTime": "2022-10-15T21:00:43+0000",
+    "closeTime": "2022-10-15T21:00:43+0000",
+    "tag": "AA_butlera1",
+    "accountId": 755541528,
+    "statusDescription": "Outside of regular market hours, market option orders for opening transactions are not permitted. TD Ameritrade accepts market, limit, stop and stop-limit option orders during regular market hours."
+  },
+  {
+    "session": "NORMAL",
+    "duration": "DAY",
+    "orderType": "NET_DEBIT",
+    "complexOrderStrategyType": "IRON_CONDOR",
+    "quantity": 1,
+    "filledQuantity": 0,
+    "remainingQuantity": 0,
+    "requestedDestination": "AUTO",
+    "destinationLinkName": "AutoRoute",
+    "price": 1.32,
+    "orderLegCollection": [
+      {
+        "orderLegType": "OPTION",
+        "legId": 1,
+        "instrument": {
+          "assetType": "OPTION",
+          "cusip": "0SPY..JH20362000",
+          "symbol": "SPY_101722C362",
+          "description": "SPY Oct 17 2022 362.0 Call",
+          "type": "VANILLA",
+          "putCall": "CALL",
+          "underlyingSymbol": "SPY"
+        },
+        "instruction": "BUY_TO_OPEN",
+        "positionEffect": "OPENING",
+        "quantity": 1
+      },
+      {
+        "orderLegType": "OPTION",
+        "legId": 2,
+        "instrument": {
+          "assetType": "OPTION",
+          "cusip": "0SPY..JH20367000",
+          "symbol": "SPY_101722C367",
+          "description": "SPY Oct 17 2022 367.0 Call",
+          "type": "VANILLA",
+          "putCall": "CALL",
+          "underlyingSymbol": "SPY"
+        },
+        "instruction": "SELL_TO_OPEN",
+        "positionEffect": "OPENING",
+        "quantity": 1
+      },
+      {
+        "orderLegType": "OPTION",
+        "legId": 3,
+        "instrument": {
+          "assetType": "OPTION",
+          "cusip": "0SPY..JH20352000",
+          "symbol": "SPY_101722C352",
+          "description": "SPY Oct 17 2022 352.0 Call",
+          "type": "VANILLA",
+          "putCall": "CALL",
+          "underlyingSymbol": "SPY"
+        },
+        "instruction": "BUY_TO_OPEN",
+        "positionEffect": "OPENING",
+        "quantity": 1
+      },
+      {
+        "orderLegType": "OPTION",
+        "legId": 4,
+        "instrument": {
+          "assetType": "OPTION",
+          "cusip": "0SPY..VH20347000",
+          "symbol": "SPY_101722P347",
+          "description": "SPY Oct 17 2022 347.0 Put",
+          "type": "VANILLA",
+          "putCall": "PUT",
+          "underlyingSymbol": "SPY"
+        },
+        "instruction": "SELL_TO_OPEN",
+        "positionEffect": "OPENING",
+        "quantity": 1
+      }
+    ],
+    "orderStrategyType": "SINGLE",
+    "orderId": 9584139710,
+    "cancelable": false,
+    "editable": false,
+    "status": "CANCELED",
+    "enteredTime": "2022-10-15T20:56:12+0000",
+    "closeTime": "2022-10-15T21:00:43+0000",
+    "tag": "AA_butlera1",
+    "accountId": 755541528
+  },
+  {
+    "session": "NORMAL",
+    "duration": "DAY",
+    "orderType": "MARKET",
+    "complexOrderStrategyType": "IRON_CONDOR",
+    "quantity": 1,
+    "filledQuantity": 0,
+    "remainingQuantity": 0,
+    "requestedDestination": "AUTO",
+    "destinationLinkName": "AutoRoute",
+    "orderLegCollection": [
+      {
+        "orderLegType": "OPTION",
+        "legId": 1,
+        "instrument": {
+          "assetType": "OPTION",
+          "cusip": "0SPY..JH20367000",
+          "symbol": "SPY_101722C367",
+          "description": "SPY Oct 17 2022 367.0 Call",
+          "type": "VANILLA",
+          "putCall": "CALL",
+          "underlyingSymbol": "SPY"
+        },
+        "instruction": "BUY_TO_OPEN",
+        "positionEffect": "OPENING",
+        "quantity": 1
+      },
+      {
+        "orderLegType": "OPTION",
+        "legId": 2,
+        "instrument": {
+          "assetType": "OPTION",
+          "cusip": "0SPY..JH20362000",
+          "symbol": "SPY_101722C362",
+          "description": "SPY Oct 17 2022 362.0 Call",
+          "type": "VANILLA",
+          "putCall": "CALL",
+          "underlyingSymbol": "SPY"
+        },
+        "instruction": "SELL_TO_OPEN",
+        "positionEffect": "OPENING",
+        "quantity": 1
+      },
+      {
+        "orderLegType": "OPTION",
+        "legId": 3,
+        "instrument": {
+          "assetType": "OPTION",
+          "cusip": "0SPY..VH20347000",
+          "symbol": "SPY_101722P347",
+          "description": "SPY Oct 17 2022 347.0 Put",
+          "type": "VANILLA",
+          "putCall": "PUT",
+          "underlyingSymbol": "SPY"
+        },
+        "instruction": "BUY_TO_OPEN",
+        "positionEffect": "OPENING",
+        "quantity": 1
+      },
+      {
+        "orderLegType": "OPTION",
+        "legId": 4,
+        "instrument": {
+          "assetType": "OPTION",
+          "cusip": "0SPY..JH20352000",
+          "symbol": "SPY_101722C352",
+          "description": "SPY Oct 17 2022 352.0 Call",
+          "type": "VANILLA",
+          "putCall": "CALL",
+          "underlyingSymbol": "SPY"
+        },
+        "instruction": "SELL_TO_OPEN",
+        "positionEffect": "OPENING",
+        "quantity": 1
+      }
+    ],
+    "orderStrategyType": "SINGLE",
+    "orderId": 9584139708,
+    "cancelable": false,
+    "editable": false,
+    "status": "REJECTED",
+    "enteredTime": "2022-10-15T20:56:12+0000",
+    "closeTime": "2022-10-15T20:56:12+0000",
+    "tag": "AA_butlera1",
+    "accountId": 755541528,
+    "statusDescription": "Outside of regular market hours, market option orders for opening transactions are not permitted. TD Ameritrade accepts market, limit, stop and stop-limit option orders during regular market hours."
+  },
+  {
+    "session": "NORMAL",
+    "duration": "DAY",
+    "orderType": "NET_DEBIT",
+    "complexOrderStrategyType": "IRON_CONDOR",
+    "quantity": 1,
+    "filledQuantity": 0,
+    "remainingQuantity": 0,
+    "requestedDestination": "AUTO",
+    "destinationLinkName": "AutoRoute",
+    "price": 1.32,
+    "orderLegCollection": [
+      {
+        "orderLegType": "OPTION",
+        "legId": 1,
+        "instrument": {
+          "assetType": "OPTION",
+          "cusip": "0SPY..JH20362000",
+          "symbol": "SPY_101722C362",
+          "description": "SPY Oct 17 2022 362.0 Call",
+          "type": "VANILLA",
+          "putCall": "CALL",
+          "underlyingSymbol": "SPY"
+        },
+        "instruction": "BUY_TO_OPEN",
+        "positionEffect": "OPENING",
+        "quantity": 1
+      },
+      {
+        "orderLegType": "OPTION",
+        "legId": 2,
+        "instrument": {
+          "assetType": "OPTION",
+          "cusip": "0SPY..JH20367000",
+          "symbol": "SPY_101722C367",
+          "description": "SPY Oct 17 2022 367.0 Call",
+          "type": "VANILLA",
+          "putCall": "CALL",
+          "underlyingSymbol": "SPY"
+        },
+        "instruction": "SELL_TO_OPEN",
+        "positionEffect": "OPENING",
+        "quantity": 1
+      },
+      {
+        "orderLegType": "OPTION",
+        "legId": 3,
+        "instrument": {
+          "assetType": "OPTION",
+          "cusip": "0SPY..JH20352000",
+          "symbol": "SPY_101722C352",
+          "description": "SPY Oct 17 2022 352.0 Call",
+          "type": "VANILLA",
+          "putCall": "CALL",
+          "underlyingSymbol": "SPY"
+        },
+        "instruction": "BUY_TO_OPEN",
+        "positionEffect": "OPENING",
+        "quantity": 1
+      },
+      {
+        "orderLegType": "OPTION",
+        "legId": 4,
+        "instrument": {
+          "assetType": "OPTION",
+          "cusip": "0SPY..VH20347000",
+          "symbol": "SPY_101722P347",
+          "description": "SPY Oct 17 2022 347.0 Put",
+          "type": "VANILLA",
+          "putCall": "PUT",
+          "underlyingSymbol": "SPY"
+        },
+        "instruction": "SELL_TO_OPEN",
+        "positionEffect": "OPENING",
+        "quantity": 1
+      }
+    ],
+    "orderStrategyType": "SINGLE",
+    "orderId": 9584139707,
+    "cancelable": false,
+    "editable": false,
+    "status": "CANCELED",
+    "enteredTime": "2022-10-15T20:56:07+0000",
+    "closeTime": "2022-10-15T20:56:12+0000",
+    "tag": "AA_butlera1",
+    "accountId": 755541528
+  },
+  {
+    "session": "NORMAL",
+    "duration": "DAY",
+    "orderType": "MARKET",
+    "complexOrderStrategyType": "IRON_CONDOR",
+    "quantity": 1,
+    "filledQuantity": 0,
+    "remainingQuantity": 0,
+    "requestedDestination": "AUTO",
+    "destinationLinkName": "AutoRoute",
+    "orderLegCollection": [
+      {
+        "orderLegType": "OPTION",
+        "legId": 1,
+        "instrument": {
+          "assetType": "OPTION",
+          "cusip": "0SPY..JH20367000",
+          "symbol": "SPY_101722C367",
+          "description": "SPY Oct 17 2022 367.0 Call",
+          "type": "VANILLA",
+          "putCall": "CALL",
+          "underlyingSymbol": "SPY"
+        },
+        "instruction": "BUY_TO_OPEN",
+        "positionEffect": "OPENING",
+        "quantity": 1
+      },
+      {
+        "orderLegType": "OPTION",
+        "legId": 2,
+        "instrument": {
+          "assetType": "OPTION",
+          "cusip": "0SPY..JH20362000",
+          "symbol": "SPY_101722C362",
+          "description": "SPY Oct 17 2022 362.0 Call",
+          "type": "VANILLA",
+          "putCall": "CALL",
+          "underlyingSymbol": "SPY"
+        },
+        "instruction": "SELL_TO_OPEN",
+        "positionEffect": "OPENING",
+        "quantity": 1
+      },
+      {
+        "orderLegType": "OPTION",
+        "legId": 3,
+        "instrument": {
+          "assetType": "OPTION",
+          "cusip": "0SPY..VH20347000",
+          "symbol": "SPY_101722P347",
+          "description": "SPY Oct 17 2022 347.0 Put",
+          "type": "VANILLA",
+          "putCall": "PUT",
+          "underlyingSymbol": "SPY"
+        },
+        "instruction": "BUY_TO_OPEN",
+        "positionEffect": "OPENING",
+        "quantity": 1
+      },
+      {
+        "orderLegType": "OPTION",
+        "legId": 4,
+        "instrument": {
+          "assetType": "OPTION",
+          "cusip": "0SPY..JH20352000",
+          "symbol": "SPY_101722C352",
+          "description": "SPY Oct 17 2022 352.0 Call",
+          "type": "VANILLA",
+          "putCall": "CALL",
+          "underlyingSymbol": "SPY"
+        },
+        "instruction": "SELL_TO_OPEN",
+        "positionEffect": "OPENING",
+        "quantity": 1
+      }
+    ],
+    "orderStrategyType": "SINGLE",
+    "orderId": 9584139705,
+    "cancelable": false,
+    "editable": false,
+    "status": "REJECTED",
+    "enteredTime": "2022-10-15T20:56:06+0000",
+    "closeTime": "2022-10-15T20:56:06+0000",
+    "tag": "AA_butlera1",
+    "accountId": 755541528,
+    "statusDescription": "Outside of regular market hours, market option orders for opening transactions are not permitted. TD Ameritrade accepts market, limit, stop and stop-limit option orders during regular market hours."
+  },
+  {
+    "session": "NORMAL",
+    "duration": "DAY",
+    "orderType": "NET_DEBIT",
+    "complexOrderStrategyType": "IRON_CONDOR",
+    "quantity": 1,
+    "filledQuantity": 0,
+    "remainingQuantity": 0,
+    "requestedDestination": "AUTO",
+    "destinationLinkName": "AutoRoute",
+    "price": 1.32,
+    "orderLegCollection": [
+      {
+        "orderLegType": "OPTION",
+        "legId": 1,
+        "instrument": {
+          "assetType": "OPTION",
+          "cusip": "0SPY..JH20362000",
+          "symbol": "SPY_101722C362",
+          "description": "SPY Oct 17 2022 362.0 Call",
+          "type": "VANILLA",
+          "putCall": "CALL",
+          "underlyingSymbol": "SPY"
+        },
+        "instruction": "BUY_TO_OPEN",
+        "positionEffect": "OPENING",
+        "quantity": 1
+      },
+      {
+        "orderLegType": "OPTION",
+        "legId": 2,
+        "instrument": {
+          "assetType": "OPTION",
+          "cusip": "0SPY..JH20367000",
+          "symbol": "SPY_101722C367",
+          "description": "SPY Oct 17 2022 367.0 Call",
+          "type": "VANILLA",
+          "putCall": "CALL",
+          "underlyingSymbol": "SPY"
+        },
+        "instruction": "SELL_TO_OPEN",
+        "positionEffect": "OPENING",
+        "quantity": 1
+      },
+      {
+        "orderLegType": "OPTION",
+        "legId": 3,
+        "instrument": {
+          "assetType": "OPTION",
+          "cusip": "0SPY..JH20352000",
+          "symbol": "SPY_101722C352",
+          "description": "SPY Oct 17 2022 352.0 Call",
+          "type": "VANILLA",
+          "putCall": "CALL",
+          "underlyingSymbol": "SPY"
+        },
+        "instruction": "BUY_TO_OPEN",
+        "positionEffect": "OPENING",
+        "quantity": 1
+      },
+      {
+        "orderLegType": "OPTION",
+        "legId": 4,
+        "instrument": {
+          "assetType": "OPTION",
+          "cusip": "0SPY..VH20347000",
+          "symbol": "SPY_101722P347",
+          "description": "SPY Oct 17 2022 347.0 Put",
+          "type": "VANILLA",
+          "putCall": "PUT",
+          "underlyingSymbol": "SPY"
+        },
+        "instruction": "SELL_TO_OPEN",
+        "positionEffect": "OPENING",
+        "quantity": 1
+      }
+    ],
+    "orderStrategyType": "SINGLE",
+    "orderId": 9584139699,
+    "cancelable": false,
+    "editable": false,
+    "status": "CANCELED",
+    "enteredTime": "2022-10-15T20:14:38+0000",
+    "closeTime": "2022-10-15T20:56:06+0000",
+    "tag": "AA_butlera1",
+    "accountId": 755541528
+  },
+  {
+    "session": "NORMAL",
+    "duration": "DAY",
+    "orderType": "MARKET",
+    "complexOrderStrategyType": "IRON_CONDOR",
+    "quantity": 1,
+    "filledQuantity": 0,
+    "remainingQuantity": 0,
+    "requestedDestination": "AUTO",
+    "destinationLinkName": "AutoRoute",
+    "orderLegCollection": [
+      {
+        "orderLegType": "OPTION",
+        "legId": 1,
+        "instrument": {
+          "assetType": "OPTION",
+          "cusip": "0SPY..JH20367000",
+          "symbol": "SPY_101722C367",
+          "description": "SPY Oct 17 2022 367.0 Call",
+          "type": "VANILLA",
+          "putCall": "CALL",
+          "underlyingSymbol": "SPY"
+        },
+        "instruction": "BUY_TO_OPEN",
+        "positionEffect": "OPENING",
+        "quantity": 1
+      },
+      {
+        "orderLegType": "OPTION",
+        "legId": 2,
+        "instrument": {
+          "assetType": "OPTION",
+          "cusip": "0SPY..JH20362000",
+          "symbol": "SPY_101722C362",
+          "description": "SPY Oct 17 2022 362.0 Call",
+          "type": "VANILLA",
+          "putCall": "CALL",
+          "underlyingSymbol": "SPY"
+        },
+        "instruction": "SELL_TO_OPEN",
+        "positionEffect": "OPENING",
+        "quantity": 1
+      },
+      {
+        "orderLegType": "OPTION",
+        "legId": 3,
+        "instrument": {
+          "assetType": "OPTION",
+          "cusip": "0SPY..VH20347000",
+          "symbol": "SPY_101722P347",
+          "description": "SPY Oct 17 2022 347.0 Put",
+          "type": "VANILLA",
+          "putCall": "PUT",
+          "underlyingSymbol": "SPY"
+        },
+        "instruction": "BUY_TO_OPEN",
+        "positionEffect": "OPENING",
+        "quantity": 1
+      },
+      {
+        "orderLegType": "OPTION",
+        "legId": 4,
+        "instrument": {
+          "assetType": "OPTION",
+          "cusip": "0SPY..JH20352000",
+          "symbol": "SPY_101722C352",
+          "description": "SPY Oct 17 2022 352.0 Call",
+          "type": "VANILLA",
+          "putCall": "CALL",
+          "underlyingSymbol": "SPY"
+        },
+        "instruction": "SELL_TO_OPEN",
+        "positionEffect": "OPENING",
+        "quantity": 1
+      }
+    ],
+    "orderStrategyType": "SINGLE",
+    "orderId": 9584139697,
+    "cancelable": false,
+    "editable": false,
+    "status": "REJECTED",
+    "enteredTime": "2022-10-15T20:14:38+0000",
+    "closeTime": "2022-10-15T20:14:38+0000",
+    "tag": "AA_butlera1",
+    "accountId": 755541528,
+    "statusDescription": "Outside of regular market hours, market option orders for opening transactions are not permitted. TD Ameritrade accepts market, limit, stop and stop-limit option orders during regular market hours."
+  },
+  {
+    "session": "NORMAL",
+    "duration": "DAY",
+    "orderType": "NET_DEBIT",
+    "complexOrderStrategyType": "IRON_CONDOR",
+    "quantity": 1,
+    "filledQuantity": 0,
+    "remainingQuantity": 0,
+    "requestedDestination": "AUTO",
+    "destinationLinkName": "AutoRoute",
+    "price": 1.32,
+    "orderLegCollection": [
+      {
+        "orderLegType": "OPTION",
+        "legId": 1,
+        "instrument": {
+          "assetType": "OPTION",
+          "cusip": "0SPY..JH20362000",
+          "symbol": "SPY_101722C362",
+          "description": "SPY Oct 17 2022 362.0 Call",
+          "type": "VANILLA",
+          "putCall": "CALL",
+          "underlyingSymbol": "SPY"
+        },
+        "instruction": "BUY_TO_OPEN",
+        "positionEffect": "OPENING",
+        "quantity": 1
+      },
+      {
+        "orderLegType": "OPTION",
+        "legId": 2,
+        "instrument": {
+          "assetType": "OPTION",
+          "cusip": "0SPY..JH20367000",
+          "symbol": "SPY_101722C367",
+          "description": "SPY Oct 17 2022 367.0 Call",
+          "type": "VANILLA",
+          "putCall": "CALL",
+          "underlyingSymbol": "SPY"
+        },
+        "instruction": "SELL_TO_OPEN",
+        "positionEffect": "OPENING",
+        "quantity": 1
+      },
+      {
+        "orderLegType": "OPTION",
+        "legId": 3,
+        "instrument": {
+          "assetType": "OPTION",
+          "cusip": "0SPY..JH20352000",
+          "symbol": "SPY_101722C352",
+          "description": "SPY Oct 17 2022 352.0 Call",
+          "type": "VANILLA",
+          "putCall": "CALL",
+          "underlyingSymbol": "SPY"
+        },
+        "instruction": "BUY_TO_OPEN",
+        "positionEffect": "OPENING",
+        "quantity": 1
+      },
+      {
+        "orderLegType": "OPTION",
+        "legId": 4,
+        "instrument": {
+          "assetType": "OPTION",
+          "cusip": "0SPY..VH20347000",
+          "symbol": "SPY_101722P347",
+          "description": "SPY Oct 17 2022 347.0 Put",
+          "type": "VANILLA",
+          "putCall": "PUT",
+          "underlyingSymbol": "SPY"
+        },
+        "instruction": "SELL_TO_OPEN",
+        "positionEffect": "OPENING",
+        "quantity": 1
+      }
+    ],
+    "orderStrategyType": "SINGLE",
+    "orderId": 9584139696,
+    "cancelable": false,
+    "editable": false,
+    "status": "CANCELED",
+    "enteredTime": "2022-10-15T20:11:46+0000",
+    "closeTime": "2022-10-15T20:14:38+0000",
+    "tag": "AA_butlera1",
+    "accountId": 755541528
+  },
+  {
+    "session": "NORMAL",
+    "duration": "DAY",
+    "orderType": "MARKET",
+    "complexOrderStrategyType": "IRON_CONDOR",
+    "quantity": 1,
+    "filledQuantity": 0,
+    "remainingQuantity": 0,
+    "requestedDestination": "AUTO",
+    "destinationLinkName": "AutoRoute",
+    "orderLegCollection": [
+      {
+        "orderLegType": "OPTION",
+        "legId": 1,
+        "instrument": {
+          "assetType": "OPTION",
+          "cusip": "0SPY..JH20367000",
+          "symbol": "SPY_101722C367",
+          "description": "SPY Oct 17 2022 367.0 Call",
+          "type": "VANILLA",
+          "putCall": "CALL",
+          "underlyingSymbol": "SPY"
+        },
+        "instruction": "BUY_TO_OPEN",
+        "positionEffect": "OPENING",
+        "quantity": 1
+      },
+      {
+        "orderLegType": "OPTION",
+        "legId": 2,
+        "instrument": {
+          "assetType": "OPTION",
+          "cusip": "0SPY..JH20362000",
+          "symbol": "SPY_101722C362",
+          "description": "SPY Oct 17 2022 362.0 Call",
+          "type": "VANILLA",
+          "putCall": "CALL",
+          "underlyingSymbol": "SPY"
+        },
+        "instruction": "SELL_TO_OPEN",
+        "positionEffect": "OPENING",
+        "quantity": 1
+      },
+      {
+        "orderLegType": "OPTION",
+        "legId": 3,
+        "instrument": {
+          "assetType": "OPTION",
+          "cusip": "0SPY..VH20347000",
+          "symbol": "SPY_101722P347",
+          "description": "SPY Oct 17 2022 347.0 Put",
+          "type": "VANILLA",
+          "putCall": "PUT",
+          "underlyingSymbol": "SPY"
+        },
+        "instruction": "BUY_TO_OPEN",
+        "positionEffect": "OPENING",
+        "quantity": 1
+      },
+      {
+        "orderLegType": "OPTION",
+        "legId": 4,
+        "instrument": {
+          "assetType": "OPTION",
+          "cusip": "0SPY..JH20352000",
+          "symbol": "SPY_101722C352",
+          "description": "SPY Oct 17 2022 352.0 Call",
+          "type": "VANILLA",
+          "putCall": "CALL",
+          "underlyingSymbol": "SPY"
+        },
+        "instruction": "SELL_TO_OPEN",
+        "positionEffect": "OPENING",
+        "quantity": 1
+      }
+    ],
+    "orderStrategyType": "SINGLE",
+    "orderId": 9584139694,
+    "cancelable": false,
+    "editable": false,
+    "status": "REJECTED",
+    "enteredTime": "2022-10-15T20:11:46+0000",
+    "closeTime": "2022-10-15T20:11:46+0000",
+    "tag": "AA_butlera1",
+    "accountId": 755541528,
+    "statusDescription": "Outside of regular market hours, market option orders for opening transactions are not permitted. TD Ameritrade accepts market, limit, stop and stop-limit option orders during regular market hours."
+  },
+  {
+    "session": "NORMAL",
+    "duration": "DAY",
+    "orderType": "NET_DEBIT",
+    "complexOrderStrategyType": "IRON_CONDOR",
+    "quantity": 1,
+    "filledQuantity": 0,
+    "remainingQuantity": 0,
+    "requestedDestination": "AUTO",
+    "destinationLinkName": "AutoRoute",
+    "price": 1.32,
+    "orderLegCollection": [
+      {
+        "orderLegType": "OPTION",
+        "legId": 1,
+        "instrument": {
+          "assetType": "OPTION",
+          "cusip": "0SPY..JH20362000",
+          "symbol": "SPY_101722C362",
+          "description": "SPY Oct 17 2022 362.0 Call",
+          "type": "VANILLA",
+          "putCall": "CALL",
+          "underlyingSymbol": "SPY"
+        },
+        "instruction": "BUY_TO_OPEN",
+        "positionEffect": "OPENING",
+        "quantity": 1
+      },
+      {
+        "orderLegType": "OPTION",
+        "legId": 2,
+        "instrument": {
+          "assetType": "OPTION",
+          "cusip": "0SPY..JH20367000",
+          "symbol": "SPY_101722C367",
+          "description": "SPY Oct 17 2022 367.0 Call",
+          "type": "VANILLA",
+          "putCall": "CALL",
+          "underlyingSymbol": "SPY"
+        },
+        "instruction": "SELL_TO_OPEN",
+        "positionEffect": "OPENING",
+        "quantity": 1
+      },
+      {
+        "orderLegType": "OPTION",
+        "legId": 3,
+        "instrument": {
+          "assetType": "OPTION",
+          "cusip": "0SPY..JH20352000",
+          "symbol": "SPY_101722C352",
+          "description": "SPY Oct 17 2022 352.0 Call",
+          "type": "VANILLA",
+          "putCall": "CALL",
+          "underlyingSymbol": "SPY"
+        },
+        "instruction": "BUY_TO_OPEN",
+        "positionEffect": "OPENING",
+        "quantity": 1
+      },
+      {
+        "orderLegType": "OPTION",
+        "legId": 4,
+        "instrument": {
+          "assetType": "OPTION",
+          "cusip": "0SPY..VH20347000",
+          "symbol": "SPY_101722P347",
+          "description": "SPY Oct 17 2022 347.0 Put",
+          "type": "VANILLA",
+          "putCall": "PUT",
+          "underlyingSymbol": "SPY"
+        },
+        "instruction": "SELL_TO_OPEN",
+        "positionEffect": "OPENING",
+        "quantity": 1
+      }
+    ],
+    "orderStrategyType": "SINGLE",
+    "orderId": 9584139692,
+    "cancelable": false,
+    "editable": false,
+    "status": "CANCELED",
+    "enteredTime": "2022-10-15T20:05:57+0000",
+    "closeTime": "2022-10-15T20:11:46+0000",
+    "tag": "AA_butlera1",
+    "accountId": 755541528
+  },
+  {
+    "session": "NORMAL",
+    "duration": "DAY",
+    "orderType": "MARKET",
+    "complexOrderStrategyType": "IRON_CONDOR",
+    "quantity": 1,
+    "filledQuantity": 0,
+    "remainingQuantity": 0,
+    "requestedDestination": "AUTO",
+    "destinationLinkName": "AutoRoute",
+    "orderLegCollection": [
+      {
+        "orderLegType": "OPTION",
+        "legId": 1,
+        "instrument": {
+          "assetType": "OPTION",
+          "cusip": "0SPY..JH20367000",
+          "symbol": "SPY_101722C367",
+          "description": "SPY Oct 17 2022 367.0 Call",
+          "type": "VANILLA",
+          "putCall": "CALL",
+          "underlyingSymbol": "SPY"
+        },
+        "instruction": "BUY_TO_OPEN",
+        "positionEffect": "OPENING",
+        "quantity": 1
+      },
+      {
+        "orderLegType": "OPTION",
+        "legId": 2,
+        "instrument": {
+          "assetType": "OPTION",
+          "cusip": "0SPY..JH20362000",
+          "symbol": "SPY_101722C362",
+          "description": "SPY Oct 17 2022 362.0 Call",
+          "type": "VANILLA",
+          "putCall": "CALL",
+          "underlyingSymbol": "SPY"
+        },
+        "instruction": "SELL_TO_OPEN",
+        "positionEffect": "OPENING",
+        "quantity": 1
+      },
+      {
+        "orderLegType": "OPTION",
+        "legId": 3,
+        "instrument": {
+          "assetType": "OPTION",
+          "cusip": "0SPY..VH20347000",
+          "symbol": "SPY_101722P347",
+          "description": "SPY Oct 17 2022 347.0 Put",
+          "type": "VANILLA",
+          "putCall": "PUT",
+          "underlyingSymbol": "SPY"
+        },
+        "instruction": "BUY_TO_OPEN",
+        "positionEffect": "OPENING",
+        "quantity": 1
+      },
+      {
+        "orderLegType": "OPTION",
+        "legId": 4,
+        "instrument": {
+          "assetType": "OPTION",
+          "cusip": "0SPY..JH20352000",
+          "symbol": "SPY_101722C352",
+          "description": "SPY Oct 17 2022 352.0 Call",
+          "type": "VANILLA",
+          "putCall": "CALL",
+          "underlyingSymbol": "SPY"
+        },
+        "instruction": "SELL_TO_OPEN",
+        "positionEffect": "OPENING",
+        "quantity": 1
+      }
+    ],
+    "orderStrategyType": "SINGLE",
+    "orderId": 9584139690,
+    "cancelable": false,
+    "editable": false,
+    "status": "REJECTED",
+    "enteredTime": "2022-10-15T20:05:56+0000",
+    "closeTime": "2022-10-15T20:05:56+0000",
+    "tag": "AA_butlera1",
+    "accountId": 755541528,
+    "statusDescription": "Outside of regular market hours, market option orders for opening transactions are not permitted. TD Ameritrade accepts market, limit, stop and stop-limit option orders during regular market hours."
+  },
+  {
+    "session": "NORMAL",
+    "duration": "DAY",
+    "orderType": "NET_DEBIT",
+    "complexOrderStrategyType": "IRON_CONDOR",
+    "quantity": 1,
+    "filledQuantity": 0,
+    "remainingQuantity": 0,
+    "requestedDestination": "AUTO",
+    "destinationLinkName": "AutoRoute",
+    "price": 1.32,
+    "orderLegCollection": [
+      {
+        "orderLegType": "OPTION",
+        "legId": 1,
+        "instrument": {
+          "assetType": "OPTION",
+          "cusip": "0SPY..JH20362000",
+          "symbol": "SPY_101722C362",
+          "description": "SPY Oct 17 2022 362.0 Call",
+          "type": "VANILLA",
+          "putCall": "CALL",
+          "underlyingSymbol": "SPY"
+        },
+        "instruction": "BUY_TO_OPEN",
+        "positionEffect": "OPENING",
+        "quantity": 1
+      },
+      {
+        "orderLegType": "OPTION",
+        "legId": 2,
+        "instrument": {
+          "assetType": "OPTION",
+          "cusip": "0SPY..JH20367000",
+          "symbol": "SPY_101722C367",
+          "description": "SPY Oct 17 2022 367.0 Call",
+          "type": "VANILLA",
+          "putCall": "CALL",
+          "underlyingSymbol": "SPY"
+        },
+        "instruction": "SELL_TO_OPEN",
+        "positionEffect": "OPENING",
+        "quantity": 1
+      },
+      {
+        "orderLegType": "OPTION",
+        "legId": 3,
+        "instrument": {
+          "assetType": "OPTION",
+          "cusip": "0SPY..JH20352000",
+          "symbol": "SPY_101722C352",
+          "description": "SPY Oct 17 2022 352.0 Call",
+          "type": "VANILLA",
+          "putCall": "CALL",
+          "underlyingSymbol": "SPY"
+        },
+        "instruction": "BUY_TO_OPEN",
+        "positionEffect": "OPENING",
+        "quantity": 1
+      },
+      {
+        "orderLegType": "OPTION",
+        "legId": 4,
+        "instrument": {
+          "assetType": "OPTION",
+          "cusip": "0SPY..VH20347000",
+          "symbol": "SPY_101722P347",
+          "description": "SPY Oct 17 2022 347.0 Put",
+          "type": "VANILLA",
+          "putCall": "PUT",
+          "underlyingSymbol": "SPY"
+        },
+        "instruction": "SELL_TO_OPEN",
+        "positionEffect": "OPENING",
+        "quantity": 1
+      }
+    ],
+    "orderStrategyType": "SINGLE",
+    "orderId": 9584139689,
+    "cancelable": false,
+    "editable": false,
+    "status": "CANCELED",
+    "enteredTime": "2022-10-15T20:01:26+0000",
+    "closeTime": "2022-10-15T20:05:56+0000",
+    "tag": "AA_butlera1",
+    "accountId": 755541528
+  },
+  {
+    "session": "NORMAL",
+    "duration": "DAY",
+    "orderType": "MARKET",
+    "complexOrderStrategyType": "IRON_CONDOR",
+    "quantity": 1,
+    "filledQuantity": 0,
+    "remainingQuantity": 0,
+    "requestedDestination": "AUTO",
+    "destinationLinkName": "AutoRoute",
+    "orderLegCollection": [
+      {
+        "orderLegType": "OPTION",
+        "legId": 1,
+        "instrument": {
+          "assetType": "OPTION",
+          "cusip": "0SPY..JH20367000",
+          "symbol": "SPY_101722C367",
+          "description": "SPY Oct 17 2022 367.0 Call",
+          "type": "VANILLA",
+          "putCall": "CALL",
+          "underlyingSymbol": "SPY"
+        },
+        "instruction": "BUY_TO_OPEN",
+        "positionEffect": "OPENING",
+        "quantity": 1
+      },
+      {
+        "orderLegType": "OPTION",
+        "legId": 2,
+        "instrument": {
+          "assetType": "OPTION",
+          "cusip": "0SPY..JH20362000",
+          "symbol": "SPY_101722C362",
+          "description": "SPY Oct 17 2022 362.0 Call",
+          "type": "VANILLA",
+          "putCall": "CALL",
+          "underlyingSymbol": "SPY"
+        },
+        "instruction": "SELL_TO_OPEN",
+        "positionEffect": "OPENING",
+        "quantity": 1
+      },
+      {
+        "orderLegType": "OPTION",
+        "legId": 3,
+        "instrument": {
+          "assetType": "OPTION",
+          "cusip": "0SPY..VH20347000",
+          "symbol": "SPY_101722P347",
+          "description": "SPY Oct 17 2022 347.0 Put",
+          "type": "VANILLA",
+          "putCall": "PUT",
+          "underlyingSymbol": "SPY"
+        },
+        "instruction": "BUY_TO_OPEN",
+        "positionEffect": "OPENING",
+        "quantity": 1
+      },
+      {
+        "orderLegType": "OPTION",
+        "legId": 4,
+        "instrument": {
+          "assetType": "OPTION",
+          "cusip": "0SPY..JH20352000",
+          "symbol": "SPY_101722C352",
+          "description": "SPY Oct 17 2022 352.0 Call",
+          "type": "VANILLA",
+          "putCall": "CALL",
+          "underlyingSymbol": "SPY"
+        },
+        "instruction": "SELL_TO_OPEN",
+        "positionEffect": "OPENING",
+        "quantity": 1
+      }
+    ],
+    "orderStrategyType": "SINGLE",
+    "orderId": 9584139687,
+    "cancelable": false,
+    "editable": false,
+    "status": "REJECTED",
+    "enteredTime": "2022-10-15T20:01:26+0000",
+    "closeTime": "2022-10-15T20:01:26+0000",
+    "tag": "AA_butlera1",
+    "accountId": 755541528,
+    "statusDescription": "Outside of regular market hours, market option orders for opening transactions are not permitted. TD Ameritrade accepts market, limit, stop and stop-limit option orders during regular market hours."
+  },
+  {
+    "session": "NORMAL",
+    "duration": "DAY",
+    "orderType": "NET_DEBIT",
+    "complexOrderStrategyType": "IRON_CONDOR",
+    "quantity": 1,
+    "filledQuantity": 0,
+    "remainingQuantity": 0,
+    "requestedDestination": "AUTO",
+    "destinationLinkName": "AutoRoute",
+    "price": 1.32,
+    "orderLegCollection": [
+      {
+        "orderLegType": "OPTION",
+        "legId": 1,
+        "instrument": {
+          "assetType": "OPTION",
+          "cusip": "0SPY..JH20362000",
+          "symbol": "SPY_101722C362",
+          "description": "SPY Oct 17 2022 362.0 Call",
+          "type": "VANILLA",
+          "putCall": "CALL",
+          "underlyingSymbol": "SPY"
+        },
+        "instruction": "BUY_TO_OPEN",
+        "positionEffect": "OPENING",
+        "quantity": 1
+      },
+      {
+        "orderLegType": "OPTION",
+        "legId": 2,
+        "instrument": {
+          "assetType": "OPTION",
+          "cusip": "0SPY..JH20367000",
+          "symbol": "SPY_101722C367",
+          "description": "SPY Oct 17 2022 367.0 Call",
+          "type": "VANILLA",
+          "putCall": "CALL",
+          "underlyingSymbol": "SPY"
+        },
+        "instruction": "SELL_TO_OPEN",
+        "positionEffect": "OPENING",
+        "quantity": 1
+      },
+      {
+        "orderLegType": "OPTION",
+        "legId": 3,
+        "instrument": {
+          "assetType": "OPTION",
+          "cusip": "0SPY..JH20352000",
+          "symbol": "SPY_101722C352",
+          "description": "SPY Oct 17 2022 352.0 Call",
+          "type": "VANILLA",
+          "putCall": "CALL",
+          "underlyingSymbol": "SPY"
+        },
+        "instruction": "BUY_TO_OPEN",
+        "positionEffect": "OPENING",
+        "quantity": 1
+      },
+      {
+        "orderLegType": "OPTION",
+        "legId": 4,
+        "instrument": {
+          "assetType": "OPTION",
+          "cusip": "0SPY..VH20347000",
+          "symbol": "SPY_101722P347",
+          "description": "SPY Oct 17 2022 347.0 Put",
+          "type": "VANILLA",
+          "putCall": "PUT",
+          "underlyingSymbol": "SPY"
+        },
+        "instruction": "SELL_TO_OPEN",
+        "positionEffect": "OPENING",
+        "quantity": 1
+      }
+    ],
+    "orderStrategyType": "SINGLE",
+    "orderId": 9584139686,
+    "cancelable": false,
+    "editable": false,
+    "status": "CANCELED",
+    "enteredTime": "2022-10-15T19:59:59+0000",
+    "closeTime": "2022-10-15T20:01:26+0000",
+    "tag": "AA_butlera1",
+    "accountId": 755541528
+  },
+  {
+    "session": "NORMAL",
+    "duration": "DAY",
+    "orderType": "MARKET",
+    "complexOrderStrategyType": "IRON_CONDOR",
+    "quantity": 1,
+    "filledQuantity": 0,
+    "remainingQuantity": 0,
+    "requestedDestination": "AUTO",
+    "destinationLinkName": "AutoRoute",
+    "orderLegCollection": [
+      {
+        "orderLegType": "OPTION",
+        "legId": 1,
+        "instrument": {
+          "assetType": "OPTION",
+          "cusip": "0SPY..JH20367000",
+          "symbol": "SPY_101722C367",
+          "description": "SPY Oct 17 2022 367.0 Call",
+          "type": "VANILLA",
+          "putCall": "CALL",
+          "underlyingSymbol": "SPY"
+        },
+        "instruction": "BUY_TO_OPEN",
+        "positionEffect": "OPENING",
+        "quantity": 1
+      },
+      {
+        "orderLegType": "OPTION",
+        "legId": 2,
+        "instrument": {
+          "assetType": "OPTION",
+          "cusip": "0SPY..JH20362000",
+          "symbol": "SPY_101722C362",
+          "description": "SPY Oct 17 2022 362.0 Call",
+          "type": "VANILLA",
+          "putCall": "CALL",
+          "underlyingSymbol": "SPY"
+        },
+        "instruction": "SELL_TO_OPEN",
+        "positionEffect": "OPENING",
+        "quantity": 1
+      },
+      {
+        "orderLegType": "OPTION",
+        "legId": 3,
+        "instrument": {
+          "assetType": "OPTION",
+          "cusip": "0SPY..VH20347000",
+          "symbol": "SPY_101722P347",
+          "description": "SPY Oct 17 2022 347.0 Put",
+          "type": "VANILLA",
+          "putCall": "PUT",
+          "underlyingSymbol": "SPY"
+        },
+        "instruction": "BUY_TO_OPEN",
+        "positionEffect": "OPENING",
+        "quantity": 1
+      },
+      {
+        "orderLegType": "OPTION",
+        "legId": 4,
+        "instrument": {
+          "assetType": "OPTION",
+          "cusip": "0SPY..JH20352000",
+          "symbol": "SPY_101722C352",
+          "description": "SPY Oct 17 2022 352.0 Call",
+          "type": "VANILLA",
+          "putCall": "CALL",
+          "underlyingSymbol": "SPY"
+        },
+        "instruction": "SELL_TO_OPEN",
+        "positionEffect": "OPENING",
+        "quantity": 1
+      }
+    ],
+    "orderStrategyType": "SINGLE",
+    "orderId": 9584139685,
+    "cancelable": false,
+    "editable": false,
+    "status": "REJECTED",
+    "enteredTime": "2022-10-15T19:59:59+0000",
+    "closeTime": "2022-10-15T19:59:59+0000",
+    "tag": "AA_butlera1",
+    "accountId": 755541528,
+    "statusDescription": "Outside of regular market hours, market option orders for opening transactions are not permitted. TD Ameritrade accepts market, limit, stop and stop-limit option orders during regular market hours."
+  },
+  {
+    "session": "NORMAL",
+    "duration": "DAY",
+    "orderType": "NET_DEBIT",
+    "complexOrderStrategyType": "IRON_CONDOR",
+    "quantity": 1,
+    "filledQuantity": 0,
+    "remainingQuantity": 0,
+    "requestedDestination": "AUTO",
+    "destinationLinkName": "AutoRoute",
+    "price": 1.32,
+    "orderLegCollection": [
+      {
+        "orderLegType": "OPTION",
+        "legId": 1,
+        "instrument": {
+          "assetType": "OPTION",
+          "cusip": "0SPY..JH20362000",
+          "symbol": "SPY_101722C362",
+          "description": "SPY Oct 17 2022 362.0 Call",
+          "type": "VANILLA",
+          "putCall": "CALL",
+          "underlyingSymbol": "SPY"
+        },
+        "instruction": "BUY_TO_OPEN",
+        "positionEffect": "OPENING",
+        "quantity": 1
+      },
+      {
+        "orderLegType": "OPTION",
+        "legId": 2,
+        "instrument": {
+          "assetType": "OPTION",
+          "cusip": "0SPY..JH20367000",
+          "symbol": "SPY_101722C367",
+          "description": "SPY Oct 17 2022 367.0 Call",
+          "type": "VANILLA",
+          "putCall": "CALL",
+          "underlyingSymbol": "SPY"
+        },
+        "instruction": "SELL_TO_OPEN",
+        "positionEffect": "OPENING",
+        "quantity": 1
+      },
+      {
+        "orderLegType": "OPTION",
+        "legId": 3,
+        "instrument": {
+          "assetType": "OPTION",
+          "cusip": "0SPY..JH20352000",
+          "symbol": "SPY_101722C352",
+          "description": "SPY Oct 17 2022 352.0 Call",
+          "type": "VANILLA",
+          "putCall": "CALL",
+          "underlyingSymbol": "SPY"
+        },
+        "instruction": "BUY_TO_OPEN",
+        "positionEffect": "OPENING",
+        "quantity": 1
+      },
+      {
+        "orderLegType": "OPTION",
+        "legId": 4,
+        "instrument": {
+          "assetType": "OPTION",
+          "cusip": "0SPY..VH20347000",
+          "symbol": "SPY_101722P347",
+          "description": "SPY Oct 17 2022 347.0 Put",
+          "type": "VANILLA",
+          "putCall": "PUT",
+          "underlyingSymbol": "SPY"
+        },
+        "instruction": "SELL_TO_OPEN",
+        "positionEffect": "OPENING",
+        "quantity": 1
+      }
+    ],
+    "orderStrategyType": "SINGLE",
+    "orderId": 9584139683,
+    "cancelable": false,
+    "editable": false,
+    "status": "CANCELED",
+    "enteredTime": "2022-10-15T19:56:31+0000",
+    "closeTime": "2022-10-15T19:59:07+0000",
+    "tag": "AA_butlera1",
+    "accountId": 755541528
+  },
+  {
+    "session": "NORMAL",
+    "duration": "DAY",
+    "orderType": "MARKET",
+    "complexOrderStrategyType": "IRON_CONDOR",
+    "quantity": 1,
+    "filledQuantity": 0,
+    "remainingQuantity": 0,
+    "requestedDestination": "AUTO",
+    "destinationLinkName": "AutoRoute",
+    "orderLegCollection": [
+      {
+        "orderLegType": "OPTION",
+        "legId": 1,
+        "instrument": {
+          "assetType": "OPTION",
+          "cusip": "0SPY..JH20367000",
+          "symbol": "SPY_101722C367",
+          "description": "SPY Oct 17 2022 367.0 Call",
+          "type": "VANILLA",
+          "putCall": "CALL",
+          "underlyingSymbol": "SPY"
+        },
+        "instruction": "BUY_TO_OPEN",
+        "positionEffect": "OPENING",
+        "quantity": 1
+      },
+      {
+        "orderLegType": "OPTION",
+        "legId": 2,
+        "instrument": {
+          "assetType": "OPTION",
+          "cusip": "0SPY..JH20362000",
+          "symbol": "SPY_101722C362",
+          "description": "SPY Oct 17 2022 362.0 Call",
+          "type": "VANILLA",
+          "putCall": "CALL",
+          "underlyingSymbol": "SPY"
+        },
+        "instruction": "SELL_TO_OPEN",
+        "positionEffect": "OPENING",
+        "quantity": 1
+      },
+      {
+        "orderLegType": "OPTION",
+        "legId": 3,
+        "instrument": {
+          "assetType": "OPTION",
+          "cusip": "0SPY..VH20347000",
+          "symbol": "SPY_101722P347",
+          "description": "SPY Oct 17 2022 347.0 Put",
+          "type": "VANILLA",
+          "putCall": "PUT",
+          "underlyingSymbol": "SPY"
+        },
+        "instruction": "BUY_TO_OPEN",
+        "positionEffect": "OPENING",
+        "quantity": 1
+      },
+      {
+        "orderLegType": "OPTION",
+        "legId": 4,
+        "instrument": {
+          "assetType": "OPTION",
+          "cusip": "0SPY..JH20352000",
+          "symbol": "SPY_101722C352",
+          "description": "SPY Oct 17 2022 352.0 Call",
+          "type": "VANILLA",
+          "putCall": "CALL",
+          "underlyingSymbol": "SPY"
+        },
+        "instruction": "SELL_TO_OPEN",
+        "positionEffect": "OPENING",
+        "quantity": 1
+      }
+    ],
+    "orderStrategyType": "SINGLE",
+    "orderId": 9584139682,
+    "cancelable": false,
+    "editable": false,
+    "status": "REJECTED",
+    "enteredTime": "2022-10-15T19:56:30+0000",
+    "closeTime": "2022-10-15T19:56:31+0000",
+    "tag": "AA_butlera1",
+    "accountId": 755541528,
+    "statusDescription": "Outside of regular market hours, market option orders for opening transactions are not permitted. TD Ameritrade accepts market, limit, stop and stop-limit option orders during regular market hours."
+  },
+  {
+    "session": "NORMAL",
+    "duration": "DAY",
+    "orderType": "NET_DEBIT",
+    "complexOrderStrategyType": "IRON_CONDOR",
+    "quantity": 1,
+    "filledQuantity": 0,
+    "remainingQuantity": 0,
+    "requestedDestination": "AUTO",
+    "destinationLinkName": "AutoRoute",
+    "price": 1.32,
+    "orderLegCollection": [
+      {
+        "orderLegType": "OPTION",
+        "legId": 1,
+        "instrument": {
+          "assetType": "OPTION",
+          "cusip": "0SPY..JH20362000",
+          "symbol": "SPY_101722C362",
+          "description": "SPY Oct 17 2022 362.0 Call",
+          "type": "VANILLA",
+          "putCall": "CALL",
+          "underlyingSymbol": "SPY"
+        },
+        "instruction": "BUY_TO_OPEN",
+        "positionEffect": "OPENING",
+        "quantity": 1
+      },
+      {
+        "orderLegType": "OPTION",
+        "legId": 2,
+        "instrument": {
+          "assetType": "OPTION",
+          "cusip": "0SPY..JH20367000",
+          "symbol": "SPY_101722C367",
+          "description": "SPY Oct 17 2022 367.0 Call",
+          "type": "VANILLA",
+          "putCall": "CALL",
+          "underlyingSymbol": "SPY"
+        },
+        "instruction": "SELL_TO_OPEN",
+        "positionEffect": "OPENING",
+        "quantity": 1
+      },
+      {
+        "orderLegType": "OPTION",
+        "legId": 3,
+        "instrument": {
+          "assetType": "OPTION",
+          "cusip": "0SPY..JH20352000",
+          "symbol": "SPY_101722C352",
+          "description": "SPY Oct 17 2022 352.0 Call",
+          "type": "VANILLA",
+          "putCall": "CALL",
+          "underlyingSymbol": "SPY"
+        },
+        "instruction": "BUY_TO_OPEN",
+        "positionEffect": "OPENING",
+        "quantity": 1
+      },
+      {
+        "orderLegType": "OPTION",
+        "legId": 4,
+        "instrument": {
+          "assetType": "OPTION",
+          "cusip": "0SPY..VH20347000",
+          "symbol": "SPY_101722P347",
+          "description": "SPY Oct 17 2022 347.0 Put",
+          "type": "VANILLA",
+          "putCall": "PUT",
+          "underlyingSymbol": "SPY"
+        },
+        "instruction": "SELL_TO_OPEN",
+        "positionEffect": "OPENING",
+        "quantity": 1
+      }
+    ],
+    "orderStrategyType": "SINGLE",
+    "orderId": 9584139680,
+    "cancelable": false,
+    "editable": false,
+    "status": "CANCELED",
+    "enteredTime": "2022-10-15T19:52:01+0000",
+    "closeTime": "2022-10-15T19:52:28+0000",
+    "tag": "AA_butlera1",
+    "accountId": 755541528
+  },
+  {
+    "session": "NORMAL",
+    "duration": "DAY",
+    "orderType": "MARKET",
+    "complexOrderStrategyType": "IRON_CONDOR",
+    "quantity": 1,
+    "filledQuantity": 0,
+    "remainingQuantity": 0,
+    "requestedDestination": "AUTO",
+    "destinationLinkName": "AutoRoute",
+    "orderLegCollection": [
+      {
+        "orderLegType": "OPTION",
+        "legId": 1,
+        "instrument": {
+          "assetType": "OPTION",
+          "cusip": "0SPY..JH20367000",
+          "symbol": "SPY_101722C367",
+          "description": "SPY Oct 17 2022 367.0 Call",
+          "type": "VANILLA",
+          "putCall": "CALL",
+          "underlyingSymbol": "SPY"
+        },
+        "instruction": "BUY_TO_OPEN",
+        "positionEffect": "OPENING",
+        "quantity": 1
+      },
+      {
+        "orderLegType": "OPTION",
+        "legId": 2,
+        "instrument": {
+          "assetType": "OPTION",
+          "cusip": "0SPY..JH20362000",
+          "symbol": "SPY_101722C362",
+          "description": "SPY Oct 17 2022 362.0 Call",
+          "type": "VANILLA",
+          "putCall": "CALL",
+          "underlyingSymbol": "SPY"
+        },
+        "instruction": "SELL_TO_OPEN",
+        "positionEffect": "OPENING",
+        "quantity": 1
+      },
+      {
+        "orderLegType": "OPTION",
+        "legId": 3,
+        "instrument": {
+          "assetType": "OPTION",
+          "cusip": "0SPY..VH20347000",
+          "symbol": "SPY_101722P347",
+          "description": "SPY Oct 17 2022 347.0 Put",
+          "type": "VANILLA",
+          "putCall": "PUT",
+          "underlyingSymbol": "SPY"
+        },
+        "instruction": "BUY_TO_OPEN",
+        "positionEffect": "OPENING",
+        "quantity": 1
+      },
+      {
+        "orderLegType": "OPTION",
+        "legId": 4,
+        "instrument": {
+          "assetType": "OPTION",
+          "cusip": "0SPY..JH20352000",
+          "symbol": "SPY_101722C352",
+          "description": "SPY Oct 17 2022 352.0 Call",
+          "type": "VANILLA",
+          "putCall": "CALL",
+          "underlyingSymbol": "SPY"
+        },
+        "instruction": "SELL_TO_OPEN",
+        "positionEffect": "OPENING",
+        "quantity": 1
+      }
+    ],
+    "orderStrategyType": "SINGLE",
+    "orderId": 9584139678,
+    "cancelable": false,
+    "editable": false,
+    "status": "REJECTED",
+    "enteredTime": "2022-10-15T19:52:01+0000",
+    "closeTime": "2022-10-15T19:52:01+0000",
+    "tag": "AA_butlera1",
+    "accountId": 755541528,
+    "statusDescription": "Outside of regular market hours, market option orders for opening transactions are not permitted. TD Ameritrade accepts market, limit, stop and stop-limit option orders during regular market hours."
+  },
+  {
+    "session": "NORMAL",
+    "duration": "DAY",
+    "orderType": "NET_DEBIT",
+    "complexOrderStrategyType": "IRON_CONDOR",
+    "quantity": 1,
+    "filledQuantity": 0,
+    "remainingQuantity": 0,
+    "requestedDestination": "AUTO",
+    "destinationLinkName": "AutoRoute",
+    "price": 1.32,
+    "orderLegCollection": [
+      {
+        "orderLegType": "OPTION",
+        "legId": 1,
+        "instrument": {
+          "assetType": "OPTION",
+          "cusip": "0SPY..JH20362000",
+          "symbol": "SPY_101722C362",
+          "description": "SPY Oct 17 2022 362.0 Call",
+          "type": "VANILLA",
+          "putCall": "CALL",
+          "underlyingSymbol": "SPY"
+        },
+        "instruction": "BUY_TO_OPEN",
+        "positionEffect": "OPENING",
+        "quantity": 1
+      },
+      {
+        "orderLegType": "OPTION",
+        "legId": 2,
+        "instrument": {
+          "assetType": "OPTION",
+          "cusip": "0SPY..JH20367000",
+          "symbol": "SPY_101722C367",
+          "description": "SPY Oct 17 2022 367.0 Call",
+          "type": "VANILLA",
+          "putCall": "CALL",
+          "underlyingSymbol": "SPY"
+        },
+        "instruction": "SELL_TO_OPEN",
+        "positionEffect": "OPENING",
+        "quantity": 1
+      },
+      {
+        "orderLegType": "OPTION",
+        "legId": 3,
+        "instrument": {
+          "assetType": "OPTION",
+          "cusip": "0SPY..JH20352000",
+          "symbol": "SPY_101722C352",
+          "description": "SPY Oct 17 2022 352.0 Call",
+          "type": "VANILLA",
+          "putCall": "CALL",
+          "underlyingSymbol": "SPY"
+        },
+        "instruction": "BUY_TO_OPEN",
+        "positionEffect": "OPENING",
+        "quantity": 1
+      },
+      {
+        "orderLegType": "OPTION",
+        "legId": 4,
+        "instrument": {
+          "assetType": "OPTION",
+          "cusip": "0SPY..VH20347000",
+          "symbol": "SPY_101722P347",
+          "description": "SPY Oct 17 2022 347.0 Put",
+          "type": "VANILLA",
+          "putCall": "PUT",
+          "underlyingSymbol": "SPY"
+        },
+        "instruction": "SELL_TO_OPEN",
+        "positionEffect": "OPENING",
+        "quantity": 1
+      }
+    ],
+    "orderStrategyType": "SINGLE",
+    "orderId": 9584139677,
+    "cancelable": false,
+    "editable": false,
+    "status": "CANCELED",
+    "enteredTime": "2022-10-15T19:51:26+0000",
+    "closeTime": "2022-10-15T19:52:01+0000",
+    "tag": "AA_butlera1",
+    "accountId": 755541528
+  },
+  {
+    "session": "NORMAL",
+    "duration": "DAY",
+    "orderType": "MARKET",
+    "complexOrderStrategyType": "IRON_CONDOR",
+    "quantity": 1,
+    "filledQuantity": 0,
+    "remainingQuantity": 0,
+    "requestedDestination": "AUTO",
+    "destinationLinkName": "AutoRoute",
+    "orderLegCollection": [
+      {
+        "orderLegType": "OPTION",
+        "legId": 1,
+        "instrument": {
+          "assetType": "OPTION",
+          "cusip": "0SPY..JH20367000",
+          "symbol": "SPY_101722C367",
+          "description": "SPY Oct 17 2022 367.0 Call",
+          "type": "VANILLA",
+          "putCall": "CALL",
+          "underlyingSymbol": "SPY"
+        },
+        "instruction": "BUY_TO_OPEN",
+        "positionEffect": "OPENING",
+        "quantity": 1
+      },
+      {
+        "orderLegType": "OPTION",
+        "legId": 2,
+        "instrument": {
+          "assetType": "OPTION",
+          "cusip": "0SPY..JH20362000",
+          "symbol": "SPY_101722C362",
+          "description": "SPY Oct 17 2022 362.0 Call",
+          "type": "VANILLA",
+          "putCall": "CALL",
+          "underlyingSymbol": "SPY"
+        },
+        "instruction": "SELL_TO_OPEN",
+        "positionEffect": "OPENING",
+        "quantity": 1
+      },
+      {
+        "orderLegType": "OPTION",
+        "legId": 3,
+        "instrument": {
+          "assetType": "OPTION",
+          "cusip": "0SPY..VH20347000",
+          "symbol": "SPY_101722P347",
+          "description": "SPY Oct 17 2022 347.0 Put",
+          "type": "VANILLA",
+          "putCall": "PUT",
+          "underlyingSymbol": "SPY"
+        },
+        "instruction": "BUY_TO_OPEN",
+        "positionEffect": "OPENING",
+        "quantity": 1
+      },
+      {
+        "orderLegType": "OPTION",
+        "legId": 4,
+        "instrument": {
+          "assetType": "OPTION",
+          "cusip": "0SPY..JH20352000",
+          "symbol": "SPY_101722C352",
+          "description": "SPY Oct 17 2022 352.0 Call",
+          "type": "VANILLA",
+          "putCall": "CALL",
+          "underlyingSymbol": "SPY"
+        },
+        "instruction": "SELL_TO_OPEN",
+        "positionEffect": "OPENING",
+        "quantity": 1
+      }
+    ],
+    "orderStrategyType": "SINGLE",
+    "orderId": 9584139676,
+    "cancelable": false,
+    "editable": false,
+    "status": "REJECTED",
+    "enteredTime": "2022-10-15T19:51:19+0000",
+    "closeTime": "2022-10-15T19:51:19+0000",
+    "tag": "AA_butlera1",
+    "accountId": 755541528,
+    "statusDescription": "Outside of regular market hours, market option orders for opening transactions are not permitted. TD Ameritrade accepts market, limit, stop and stop-limit option orders during regular market hours."
+  },
+  {
+    "session": "NORMAL",
+    "duration": "DAY",
+    "orderType": "STOP",
+    "complexOrderStrategyType": "IRON_CONDOR",
+    "quantity": 1,
+    "filledQuantity": 0,
+    "remainingQuantity": 0,
+    "requestedDestination": "AUTO",
+    "destinationLinkName": "AutoRoute",
+    "releaseTime": "2022-10-17T16:00:00+0000",
+    "stopPrice": 2,
+    "stopType": "MARK",
+    "orderLegCollection": [
+      {
+        "orderLegType": "OPTION",
+        "legId": 1,
+        "instrument": {
+          "assetType": "OPTION",
+          "cusip": "0SPY..JH20362000",
+          "symbol": "SPY_101722C362",
+          "description": "SPY Oct 17 2022 362.0 Call",
+          "type": "VANILLA",
+          "putCall": "CALL",
+          "underlyingSymbol": "SPY"
+        },
+        "instruction": "BUY_TO_OPEN",
+        "positionEffect": "OPENING",
+        "quantity": 1
+      },
+      {
+        "orderLegType": "OPTION",
+        "legId": 2,
+        "instrument": {
+          "assetType": "OPTION",
+          "cusip": "0SPY..JH20367000",
+          "symbol": "SPY_101722C367",
+          "description": "SPY Oct 17 2022 367.0 Call",
+          "type": "VANILLA",
+          "putCall": "CALL",
+          "underlyingSymbol": "SPY"
+        },
+        "instruction": "SELL_TO_OPEN",
+        "positionEffect": "OPENING",
+        "quantity": 1
+      },
+      {
+        "orderLegType": "OPTION",
+        "legId": 3,
+        "instrument": {
+          "assetType": "OPTION",
+          "cusip": "0SPY..VH20352000",
+          "symbol": "SPY_101722P352",
+          "description": "SPY Oct 17 2022 352.0 Put",
+          "type": "VANILLA",
+          "putCall": "PUT",
+          "underlyingSymbol": "SPY"
+        },
+        "instruction": "BUY_TO_OPEN",
+        "positionEffect": "OPENING",
+        "quantity": 1
+      },
+      {
+        "orderLegType": "OPTION",
+        "legId": 4,
+        "instrument": {
+          "assetType": "OPTION",
+          "cusip": "0SPY..VH20347000",
+          "symbol": "SPY_101722P347",
+          "description": "SPY Oct 17 2022 347.0 Put",
+          "type": "VANILLA",
+          "putCall": "PUT",
+          "underlyingSymbol": "SPY"
+        },
+        "instruction": "SELL_TO_OPEN",
+        "positionEffect": "OPENING",
+        "quantity": 1
+      }
+    ],
+    "orderStrategyType": "SINGLE",
+    "orderId": 9584139673,
+    "cancelable": false,
+    "editable": false,
+    "status": "CANCELED",
+    "enteredTime": "2022-10-15T19:28:49+0000",
+    "closeTime": "2022-10-15T19:44:56+0000",
+    "tag": "API_TOS:TRADE_ALL",
+    "accountId": 755541528
+  },
+  {
+    "session": "NORMAL",
+    "duration": "DAY",
+    "orderType": "NET_DEBIT",
+    "complexOrderStrategyType": "IRON_CONDOR",
+    "quantity": 1,
+    "filledQuantity": 0,
+    "remainingQuantity": 0,
+    "requestedDestination": "AUTO",
+    "destinationLinkName": "AutoRoute",
+    "price": 1.32,
+    "orderLegCollection": [
+      {
+        "orderLegType": "OPTION",
+        "legId": 1,
+        "instrument": {
+          "assetType": "OPTION",
+          "cusip": "0SPY..JH20362000",
+          "symbol": "SPY_101722C362",
+          "description": "SPY Oct 17 2022 362.0 Call",
+          "type": "VANILLA",
+          "putCall": "CALL",
+          "underlyingSymbol": "SPY"
+        },
+        "instruction": "BUY_TO_OPEN",
+        "positionEffect": "OPENING",
+        "quantity": 1
+      },
+      {
+        "orderLegType": "OPTION",
+        "legId": 2,
+        "instrument": {
+          "assetType": "OPTION",
+          "cusip": "0SPY..JH20367000",
+          "symbol": "SPY_101722C367",
+          "description": "SPY Oct 17 2022 367.0 Call",
+          "type": "VANILLA",
+          "putCall": "CALL",
+          "underlyingSymbol": "SPY"
+        },
+        "instruction": "SELL_TO_OPEN",
+        "positionEffect": "OPENING",
+        "quantity": 1
+      },
+      {
+        "orderLegType": "OPTION",
+        "legId": 3,
+        "instrument": {
+          "assetType": "OPTION",
+          "cusip": "0SPY..JH20352000",
+          "symbol": "SPY_101722C352",
+          "description": "SPY Oct 17 2022 352.0 Call",
+          "type": "VANILLA",
+          "putCall": "CALL",
+          "underlyingSymbol": "SPY"
+        },
+        "instruction": "BUY_TO_OPEN",
+        "positionEffect": "OPENING",
+        "quantity": 1
+      },
+      {
+        "orderLegType": "OPTION",
+        "legId": 4,
+        "instrument": {
+          "assetType": "OPTION",
+          "cusip": "0SPY..VH20347000",
+          "symbol": "SPY_101722P347",
+          "description": "SPY Oct 17 2022 347.0 Put",
+          "type": "VANILLA",
+          "putCall": "PUT",
+          "underlyingSymbol": "SPY"
+        },
+        "instruction": "SELL_TO_OPEN",
+        "positionEffect": "OPENING",
+        "quantity": 1
+      }
+    ],
+    "orderStrategyType": "SINGLE",
+    "orderId": 9584139669,
+    "cancelable": false,
+    "editable": false,
+    "status": "CANCELED",
+    "enteredTime": "2022-10-15T19:20:28+0000",
+    "closeTime": "2022-10-15T19:26:21+0000",
+    "tag": "AA_butlera1",
+    "accountId": 755541528
+  },
+  {
+    "session": "NORMAL",
+    "duration": "DAY",
+    "orderType": "MARKET",
+    "complexOrderStrategyType": "IRON_CONDOR",
+    "quantity": 1,
+    "filledQuantity": 0,
+    "remainingQuantity": 0,
+    "requestedDestination": "AUTO",
+    "destinationLinkName": "AutoRoute",
+    "orderLegCollection": [
+      {
+        "orderLegType": "OPTION",
+        "legId": 1,
+        "instrument": {
+          "assetType": "OPTION",
+          "cusip": "0SPY..JH20367000",
+          "symbol": "SPY_101722C367",
+          "description": "SPY Oct 17 2022 367.0 Call",
+          "type": "VANILLA",
+          "putCall": "CALL",
+          "underlyingSymbol": "SPY"
+        },
+        "instruction": "BUY_TO_OPEN",
+        "positionEffect": "OPENING",
+        "quantity": 1
+      },
+      {
+        "orderLegType": "OPTION",
+        "legId": 2,
+        "instrument": {
+          "assetType": "OPTION",
+          "cusip": "0SPY..JH20362000",
+          "symbol": "SPY_101722C362",
+          "description": "SPY Oct 17 2022 362.0 Call",
+          "type": "VANILLA",
+          "putCall": "CALL",
+          "underlyingSymbol": "SPY"
+        },
+        "instruction": "SELL_TO_OPEN",
+        "positionEffect": "OPENING",
+        "quantity": 1
+      },
+      {
+        "orderLegType": "OPTION",
+        "legId": 3,
+        "instrument": {
+          "assetType": "OPTION",
+          "cusip": "0SPY..VH20347000",
+          "symbol": "SPY_101722P347",
+          "description": "SPY Oct 17 2022 347.0 Put",
+          "type": "VANILLA",
+          "putCall": "PUT",
+          "underlyingSymbol": "SPY"
+        },
+        "instruction": "BUY_TO_OPEN",
+        "positionEffect": "OPENING",
+        "quantity": 1
+      },
+      {
+        "orderLegType": "OPTION",
+        "legId": 4,
+        "instrument": {
+          "assetType": "OPTION",
+          "cusip": "0SPY..JH20352000",
+          "symbol": "SPY_101722C352",
+          "description": "SPY Oct 17 2022 352.0 Call",
+          "type": "VANILLA",
+          "putCall": "CALL",
+          "underlyingSymbol": "SPY"
+        },
+        "instruction": "SELL_TO_OPEN",
+        "positionEffect": "OPENING",
+        "quantity": 1
+      }
+    ],
+    "orderStrategyType": "SINGLE",
+    "orderId": 9584139656,
+    "cancelable": false,
+    "editable": false,
+    "status": "REJECTED",
+    "enteredTime": "2022-10-15T18:41:46+0000",
+    "closeTime": "2022-10-15T18:41:46+0000",
+    "tag": "AA_butlera1",
+    "accountId": 755541528,
+    "statusDescription": "Outside of regular market hours, market option orders for opening transactions are not permitted. TD Ameritrade accepts market, limit, stop and stop-limit option orders during regular market hours."
+  },
+  {
+    "session": "NORMAL",
+    "duration": "DAY",
+    "orderType": "MARKET",
+    "complexOrderStrategyType": "IRON_CONDOR",
+    "quantity": 1,
+    "filledQuantity": 0,
+    "remainingQuantity": 0,
+    "requestedDestination": "AUTO",
+    "destinationLinkName": "AutoRoute",
+    "orderLegCollection": [
+      {
+        "orderLegType": "OPTION",
+        "legId": 1,
+        "instrument": {
+          "assetType": "OPTION",
+          "cusip": "0SPY..JH20367000",
+          "symbol": "SPY_101722C367",
+          "description": "SPY Oct 17 2022 367.0 Call",
+          "type": "VANILLA",
+          "putCall": "CALL",
+          "underlyingSymbol": "SPY"
+        },
+        "instruction": "BUY_TO_OPEN",
+        "positionEffect": "OPENING",
+        "quantity": 1
+      },
+      {
+        "orderLegType": "OPTION",
+        "legId": 2,
+        "instrument": {
+          "assetType": "OPTION",
+          "cusip": "0SPY..JH20362000",
+          "symbol": "SPY_101722C362",
+          "description": "SPY Oct 17 2022 362.0 Call",
+          "type": "VANILLA",
+          "putCall": "CALL",
+          "underlyingSymbol": "SPY"
+        },
+        "instruction": "SELL_TO_OPEN",
+        "positionEffect": "OPENING",
+        "quantity": 1
+      },
+      {
+        "orderLegType": "OPTION",
+        "legId": 3,
+        "instrument": {
+          "assetType": "OPTION",
+          "cusip": "0SPY..VH20347000",
+          "symbol": "SPY_101722P347",
+          "description": "SPY Oct 17 2022 347.0 Put",
+          "type": "VANILLA",
+          "putCall": "PUT",
+          "underlyingSymbol": "SPY"
+        },
+        "instruction": "BUY_TO_OPEN",
+        "positionEffect": "OPENING",
+        "quantity": 1
+      },
+      {
+        "orderLegType": "OPTION",
+        "legId": 4,
+        "instrument": {
+          "assetType": "OPTION",
+          "cusip": "0SPY..JH20352000",
+          "symbol": "SPY_101722C352",
+          "description": "SPY Oct 17 2022 352.0 Call",
+          "type": "VANILLA",
+          "putCall": "CALL",
+          "underlyingSymbol": "SPY"
+        },
+        "instruction": "SELL_TO_OPEN",
+        "positionEffect": "OPENING",
+        "quantity": 1
+      }
+    ],
+    "orderStrategyType": "SINGLE",
+    "orderId": 9584139655,
+    "cancelable": false,
+    "editable": false,
+    "status": "REJECTED",
+    "enteredTime": "2022-10-15T18:40:51+0000",
+    "closeTime": "2022-10-15T18:40:51+0000",
+    "tag": "AA_butlera1",
+    "accountId": 755541528,
+    "statusDescription": "Outside of regular market hours, market option orders for opening transactions are not permitted. TD Ameritrade accepts market, limit, stop and stop-limit option orders during regular market hours."
+  },
+  {
+    "session": "NORMAL",
+    "duration": "DAY",
+    "orderType": "MARKET",
+    "complexOrderStrategyType": "IRON_CONDOR",
+    "quantity": 1,
+    "filledQuantity": 0,
+    "remainingQuantity": 0,
+    "requestedDestination": "AUTO",
+    "destinationLinkName": "AutoRoute",
+    "orderLegCollection": [
+      {
+        "orderLegType": "OPTION",
+        "legId": 1,
+        "instrument": {
+          "assetType": "OPTION",
+          "cusip": "0SPY..JH20367000",
+          "symbol": "SPY_101722C367",
+          "description": "SPY Oct 17 2022 367.0 Call",
+          "type": "VANILLA",
+          "putCall": "CALL",
+          "underlyingSymbol": "SPY"
+        },
+        "instruction": "BUY_TO_OPEN",
+        "positionEffect": "OPENING",
+        "quantity": 1
+      },
+      {
+        "orderLegType": "OPTION",
+        "legId": 2,
+        "instrument": {
+          "assetType": "OPTION",
+          "cusip": "0SPY..JH20362000",
+          "symbol": "SPY_101722C362",
+          "description": "SPY Oct 17 2022 362.0 Call",
+          "type": "VANILLA",
+          "putCall": "CALL",
+          "underlyingSymbol": "SPY"
+        },
+        "instruction": "SELL_TO_OPEN",
+        "positionEffect": "OPENING",
+        "quantity": 1
+      },
+      {
+        "orderLegType": "OPTION",
+        "legId": 3,
+        "instrument": {
+          "assetType": "OPTION",
+          "cusip": "0SPY..VH20347000",
+          "symbol": "SPY_101722P347",
+          "description": "SPY Oct 17 2022 347.0 Put",
+          "type": "VANILLA",
+          "putCall": "PUT",
+          "underlyingSymbol": "SPY"
+        },
+        "instruction": "BUY_TO_OPEN",
+        "positionEffect": "OPENING",
+        "quantity": 1
+      },
+      {
+        "orderLegType": "OPTION",
+        "legId": 4,
+        "instrument": {
+          "assetType": "OPTION",
+          "cusip": "0SPY..JH20352000",
+          "symbol": "SPY_101722C352",
+          "description": "SPY Oct 17 2022 352.0 Call",
+          "type": "VANILLA",
+          "putCall": "CALL",
+          "underlyingSymbol": "SPY"
+        },
+        "instruction": "SELL_TO_OPEN",
+        "positionEffect": "OPENING",
+        "quantity": 1
+      }
+    ],
+    "orderStrategyType": "SINGLE",
+    "orderId": 9584139654,
+    "cancelable": false,
+    "editable": false,
+    "status": "REJECTED",
+    "enteredTime": "2022-10-15T18:40:09+0000",
+    "closeTime": "2022-10-15T18:40:09+0000",
+    "tag": "AA_butlera1",
+    "accountId": 755541528,
+    "statusDescription": "Outside of regular market hours, market option orders for opening transactions are not permitted. TD Ameritrade accepts market, limit, stop and stop-limit option orders during regular market hours."
+  },
+  {
+    "session": "NORMAL",
+    "duration": "DAY",
+    "orderType": "MARKET",
+    "complexOrderStrategyType": "IRON_CONDOR",
+    "quantity": 1,
+    "filledQuantity": 0,
+    "remainingQuantity": 0,
+    "requestedDestination": "AUTO",
+    "destinationLinkName": "AutoRoute",
+    "orderLegCollection": [
+      {
+        "orderLegType": "OPTION",
+        "legId": 1,
+        "instrument": {
+          "assetType": "OPTION",
+          "cusip": "0SPY..JH20367000",
+          "symbol": "SPY_101722C367",
+          "description": "SPY Oct 17 2022 367.0 Call",
+          "type": "VANILLA",
+          "putCall": "CALL",
+          "underlyingSymbol": "SPY"
+        },
+        "instruction": "BUY_TO_OPEN",
+        "positionEffect": "OPENING",
+        "quantity": 1
+      },
+      {
+        "orderLegType": "OPTION",
+        "legId": 2,
+        "instrument": {
+          "assetType": "OPTION",
+          "cusip": "0SPY..JH20362000",
+          "symbol": "SPY_101722C362",
+          "description": "SPY Oct 17 2022 362.0 Call",
+          "type": "VANILLA",
+          "putCall": "CALL",
+          "underlyingSymbol": "SPY"
+        },
+        "instruction": "SELL_TO_OPEN",
+        "positionEffect": "OPENING",
+        "quantity": 1
+      },
+      {
+        "orderLegType": "OPTION",
+        "legId": 3,
+        "instrument": {
+          "assetType": "OPTION",
+          "cusip": "0SPY..VH20347000",
+          "symbol": "SPY_101722P347",
+          "description": "SPY Oct 17 2022 347.0 Put",
+          "type": "VANILLA",
+          "putCall": "PUT",
+          "underlyingSymbol": "SPY"
+        },
+        "instruction": "BUY_TO_OPEN",
+        "positionEffect": "OPENING",
+        "quantity": 1
+      },
+      {
+        "orderLegType": "OPTION",
+        "legId": 4,
+        "instrument": {
+          "assetType": "OPTION",
+          "cusip": "0SPY..JH20352000",
+          "symbol": "SPY_101722C352",
+          "description": "SPY Oct 17 2022 352.0 Call",
+          "type": "VANILLA",
+          "putCall": "CALL",
+          "underlyingSymbol": "SPY"
+        },
+        "instruction": "SELL_TO_OPEN",
+        "positionEffect": "OPENING",
+        "quantity": 1
+      }
+    ],
+    "orderStrategyType": "SINGLE",
+    "orderId": 9584139653,
+    "cancelable": false,
+    "editable": false,
+    "status": "REJECTED",
+    "enteredTime": "2022-10-15T18:32:48+0000",
+    "closeTime": "2022-10-15T18:32:48+0000",
+    "tag": "AA_butlera1",
+    "accountId": 755541528,
+    "statusDescription": "Outside of regular market hours, market option orders for opening transactions are not permitted. TD Ameritrade accepts market, limit, stop and stop-limit option orders during regular market hours."
+  },
+  {
+    "session": "NORMAL",
+    "duration": "DAY",
+    "orderType": "NET_CREDIT",
+    "complexOrderStrategyType": "IRON_CONDOR",
+    "quantity": 1,
+    "filledQuantity": 0,
+    "remainingQuantity": 0,
+    "requestedDestination": "AUTO",
+    "destinationLinkName": "AutoRoute",
+    "price": 1.42,
+    "orderLegCollection": [
+      {
+        "orderLegType": "OPTION",
+        "legId": 1,
+        "instrument": {
+          "assetType": "OPTION",
+          "cusip": "0SPY..JH20362000",
+          "symbol": "SPY_101722C362",
+          "description": "SPY Oct 17 2022 362.0 Call",
+          "type": "VANILLA",
+          "putCall": "CALL",
+          "underlyingSymbol": "SPY"
+        },
+        "instruction": "BUY_TO_OPEN",
+        "positionEffect": "OPENING",
+        "quantity": 1
+      },
+      {
+        "orderLegType": "OPTION",
+        "legId": 2,
+        "instrument": {
+          "assetType": "OPTION",
+          "cusip": "0SPY..JH20367000",
+          "symbol": "SPY_101722C367",
+          "description": "SPY Oct 17 2022 367.0 Call",
+          "type": "VANILLA",
+          "putCall": "CALL",
+          "underlyingSymbol": "SPY"
+        },
+        "instruction": "SELL_TO_OPEN",
+        "positionEffect": "OPENING",
+        "quantity": 1
+      },
+      {
+        "orderLegType": "OPTION",
+        "legId": 3,
+        "instrument": {
+          "assetType": "OPTION",
+          "cusip": "0SPY..VH20352000",
+          "symbol": "SPY_101722P352",
+          "description": "SPY Oct 17 2022 352.0 Put",
+          "type": "VANILLA",
+          "putCall": "PUT",
+          "underlyingSymbol": "SPY"
+        },
+        "instruction": "BUY_TO_OPEN",
+        "positionEffect": "OPENING",
+        "quantity": 1
+      },
+      {
+        "orderLegType": "OPTION",
+        "legId": 4,
+        "instrument": {
+          "assetType": "OPTION",
+          "cusip": "0SPY..VH20347000",
+          "symbol": "SPY_101722P347",
+          "description": "SPY Oct 17 2022 347.0 Put",
+          "type": "VANILLA",
+          "putCall": "PUT",
+          "underlyingSymbol": "SPY"
+        },
+        "instruction": "SELL_TO_OPEN",
+        "positionEffect": "OPENING",
+        "quantity": 1
+      }
+    ],
+    "orderStrategyType": "SINGLE",
+    "orderId": 9584139650,
+    "cancelable": false,
+    "editable": false,
+    "status": "REJECTED",
+    "enteredTime": "2022-10-15T17:26:29+0000",
+    "closeTime": "2022-10-15T17:26:29+0000",
+    "tag": "AA_butlera1",
+    "accountId": 755541528,
+    "statusDescription": "Your order was canceled. It was entered with an incorrect credit or debit amount."
+  },
+  {
+    "session": "NORMAL",
+    "duration": "DAY",
+    "orderType": "NET_CREDIT",
+    "complexOrderStrategyType": "IRON_CONDOR",
+    "quantity": 1,
+    "filledQuantity": 0,
+    "remainingQuantity": 0,
+    "requestedDestination": "AUTO",
+    "destinationLinkName": "AutoRoute",
+    "orderLegCollection": [
+      {
+        "orderLegType": "OPTION",
+        "legId": 1,
+        "instrument": {
+          "assetType": "OPTION",
+          "cusip": "0SPY..JH20362000",
+          "symbol": "SPY_101722C362",
+          "description": "SPY Oct 17 2022 362.0 Call",
+          "type": "VANILLA",
+          "putCall": "CALL",
+          "underlyingSymbol": "SPY"
+        },
+        "instruction": "BUY_TO_OPEN",
+        "positionEffect": "OPENING",
+        "quantity": 1
+      },
+      {
+        "orderLegType": "OPTION",
+        "legId": 2,
+        "instrument": {
+          "assetType": "OPTION",
+          "cusip": "0SPY..JH20367000",
+          "symbol": "SPY_101722C367",
+          "description": "SPY Oct 17 2022 367.0 Call",
+          "type": "VANILLA",
+          "putCall": "CALL",
+          "underlyingSymbol": "SPY"
+        },
+        "instruction": "SELL_TO_OPEN",
+        "positionEffect": "OPENING",
+        "quantity": 1
+      },
+      {
+        "orderLegType": "OPTION",
+        "legId": 3,
+        "instrument": {
+          "assetType": "OPTION",
+          "cusip": "0SPY..VH20352000",
+          "symbol": "SPY_101722P352",
+          "description": "SPY Oct 17 2022 352.0 Put",
+          "type": "VANILLA",
+          "putCall": "PUT",
+          "underlyingSymbol": "SPY"
+        },
+        "instruction": "BUY_TO_OPEN",
+        "positionEffect": "OPENING",
+        "quantity": 1
+      },
+      {
+        "orderLegType": "OPTION",
+        "legId": 4,
+        "instrument": {
+          "assetType": "OPTION",
+          "cusip": "0SPY..VH20347000",
+          "symbol": "SPY_101722P347",
+          "description": "SPY Oct 17 2022 347.0 Put",
+          "type": "VANILLA",
+          "putCall": "PUT",
+          "underlyingSymbol": "SPY"
+        },
+        "instruction": "SELL_TO_OPEN",
+        "positionEffect": "OPENING",
+        "quantity": 1
+      }
+    ],
+    "orderStrategyType": "SINGLE",
+    "orderId": 9584139649,
+    "cancelable": false,
+    "editable": false,
+    "status": "REJECTED",
+    "enteredTime": "2022-10-15T17:25:33+0000",
+    "closeTime": "2022-10-15T17:25:34+0000",
+    "tag": "AA_butlera1",
+    "accountId": 755541528
+  },
+  {
+    "session": "NORMAL",
+    "duration": "DAY",
+    "orderType": "NET_CREDIT",
+    "complexOrderStrategyType": "IRON_CONDOR",
+    "quantity": 1,
+    "filledQuantity": 0,
+    "remainingQuantity": 0,
+    "requestedDestination": "AUTO",
+    "destinationLinkName": "AutoRoute",
+    "orderLegCollection": [
+      {
+        "orderLegType": "OPTION",
+        "legId": 1,
+        "instrument": {
+          "assetType": "OPTION",
+          "cusip": "0SPY..JH20362000",
+          "symbol": "SPY_101722C362",
+          "description": "SPY Oct 17 2022 362.0 Call",
+          "type": "VANILLA",
+          "putCall": "CALL",
+          "underlyingSymbol": "SPY"
+        },
+        "instruction": "BUY_TO_OPEN",
+        "positionEffect": "OPENING",
+        "quantity": 1
+      },
+      {
+        "orderLegType": "OPTION",
+        "legId": 2,
+        "instrument": {
+          "assetType": "OPTION",
+          "cusip": "0SPY..JH20367000",
+          "symbol": "SPY_101722C367",
+          "description": "SPY Oct 17 2022 367.0 Call",
+          "type": "VANILLA",
+          "putCall": "CALL",
+          "underlyingSymbol": "SPY"
+        },
+        "instruction": "SELL_TO_OPEN",
+        "positionEffect": "OPENING",
+        "quantity": 1
+      },
+      {
+        "orderLegType": "OPTION",
+        "legId": 3,
+        "instrument": {
+          "assetType": "OPTION",
+          "cusip": "0SPY..VH20352000",
+          "symbol": "SPY_101722P352",
+          "description": "SPY Oct 17 2022 352.0 Put",
+          "type": "VANILLA",
+          "putCall": "PUT",
+          "underlyingSymbol": "SPY"
+        },
+        "instruction": "BUY_TO_OPEN",
+        "positionEffect": "OPENING",
+        "quantity": 1
+      },
+      {
+        "orderLegType": "OPTION",
+        "legId": 4,
+        "instrument": {
+          "assetType": "OPTION",
+          "cusip": "0SPY..VH20347000",
+          "symbol": "SPY_101722P347",
+          "description": "SPY Oct 17 2022 347.0 Put",
+          "type": "VANILLA",
+          "putCall": "PUT",
+          "underlyingSymbol": "SPY"
+        },
+        "instruction": "SELL_TO_OPEN",
+        "positionEffect": "OPENING",
+        "quantity": 1
+      }
+    ],
+    "orderStrategyType": "SINGLE",
+    "orderId": 9584139648,
+    "cancelable": false,
+    "editable": false,
+    "status": "REJECTED",
+    "enteredTime": "2022-10-15T17:25:18+0000",
+    "closeTime": "2022-10-15T17:25:18+0000",
+    "tag": "AA_butlera1",
+    "accountId": 755541528
+  },
+  {
+    "session": "NORMAL",
+    "duration": "DAY",
+    "orderType": "MARKET",
+    "complexOrderStrategyType": "IRON_CONDOR",
+    "quantity": 1,
+    "filledQuantity": 0,
+    "remainingQuantity": 0,
+    "requestedDestination": "AUTO",
+    "destinationLinkName": "AutoRoute",
+    "orderLegCollection": [
+      {
+        "orderLegType": "OPTION",
+        "legId": 1,
+        "instrument": {
+          "assetType": "OPTION",
+          "cusip": "0SPY..JH20362000",
+          "symbol": "SPY_101722C362",
+          "description": "SPY Oct 17 2022 362.0 Call",
+          "type": "VANILLA",
+          "putCall": "CALL",
+          "underlyingSymbol": "SPY"
+        },
+        "instruction": "BUY_TO_OPEN",
+        "positionEffect": "OPENING",
+        "quantity": 1
+      },
+      {
+        "orderLegType": "OPTION",
+        "legId": 2,
+        "instrument": {
+          "assetType": "OPTION",
+          "cusip": "0SPY..JH20367000",
+          "symbol": "SPY_101722C367",
+          "description": "SPY Oct 17 2022 367.0 Call",
+          "type": "VANILLA",
+          "putCall": "CALL",
+          "underlyingSymbol": "SPY"
+        },
+        "instruction": "SELL_TO_OPEN",
+        "positionEffect": "OPENING",
+        "quantity": 1
+      },
+      {
+        "orderLegType": "OPTION",
+        "legId": 3,
+        "instrument": {
+          "assetType": "OPTION",
+          "cusip": "0SPY..VH20352000",
+          "symbol": "SPY_101722P352",
+          "description": "SPY Oct 17 2022 352.0 Put",
+          "type": "VANILLA",
+          "putCall": "PUT",
+          "underlyingSymbol": "SPY"
+        },
+        "instruction": "BUY_TO_OPEN",
+        "positionEffect": "OPENING",
+        "quantity": 1
+      },
+      {
+        "orderLegType": "OPTION",
+        "legId": 4,
+        "instrument": {
+          "assetType": "OPTION",
+          "cusip": "0SPY..VH20347000",
+          "symbol": "SPY_101722P347",
+          "description": "SPY Oct 17 2022 347.0 Put",
+          "type": "VANILLA",
+          "putCall": "PUT",
+          "underlyingSymbol": "SPY"
+        },
+        "instruction": "SELL_TO_OPEN",
+        "positionEffect": "OPENING",
+        "quantity": 1
+      }
+    ],
+    "orderStrategyType": "SINGLE",
+    "orderId": 9584139647,
+    "cancelable": false,
+    "editable": false,
+    "status": "REJECTED",
+    "enteredTime": "2022-10-15T17:24:02+0000",
+    "closeTime": "2022-10-15T17:24:02+0000",
+    "tag": "AA_butlera1",
+    "accountId": 755541528,
+    "statusDescription": "Outside of regular market hours, market option orders for opening transactions are not permitted. TD Ameritrade accepts market, limit, stop and stop-limit option orders during regular market hours."
+  },
+  {
+    "session": "NORMAL",
+    "duration": "DAY",
+    "orderType": "MARKET",
+    "complexOrderStrategyType": "IRON_CONDOR",
+    "quantity": 1,
+    "filledQuantity": 0,
+    "remainingQuantity": 0,
+    "requestedDestination": "AUTO",
+    "destinationLinkName": "AutoRoute",
+    "orderLegCollection": [
+      {
+        "orderLegType": "OPTION",
+        "legId": 1,
+        "instrument": {
+          "assetType": "OPTION",
+          "cusip": "0SPY..JH20362000",
+          "symbol": "SPY_101722C362",
+          "description": "SPY Oct 17 2022 362.0 Call",
+          "type": "VANILLA",
+          "putCall": "CALL",
+          "underlyingSymbol": "SPY"
+        },
+        "instruction": "SELL_TO_OPEN",
+        "positionEffect": "OPENING",
+        "quantity": 1
+      },
+      {
+        "orderLegType": "OPTION",
+        "legId": 2,
+        "instrument": {
+          "assetType": "OPTION",
+          "cusip": "0SPY..JH20367000",
+          "symbol": "SPY_101722C367",
+          "description": "SPY Oct 17 2022 367.0 Call",
+          "type": "VANILLA",
+          "putCall": "CALL",
+          "underlyingSymbol": "SPY"
+        },
+        "instruction": "BUY_TO_OPEN",
+        "positionEffect": "OPENING",
+        "quantity": 1
+      },
+      {
+        "orderLegType": "OPTION",
+        "legId": 3,
+        "instrument": {
+          "assetType": "OPTION",
+          "cusip": "0SPY..VH20352000",
+          "symbol": "SPY_101722P352",
+          "description": "SPY Oct 17 2022 352.0 Put",
+          "type": "VANILLA",
+          "putCall": "PUT",
+          "underlyingSymbol": "SPY"
+        },
+        "instruction": "SELL_TO_OPEN",
+        "positionEffect": "OPENING",
+        "quantity": 1
+      },
+      {
+        "orderLegType": "OPTION",
+        "legId": 4,
+        "instrument": {
+          "assetType": "OPTION",
+          "cusip": "0SPY..VH20347000",
+          "symbol": "SPY_101722P347",
+          "description": "SPY Oct 17 2022 347.0 Put",
+          "type": "VANILLA",
+          "putCall": "PUT",
+          "underlyingSymbol": "SPY"
+        },
+        "instruction": "BUY_TO_OPEN",
+        "positionEffect": "OPENING",
+        "quantity": 1
+      }
+    ],
+    "orderStrategyType": "SINGLE",
+    "orderId": 9584139646,
+    "cancelable": false,
+    "editable": false,
+    "status": "REJECTED",
+    "enteredTime": "2022-10-15T17:20:27+0000",
+    "closeTime": "2022-10-15T17:20:27+0000",
+    "tag": "API_TOS:TRADE_ALL",
+    "accountId": 755541528,
+    "statusDescription": "Outside of regular market hours, market option orders for opening transactions are not permitted. TD Ameritrade accepts market, limit, stop and stop-limit option orders during regular market hours."
+  },
+  {
+    "session": "NORMAL",
+    "duration": "DAY",
+    "orderType": "NET_CREDIT",
+    "complexOrderStrategyType": "IRON_CONDOR",
+    "quantity": 1,
+    "filledQuantity": 0,
+    "remainingQuantity": 0,
+    "requestedDestination": "AUTO",
+    "destinationLinkName": "AutoRoute",
+    "orderLegCollection": [
+      {
+        "orderLegType": "OPTION",
+        "legId": 1,
+        "instrument": {
+          "assetType": "OPTION",
+          "cusip": "0SPY..JH20362000",
+          "symbol": "SPY_101722C362",
+          "description": "SPY Oct 17 2022 362.0 Call",
+          "type": "VANILLA",
+          "putCall": "CALL",
+          "underlyingSymbol": "SPY"
+        },
+        "instruction": "BUY_TO_OPEN",
+        "positionEffect": "OPENING",
+        "quantity": 1
+      },
+      {
+        "orderLegType": "OPTION",
+        "legId": 2,
+        "instrument": {
+          "assetType": "OPTION",
+          "cusip": "0SPY..JH20367000",
+          "symbol": "SPY_101722C367",
+          "description": "SPY Oct 17 2022 367.0 Call",
+          "type": "VANILLA",
+          "putCall": "CALL",
+          "underlyingSymbol": "SPY"
+        },
+        "instruction": "SELL_TO_OPEN",
+        "positionEffect": "OPENING",
+        "quantity": 1
+      },
+      {
+        "orderLegType": "OPTION",
+        "legId": 3,
+        "instrument": {
+          "assetType": "OPTION",
+          "cusip": "0SPY..VH20352000",
+          "symbol": "SPY_101722P352",
+          "description": "SPY Oct 17 2022 352.0 Put",
+          "type": "VANILLA",
+          "putCall": "PUT",
+          "underlyingSymbol": "SPY"
+        },
+        "instruction": "BUY_TO_OPEN",
+        "positionEffect": "OPENING",
+        "quantity": 1
+      },
+      {
+        "orderLegType": "OPTION",
+        "legId": 4,
+        "instrument": {
+          "assetType": "OPTION",
+          "cusip": "0SPY..VH20347000",
+          "symbol": "SPY_101722P347",
+          "description": "SPY Oct 17 2022 347.0 Put",
+          "type": "VANILLA",
+          "putCall": "PUT",
+          "underlyingSymbol": "SPY"
+        },
+        "instruction": "SELL_TO_OPEN",
+        "positionEffect": "OPENING",
+        "quantity": 1
+      }
+    ],
+    "orderStrategyType": "SINGLE",
+    "orderId": 9584139642,
+    "cancelable": false,
+    "editable": false,
+    "status": "REJECTED",
+    "enteredTime": "2022-10-15T17:17:31+0000",
+    "closeTime": "2022-10-15T17:17:31+0000",
+    "tag": "AA_butlera1",
+    "accountId": 755541528
+  },
+  {
+    "session": "NORMAL",
+    "duration": "DAY",
+    "orderType": "NET_CREDIT",
+    "complexOrderStrategyType": "IRON_CONDOR",
+    "quantity": 1,
+    "filledQuantity": 0,
+    "remainingQuantity": 0,
+    "requestedDestination": "AUTO",
+    "destinationLinkName": "AutoRoute",
+    "price": 1.42,
+    "orderLegCollection": [
+      {
+        "orderLegType": "OPTION",
+        "legId": 1,
+        "instrument": {
+          "assetType": "OPTION",
+          "cusip": "0SPY..JH20362000",
+          "symbol": "SPY_101722C362",
+          "description": "SPY Oct 17 2022 362.0 Call",
+          "type": "VANILLA",
+          "putCall": "CALL",
+          "underlyingSymbol": "SPY"
+        },
+        "instruction": "BUY_TO_OPEN",
+        "positionEffect": "OPENING",
+        "quantity": 1
+      },
+      {
+        "orderLegType": "OPTION",
+        "legId": 2,
+        "instrument": {
+          "assetType": "OPTION",
+          "cusip": "0SPY..JH20367000",
+          "symbol": "SPY_101722C367",
+          "description": "SPY Oct 17 2022 367.0 Call",
+          "type": "VANILLA",
+          "putCall": "CALL",
+          "underlyingSymbol": "SPY"
+        },
+        "instruction": "SELL_TO_OPEN",
+        "positionEffect": "OPENING",
+        "quantity": 1
+      },
+      {
+        "orderLegType": "OPTION",
+        "legId": 3,
+        "instrument": {
+          "assetType": "OPTION",
+          "cusip": "0SPY..VH20352000",
+          "symbol": "SPY_101722P352",
+          "description": "SPY Oct 17 2022 352.0 Put",
+          "type": "VANILLA",
+          "putCall": "PUT",
+          "underlyingSymbol": "SPY"
+        },
+        "instruction": "BUY_TO_OPEN",
+        "positionEffect": "OPENING",
+        "quantity": 1
+      },
+      {
+        "orderLegType": "OPTION",
+        "legId": 4,
+        "instrument": {
+          "assetType": "OPTION",
+          "cusip": "0SPY..VH20347000",
+          "symbol": "SPY_101722P347",
+          "description": "SPY Oct 17 2022 347.0 Put",
+          "type": "VANILLA",
+          "putCall": "PUT",
+          "underlyingSymbol": "SPY"
+        },
+        "instruction": "SELL_TO_OPEN",
+        "positionEffect": "OPENING",
+        "quantity": 1
+      }
+    ],
+    "orderStrategyType": "SINGLE",
+    "orderId": 9584139634,
+    "cancelable": false,
+    "editable": false,
+    "status": "REJECTED",
+    "enteredTime": "2022-10-15T17:11:31+0000",
+    "closeTime": "2022-10-15T17:11:31+0000",
+    "tag": "AA_butlera1",
+    "accountId": 755541528,
+    "statusDescription": "Your order was canceled. It was entered with an incorrect credit or debit amount."
+  },
+  {
+    "session": "NORMAL",
+    "duration": "DAY",
+    "orderType": "NET_CREDIT",
+    "complexOrderStrategyType": "IRON_CONDOR",
+    "quantity": 1,
+    "filledQuantity": 0,
+    "remainingQuantity": 0,
+    "requestedDestination": "AUTO",
+    "destinationLinkName": "AutoRoute",
+    "price": 1.42,
+    "orderLegCollection": [
+      {
+        "orderLegType": "OPTION",
+        "legId": 1,
+        "instrument": {
+          "assetType": "OPTION",
+          "cusip": "0SPY..JH20362000",
+          "symbol": "SPY_101722C362",
+          "description": "SPY Oct 17 2022 362.0 Call",
+          "type": "VANILLA",
+          "putCall": "CALL",
+          "underlyingSymbol": "SPY"
+        },
+        "instruction": "SELL_TO_OPEN",
+        "positionEffect": "OPENING",
+        "quantity": 1
+      },
+      {
+        "orderLegType": "OPTION",
+        "legId": 2,
+        "instrument": {
+          "assetType": "OPTION",
+          "cusip": "0SPY..JH20367000",
+          "symbol": "SPY_101722C367",
+          "description": "SPY Oct 17 2022 367.0 Call",
+          "type": "VANILLA",
+          "putCall": "CALL",
+          "underlyingSymbol": "SPY"
+        },
+        "instruction": "BUY_TO_OPEN",
+        "positionEffect": "OPENING",
+        "quantity": 1
+      },
+      {
+        "orderLegType": "OPTION",
+        "legId": 3,
+        "instrument": {
+          "assetType": "OPTION",
+          "cusip": "0SPY..VH20352000",
+          "symbol": "SPY_101722P352",
+          "description": "SPY Oct 17 2022 352.0 Put",
+          "type": "VANILLA",
+          "putCall": "PUT",
+          "underlyingSymbol": "SPY"
+        },
+        "instruction": "SELL_TO_OPEN",
+        "positionEffect": "OPENING",
+        "quantity": 1
+      },
+      {
+        "orderLegType": "OPTION",
+        "legId": 4,
+        "instrument": {
+          "assetType": "OPTION",
+          "cusip": "0SPY..VH20347000",
+          "symbol": "SPY_101722P347",
+          "description": "SPY Oct 17 2022 347.0 Put",
+          "type": "VANILLA",
+          "putCall": "PUT",
+          "underlyingSymbol": "SPY"
+        },
+        "instruction": "BUY_TO_OPEN",
+        "positionEffect": "OPENING",
+        "quantity": 1
+      }
+    ],
+    "orderStrategyType": "TRIGGER",
+    "orderId": 9584139610,
+    "cancelable": false,
+    "editable": false,
+    "status": "CANCELED",
+    "enteredTime": "2022-10-15T16:47:02+0000",
+    "closeTime": "2022-10-15T17:11:31+0000",
+    "tag": "API_TOS:TRADE_ALL",
+    "accountId": 755541528,
+    "childOrderStrategies": [
+      {
+        "orderStrategyType": "OCO",
+        "orderId": 9584139611,
+        "cancelable": false,
+        "editable": false,
+        "status": "CANCELED",
+        "enteredTime": "2022-10-15T16:47:02+0000",
+        "closeTime": "2022-10-15T17:11:31+0000",
+        "accountId": 755541528,
+        "childOrderStrategies": [
+          {
+            "session": "NORMAL",
+            "duration": "DAY",
+            "orderType": "NET_DEBIT",
+            "complexOrderStrategyType": "IRON_CONDOR",
+            "quantity": 1,
+            "filledQuantity": 0,
+            "remainingQuantity": 0,
+            "requestedDestination": "AUTO",
+            "destinationLinkName": "AutoRoute",
+            "price": 1,
+            "orderLegCollection": [
+              {
+                "orderLegType": "OPTION",
+                "legId": 1,
+                "instrument": {
+                  "assetType": "OPTION",
+                  "cusip": "0SPY..JH20362000",
+                  "symbol": "SPY_101722C362",
+                  "description": "SPY Oct 17 2022 362.0 Call",
+                  "type": "VANILLA",
+                  "putCall": "CALL",
+                  "underlyingSymbol": "SPY"
+                },
+                "instruction": "BUY_TO_CLOSE",
+                "positionEffect": "CLOSING",
+                "quantity": 1
+              },
+              {
+                "orderLegType": "OPTION",
+                "legId": 2,
+                "instrument": {
+                  "assetType": "OPTION",
+                  "cusip": "0SPY..JH20367000",
+                  "symbol": "SPY_101722C367",
+                  "description": "SPY Oct 17 2022 367.0 Call",
+                  "type": "VANILLA",
+                  "putCall": "CALL",
+                  "underlyingSymbol": "SPY"
+                },
+                "instruction": "SELL_TO_CLOSE",
+                "positionEffect": "CLOSING",
+                "quantity": 1
+              },
+              {
+                "orderLegType": "OPTION",
+                "legId": 3,
+                "instrument": {
+                  "assetType": "OPTION",
+                  "cusip": "0SPY..VH20352000",
+                  "symbol": "SPY_101722P352",
+                  "description": "SPY Oct 17 2022 352.0 Put",
+                  "type": "VANILLA",
+                  "putCall": "PUT",
+                  "underlyingSymbol": "SPY"
+                },
+                "instruction": "BUY_TO_CLOSE",
+                "positionEffect": "CLOSING",
+                "quantity": 1
+              },
+              {
+                "orderLegType": "OPTION",
+                "legId": 4,
+                "instrument": {
+                  "assetType": "OPTION",
+                  "cusip": "0SPY..VH20347000",
+                  "symbol": "SPY_101722P347",
+                  "description": "SPY Oct 17 2022 347.0 Put",
+                  "type": "VANILLA",
+                  "putCall": "PUT",
+                  "underlyingSymbol": "SPY"
+                },
+                "instruction": "SELL_TO_CLOSE",
+                "positionEffect": "CLOSING",
+                "quantity": 1
+              }
+            ],
+            "orderStrategyType": "SINGLE",
+            "orderId": 9584139612,
+            "cancelable": false,
+            "editable": false,
+            "status": "CANCELED",
+            "enteredTime": "2022-10-15T16:47:02+0000",
+            "closeTime": "2022-10-15T17:11:31+0000",
+            "tag": "API_TOS:TRADE_ALL",
+            "accountId": 755541528
+          },
+          {
+            "session": "NORMAL",
+            "duration": "DAY",
+            "orderType": "STOP",
+            "complexOrderStrategyType": "IRON_CONDOR",
+            "quantity": 1,
+            "filledQuantity": 0,
+            "remainingQuantity": 0,
+            "requestedDestination": "AUTO",
+            "destinationLinkName": "AutoRoute",
+            "stopPrice": 2,
+            "stopType": "MARK",
+            "orderLegCollection": [
+              {
+                "orderLegType": "OPTION",
+                "legId": 1,
+                "instrument": {
+                  "assetType": "OPTION",
+                  "cusip": "0SPY..JH20362000",
+                  "symbol": "SPY_101722C362",
+                  "description": "SPY Oct 17 2022 362.0 Call",
+                  "type": "VANILLA",
+                  "putCall": "CALL",
+                  "underlyingSymbol": "SPY"
+                },
+                "instruction": "BUY_TO_CLOSE",
+                "positionEffect": "CLOSING",
+                "quantity": 1
+              },
+              {
+                "orderLegType": "OPTION",
+                "legId": 2,
+                "instrument": {
+                  "assetType": "OPTION",
+                  "cusip": "0SPY..JH20367000",
+                  "symbol": "SPY_101722C367",
+                  "description": "SPY Oct 17 2022 367.0 Call",
+                  "type": "VANILLA",
+                  "putCall": "CALL",
+                  "underlyingSymbol": "SPY"
+                },
+                "instruction": "SELL_TO_CLOSE",
+                "positionEffect": "CLOSING",
+                "quantity": 1
+              },
+              {
+                "orderLegType": "OPTION",
+                "legId": 3,
+                "instrument": {
+                  "assetType": "OPTION",
+                  "cusip": "0SPY..VH20352000",
+                  "symbol": "SPY_101722P352",
+                  "description": "SPY Oct 17 2022 352.0 Put",
+                  "type": "VANILLA",
+                  "putCall": "PUT",
+                  "underlyingSymbol": "SPY"
+                },
+                "instruction": "BUY_TO_CLOSE",
+                "positionEffect": "CLOSING",
+                "quantity": 1
+              },
+              {
+                "orderLegType": "OPTION",
+                "legId": 4,
+                "instrument": {
+                  "assetType": "OPTION",
+                  "cusip": "0SPY..VH20347000",
+                  "symbol": "SPY_101722P347",
+                  "description": "SPY Oct 17 2022 347.0 Put",
+                  "type": "VANILLA",
+                  "putCall": "PUT",
+                  "underlyingSymbol": "SPY"
+                },
+                "instruction": "SELL_TO_CLOSE",
+                "positionEffect": "CLOSING",
+                "quantity": 1
+              }
+            ],
+            "orderStrategyType": "SINGLE",
+            "orderId": 9584139613,
+            "cancelable": false,
+            "editable": false,
+            "status": "CANCELED",
+            "enteredTime": "2022-10-15T16:47:02+0000",
+            "closeTime": "2022-10-15T17:11:31+0000",
+            "tag": "API_TOS:TRADE_ALL",
+            "accountId": 755541528
+          },
+          {
+            "session": "NORMAL",
+            "duration": "DAY",
+            "orderType": "MARKET",
+            "complexOrderStrategyType": "IRON_CONDOR",
+            "quantity": 1,
+            "filledQuantity": 0,
+            "remainingQuantity": 0,
+            "requestedDestination": "AUTO",
+            "destinationLinkName": "AutoRoute",
+            "releaseTime": "2022-10-17T16:00:00+0000",
+            "orderLegCollection": [
+              {
+                "orderLegType": "OPTION",
+                "legId": 1,
+                "instrument": {
+                  "assetType": "OPTION",
+                  "cusip": "0SPY..JH20362000",
+                  "symbol": "SPY_101722C362",
+                  "description": "SPY Oct 17 2022 362.0 Call",
+                  "type": "VANILLA",
+                  "putCall": "CALL",
+                  "underlyingSymbol": "SPY"
+                },
+                "instruction": "BUY_TO_CLOSE",
+                "positionEffect": "CLOSING",
+                "quantity": 1
+              },
+              {
+                "orderLegType": "OPTION",
+                "legId": 2,
+                "instrument": {
+                  "assetType": "OPTION",
+                  "cusip": "0SPY..JH20367000",
+                  "symbol": "SPY_101722C367",
+                  "description": "SPY Oct 17 2022 367.0 Call",
+                  "type": "VANILLA",
+                  "putCall": "CALL",
+                  "underlyingSymbol": "SPY"
+                },
+                "instruction": "SELL_TO_CLOSE",
+                "positionEffect": "CLOSING",
+                "quantity": 1
+              },
+              {
+                "orderLegType": "OPTION",
+                "legId": 3,
+                "instrument": {
+                  "assetType": "OPTION",
+                  "cusip": "0SPY..VH20352000",
+                  "symbol": "SPY_101722P352",
+                  "description": "SPY Oct 17 2022 352.0 Put",
+                  "type": "VANILLA",
+                  "putCall": "PUT",
+                  "underlyingSymbol": "SPY"
+                },
+                "instruction": "BUY_TO_CLOSE",
+                "positionEffect": "CLOSING",
+                "quantity": 1
+              },
+              {
+                "orderLegType": "OPTION",
+                "legId": 4,
+                "instrument": {
+                  "assetType": "OPTION",
+                  "cusip": "0SPY..VH20347000",
+                  "symbol": "SPY_101722P347",
+                  "description": "SPY Oct 17 2022 347.0 Put",
+                  "type": "VANILLA",
+                  "putCall": "PUT",
+                  "underlyingSymbol": "SPY"
+                },
+                "instruction": "SELL_TO_CLOSE",
+                "positionEffect": "CLOSING",
+                "quantity": 1
+              }
+            ],
+            "orderStrategyType": "SINGLE",
+            "orderId": 9584139614,
+            "cancelable": false,
+            "editable": false,
+            "status": "CANCELED",
+            "enteredTime": "2022-10-15T16:47:02+0000",
+            "closeTime": "2022-10-15T17:11:31+0000",
+            "tag": "API_TOS:TRADE_ALL",
+            "accountId": 755541528
+          }
+        ]
+      }
+    ]
+  }
+]
