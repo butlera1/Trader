@@ -4,11 +4,9 @@ import dayjs from 'dayjs';
 import BuyStockOrderForm from './Templates/BuyStockOrderForm';
 import SellStraddleOrderForm from './Templates/SellStraddleOrderForm';
 import {IronCondorMarketOrder} from './Templates/SellIronCondorOrder';
-import {GetNewYorkTimeAt, WaitForOrderCompleted} from '../Trader';
 import {Users} from '../collections/users';
-import {Trades} from '../collections/trades';
-import {DefaultTradeSettings} from '../SeedUser';
 import optionOrderForm from './Templates/OptionOrderForm';
+import {DefaultTradeSettings} from '../../imports/Interfaces/ITradeSettings';
 
 const clientId = 'PFVYW5LYNPRZH6Y1ZCY5OTBGINDLZDW8@AMER.OAUTHAP';
 const redirectUrl = 'https://localhost/traderOAuthCallback';

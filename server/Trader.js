@@ -9,9 +9,9 @@ import {
 } from './TDAApi/TDAApi';
 import {Users} from './collections/users';
 import dayjs from 'dayjs';
-import {DefaultTradeSettings} from './SeedUser';
 import duration from 'dayjs/plugin/duration';
 import {Trades} from './collections/trades';
+import {DefaultTradeSettings} from '../imports/Interfaces/ITradeSettings';
 
 dayjs.extend(duration);
 const tenSeconds = 10000;

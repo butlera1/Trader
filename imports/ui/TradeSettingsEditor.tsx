@@ -1,3 +1,4 @@
+import {Meteor} from 'meteor/meteor';
 import React from 'react';
 import {Button, Form, Input, InputNumber, Radio, Select, Space, Switch, TimePicker} from 'antd';
 import moment from 'moment';
@@ -15,12 +16,40 @@ const disabledTime = () => {
 type Props = {
   tradeSettings: ITradeSettings,
 }
+
 export const TradeSettingsEditor = ({tradeSettings}: Props) => {
-  const onFinish = (values) => {
-    console.log('Success:', values);
+  const [isActive, setIsActive] = React.useState(tradeSettings?.isTrading);
+  const [accountNumber, setAccountNumber] = React.useState(tradeSettings?.accountNumber);
+  const [symbol, setSymbol] = React.useState(tradeSettings?.symbol);
+  const [entryTime, setEntryTime] = React.useState(`${tradeSettings.entryHour}:${tradeSettings.entryMinute}`);
+  const [exitTime, setExitTime] = React.useState(`${tradeSettings.exitHour}:${tradeSettings.exitMinute}`);
+  const [percentGain, setPercentGain] = React.useState(tradeSettings?.percentGain);
+  const [percentLoss, setPercentLoss] = React.useState(tradeSettings?.percentLoss);
+  let saveHandle = null;
+  const setMap = {
+    isActive: setIsActive,
+    accountNumber: setAccountNumber,
+    symbol:setSymbol,
+    entryTime:setEntryTime,
+    exitTime: setExitTime,
+    percentGain: setPercentGain,
+    percentLoss, setPercentLoss,
   };
-  const onFinishFailed = (errorInfo) => {
-    console.log('Failed:', errorInfo);
+  
+  const saveChanges = () => {
+    console.log('Formally saving changes');
+  };
+  
+  const onChange = (name, value) => {
+    console.log('Changing:', name, value);
+    setMap[name](value);
+    if (saveHandle) {
+      Meteor.clearTimeout(saveHandle);
+    }
+    saveHandle = Meteor.setTimeout(() => {
+      console.log('Formally saving changes');
+    }, 3000);
+    saveChanges();
   };
   
   return (
@@ -29,8 +58,7 @@ export const TradeSettingsEditor = ({tradeSettings}: Props) => {
       labelCol={{span: 6}}
       wrapperCol={{span: 8}}
       initialValues={{remember: true}}
-      onFinish={onFinish}
-      onFinishFailed={onFinishFailed}
+      onChange={onChange}
       autoComplete="off"
     >
       <Form.Item
@@ -39,7 +67,7 @@ export const TradeSettingsEditor = ({tradeSettings}: Props) => {
         rules={[{required: true, message: 'True if trading this patter. False to turn it off.'}]}
         valuePropName="checked"
       >
-        <Switch/>
+        <Switch onChange={setIsActive} checked={isActive}/>
       </Form.Item>
       
       <Form.Item

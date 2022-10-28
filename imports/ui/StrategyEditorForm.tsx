@@ -32,9 +32,20 @@ export const StrategyEditorForm = () => {
       onFinishFailed={onFinishFailed}
       autoComplete="off"
     >
-      
       <Form.Item
-        name="buySell"
+        name="type"
+        rules={[{
+          message: 'Please define trade type (spread or IC).',
+        }]}
+      >
+        <Select defaultValue="Iron Condor" style={{width:200}}>
+          <Select.Option value="Iron Condor">Iron Condor</Select.Option>
+          <Select.Option value="Spread">Spread</Select.Option>
+        </Select>
+      </Form.Item>
+  
+      <Form.Item
+        name="leg1"
         rules={[{
           required: true,
           message: 'Please define Buy/Sell, Call/Put, Quantity, and Days To Expiration (DTE).',
@@ -44,10 +55,25 @@ export const StrategyEditorForm = () => {
           <Radio.Group options={['Buy', 'Sell']} optionType="button" buttonStyle="solid" defaultValue="Sell" style={{border:'1,solid,red'}}/>
           <Radio.Group options={['Call', 'Put']} optionType="button" buttonStyle="solid" defaultValue="Put"/>
           <InputNumber min={1} max={100} addonAfter={'QTY'} style={{width: '100px'}} defaultValue={1}/>
-          <InputNumber min={1} max={100} addonAfter={'DTE'} style={{width: '100px'}} defaultValue={1}/>
+          <InputNumber min={0} max={100} addonAfter={'DTE'} style={{width: '100px'}} defaultValue={1}/>
         </Space>
       </Form.Item>
       
+      <Form.Item
+        name="leg2"
+        rules={[{
+          required: true,
+          message: 'Please define Buy/Sell, Call/Put, Quantity, and Days To Expiration (DTE).',
+        }]}
+      >
+        <Space >
+          <Radio.Group disabled options={['Buy', 'Sell']} optionType="button" buttonStyle="solid" defaultValue="Sell" style={{border:'1,solid,red'}}/>
+          <Radio.Group disabled options={['Call', 'Put']} optionType="button" buttonStyle="solid" defaultValue="Put"/>
+          <InputNumber disabled min={1} max={100} addonAfter={'QTY'} style={{width: '100px'}} defaultValue={1}/>
+          <InputNumber disabled min={1} max={100} addonAfter={'DTE'} style={{width: '100px'}} defaultValue={1}/>
+        </Space>
+      </Form.Item>
+
     </Form>
   );
 };

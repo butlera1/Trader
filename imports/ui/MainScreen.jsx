@@ -1,6 +1,7 @@
 import * as ReactDOM from 'react-dom';
 import React, {useState} from 'react';
 import {TradeSettingsEditor} from './TradeSettingsEditor';
+import {DefaultTradeSettings} from '../Interfaces/ITradeSettings';
 
 export const MainScreen = () => {
   const [codeValue, setCodeValue] = useState(null);
@@ -8,6 +9,7 @@ export const MainScreen = () => {
   const [accessToken, setAccessToken] = useState(null);
   const [orders, setOrders] = useState(null);
   const [orderPlaced, setOrderPlaced] = useState(false);
+  const [tradeSettings, setTradeSettings] = useState(DefaultTradeSettings);
 
   const setAccessReturn = (error, result) => {
     if (error) {
@@ -81,7 +83,7 @@ export const MainScreen = () => {
       <br/>
       <button onClick={TestMethod}>Run Test Method</button>
       {orderPlaced ? <p>Options: {orderPlaced}</p> : null}
-      <TradeSettingsEditor/>
+      <TradeSettingsEditor tradeSettings={tradeSettings}/>
     </div>
   );
 };

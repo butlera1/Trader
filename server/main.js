@@ -16,20 +16,13 @@ import later from 'later';
 import {GetNewYorkTimeAt, PerformTradeForAllUsers, PerformTradeForUser} from './Trader';
 import dayjs from 'dayjs';
 import {Users} from './collections/users';
+import {GetUserTradeSettings, SetUserTradeSettings} from './collections/tradeSettings';
 
 // Listen to incoming HTTP requests (can only be used on the server).
 WebApp.connectHandlers.use('/traderOAuthCallback', (req, res, next) => {
   res.writeHead(200);
   res.end(`Trader received a redirect callback. Received new access code: \n${decodeURI(req.query?.code)}`);
 });
-
-function SetUserTradeSettings(settings){
-  const user = Meteor.user();
-  if (user){
-    settings = {...user.services.tradeSettings, ...settings};
-    Meteor.users.update(user._id, {$set: {'services.tradeSettings': settings}});
-  }
-}
 
 function Test(){
   const user = Users.findOne({username: 'Arch'});
@@ -43,11 +36,12 @@ Meteor.methods({
   SetUserAccessInfo,
   GetAccessToken,
   GetOrders,
+  SetUserTradeSettings,
+  GetUserTradeSettings,
   BuyStock,
   SellStraddle,
   GetATMOptionChains,
   PerformTradeForAllUsers,
-  SetUserTradeSettings,
   Test,
 });
 
