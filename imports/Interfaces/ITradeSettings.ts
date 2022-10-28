@@ -1,8 +1,10 @@
-import dayjs from "dayjs";
+import ILegSettings from "./ILegSettings";
 
 interface ITradeSettings {
-  isTrading: boolean,
-  desiredDelta: number,
+  _id?: string,
+  userId?: string;
+  isActive: boolean,
+  dte: number,
   percentGain: number,
   percentLoss: number,
   entryHour: number,
@@ -12,23 +14,24 @@ interface ITradeSettings {
   accountNumber: string,
   quantity: number,
   symbol: string,
-  tradeType:string,
   emailAddress?: string,
   phone?: string,
+  legs: ILegSettings[],
 }
 
-export const DefaultTradeSettings = {
-  isTrading: false,
-  desiredDelta: 0.25,
+export const DefaultTradeSettings: ITradeSettings = {
+  isActive: false,
+  dte: 1,
   percentGain: 0.26,
   percentLoss: 1.00,
-  openHour: 9,
-  openMinute: 45,
-  closeHour: 11,
-  closeMinute: 45,
+  entryHour: 9,
+  entryMinute: 45,
+  exitHour: 11,
+  exitMinute: 45,
   accountNumber: 'none',
   quantity: 1,
   symbol: 'SPY',
+  legs: [],
   emailAddress: 'none',
   phone: 'none'
 };

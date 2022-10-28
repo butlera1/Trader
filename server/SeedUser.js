@@ -2,6 +2,7 @@ import {Meteor} from 'meteor/meteor';
 import {Accounts} from 'meteor/accounts-base';
 import {Users} from './collections/users';
 import {DefaultTradeSettings} from '../imports/Interfaces/ITradeSettings';
+import {TradeSettings} from './collections/TradeSettings';
 
 function prepareAccounts(name, other) {
   let userRecord = Accounts.findUserByUsername(name);
@@ -11,10 +12,6 @@ function prepareAccounts(name, other) {
       password: other,
     });
   }
-  // Add/update trader settings values to the user.
-  userRecord = Accounts.findUserByUsername(name);
-  const tradeSettings = {...DefaultTradeSettings, ...(userRecord?.services.tradeSettings)};
-  Users.update(userRecord._id, {$set: {'services.tradeSettings': tradeSettings}});
 }
 
 Meteor.startup(() => {

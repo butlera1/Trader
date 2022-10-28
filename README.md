@@ -1,9 +1,16 @@
 # Stock trading tool for TDAmeritrade API. Focused on daily option trading.
 
 ## Initial API call to get access code.
+Go to the following link in a browser and log in using your TDA credentials.:
 ```
 https://auth.tdameritrade.com/auth?response_type=code&redirect_uri=https://localhost/traderOAuthCallback&client_id=PFVYW5LYNPRZH6Y1ZCY5OTBGINDLZDW8@AMER.OAUTHAP
 ```
+After valid signing in, the system will attempt to redirect the URL and fail. In the failed URL will be en encrypted code. Copy everything in the URL after the "?code=" and take it to the following link to decode it.
+
+```
+https://www.base64decode.org/
+```
+Then take the decoded information and paste it into the "Enter code here:" location in the option trader application and click the "Store Data" button.
 
 Example output:
 ```

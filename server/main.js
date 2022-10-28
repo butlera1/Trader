@@ -16,7 +16,12 @@ import later from 'later';
 import {GetNewYorkTimeAt, PerformTradeForAllUsers, PerformTradeForUser} from './Trader';
 import dayjs from 'dayjs';
 import {Users} from './collections/users';
-import {GetUserTradeSettings, SetUserTradeSettings} from './collections/tradeSettings';
+import {
+  GetAllUserTradeSettings,
+  GetNewUserTradeSettingsRecord,
+  SetUserTradeSettings
+} from './collections/TradeSettings';
+import ConfirmValidatedUser from './Methods/ConfirmValidatedUser';
 
 // Listen to incoming HTTP requests (can only be used on the server).
 WebApp.connectHandlers.use('/traderOAuthCallback', (req, res, next) => {
@@ -37,7 +42,9 @@ Meteor.methods({
   GetAccessToken,
   GetOrders,
   SetUserTradeSettings,
-  GetUserTradeSettings,
+  GetAllUserTradeSettings,
+  GetNewUserTradeSettingsRecord,
+  ConfirmValidatedUser,
   BuyStock,
   SellStraddle,
   GetATMOptionChains,

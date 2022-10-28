@@ -1,9 +1,10 @@
 import {Meteor} from 'meteor/meteor';
 import React from 'react';
-import {Button, Form, Input, InputNumber, Radio, Select, Space, Switch, TimePicker} from 'antd';
+import {Alert, Button, Form, Input, InputNumber, Select, Space, Switch, TimePicker} from 'antd';
 import moment from 'moment';
-import ITradeSettings from '../Interfaces/ITradeSettings';
-import {StrategyEditorForm} from "./StrategyEditorForm";
+import ITradeSettings, {DefaultTradeSettings} from '../../Interfaces/ITradeSettings';
+import {StrategyLegEditor} from './StrategyLegEditor';
+import './TradeSettings.css';
 
 const disabledTime = () => {
   return {
@@ -25,19 +26,19 @@ export const TradeSettingsEditor = ({tradeSettings}: Props) => {
   const [exitTime, setExitTime] = React.useState(`${tradeSettings.exitHour}:${tradeSettings.exitMinute}`);
   const [percentGain, setPercentGain] = React.useState(tradeSettings?.percentGain);
   const [percentLoss, setPercentLoss] = React.useState(tradeSettings?.percentLoss);
-  let saveHandle = null;
+  const [dte, setDTE] = React.useState(tradeSettings?.dte);
+  const [quantity, setQuantity] = React.useState(tradeSettings?.quantity);
+  const [errorText, setErrorText] = React.useState(null);
+  const [saveHandle, setSaveHandle] = React.useState(null);
+
   const setMap = {
     isActive: setIsActive,
     accountNumber: setAccountNumber,
-    symbol:setSymbol,
-    entryTime:setEntryTime,
+    symbol: setSymbol,
+    entryTime: setEntryTime,
     exitTime: setExitTime,
     percentGain: setPercentGain,
     percentLoss, setPercentLoss,
-  };
-  
-  const saveChanges = () => {
-    console.log('Formally saving changes');
   };
   
   const onChange = (name, value) => {
@@ -45,11 +46,30 @@ export const TradeSettingsEditor = ({tradeSettings}: Props) => {
     setMap[name](value);
     if (saveHandle) {
       Meteor.clearTimeout(saveHandle);
+      setSaveHandle(null);
     }
-    saveHandle = Meteor.setTimeout(() => {
-      console.log('Formally saving changes');
+    const tempHandle = Meteor.setTimeout(() => {
+      setSaveHandle(null);
+      console.log('Persisting changes');
+      const strategy = {
+        ...DefaultTradeSettings,
+        isActive,
+        accountNumber,
+        symbol,
+        entryTime,
+        exitTime,
+        percentGain,
+        percentLoss,
+        dte,
+        quantity,
+      };
+      Meteor.call('SetUserStrategy', strategy, (error, result) => {
+        if (error) {
+          setErrorText(error.toString());
+        }
+      });
     }, 3000);
-    saveChanges();
+    setSaveHandle(tempHandle);
   };
   
   return (
@@ -63,11 +83,11 @@ export const TradeSettingsEditor = ({tradeSettings}: Props) => {
     >
       <Form.Item
         label="Is Active"
-        name="isTrading"
+        name="isActive"
         rules={[{required: true, message: 'True if trading this patter. False to turn it off.'}]}
         valuePropName="checked"
       >
-        <Switch onChange={setIsActive} checked={isActive}/>
+        <Switch onChange={(value)=>onChange('isActive', value)} checked={isActive}/>
       </Form.Item>
       
       <Form.Item
@@ -75,7 +95,7 @@ export const TradeSettingsEditor = ({tradeSettings}: Props) => {
         name="accountNumber"
         rules={[{required: true, message: 'Please define the TDA account number to trade in.'}]}
       >
-        <Input/>
+        <Input style={{width:200}}/>
       </Form.Item>
       
       <Form.Item
@@ -138,7 +158,7 @@ export const TradeSettingsEditor = ({tradeSettings}: Props) => {
       >
         <InputNumber min={0} max={400} addonAfter={'%'} style={{width: '100px'}}/>
       </Form.Item>
-      
+  
       <Form.Item
         label="DTE"
         name="dte"
@@ -149,24 +169,44 @@ export const TradeSettingsEditor = ({tradeSettings}: Props) => {
       >
         <InputNumber min={0} max={100} addonAfter={'days'} style={{width: '100px'}}/>
       </Form.Item>
+  
+      <Form.Item
+        label="Quantity"
+        name="quantity"
+        rules={[{
+          required: true,
+          message: 'Please input the quantity options to trade.'
+        }]}
+      >
+        <InputNumber min={0} max={200} style={{width: '100px'}}/>
+      </Form.Item>
       
       <Form.Item
-        label="Strategy"
+        label="Legs"
         name="buySell"
         rules={[{
           required: true,
           message: 'Please define Buy/Sell, Call/Put, Quantity, and Days To Expiration (DTE).',
         }]}
       >
-        <StrategyEditorForm  />
+        <StrategyLegEditor/>
       </Form.Item>
-      
-      
-      <Form.Item wrapperCol={{offset: 6, span: 8}}>
-        <Button type="primary" htmlType="submit">
-          Submit
-        </Button>
-      </Form.Item>
+  
+      {errorText ?
+        <Alert
+          message={errorText}
+          type="warning"
+          action={
+            <Space>
+              <Button size="small" type="ghost" onClick={() => setErrorText(null)}>
+                Done
+              </Button>
+            </Space>
+          }
+          closable
+        />
+          : null
+      }
     </Form>
   );
 };
