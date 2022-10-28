@@ -4,9 +4,11 @@ import dayjs from 'dayjs';
 import BuyStockOrderForm from './Templates/BuyStockOrderForm';
 import SellStraddleOrderForm from './Templates/SellStraddleOrderForm';
 import {IronCondorMarketOrder} from './Templates/SellIronCondorOrder';
-import {WaitForOrderCompleted} from '../Trader';
+import {GetNewYorkTimeAt, WaitForOrderCompleted} from '../Trader';
 import {Users} from '../collections/users';
 import {Trades} from '../collections/trades';
+import {DefaultTradeSettings} from '../SeedUser';
+import optionOrderForm from './Templates/OptionOrderForm';
 
 const clientId = 'PFVYW5LYNPRZH6Y1ZCY5OTBGINDLZDW8@AMER.OAUTHAP';
 const redirectUrl = 'https://localhost/traderOAuthCallback';
@@ -41,16 +43,10 @@ export async function SetUserAccessInfo(code) {
     data.refreshTokenExpiresAt = dayjs().add(data.refresh_token_expires_in, 'second').valueOf();
     delete data.expires_in;
     delete data.refresh_token_expires_in;
-    const defaultSettings = {
-      isTrading: false,
-      desiredDelta: 0.25,
-      percentGain: 0.25,
-      percentLoss: 0.55,
-    };
     Meteor.users.update({_id: Meteor.userId()}, {
       $set: {
         'services.tda': data,
-        'services.traderSettings': defaultSettings
+        'services.tradeSettings': DefaultTradeSettings,
       }
     });
     result = true;
@@ -220,7 +216,8 @@ export async function GetPriceForOptions(userId, options) {
         currentPrice = currentPrice + quote.mark;
       }
     });
-    const quoteTime = dayjs((new Date()).toLocaleString('en-US', {timeZone: 'America/New_York'}));
+    // Get quote time in local hours.
+    const quoteTime = dayjs();
     return {currentPrice, quoteTime};
   } catch (error) {
     const msg = `TDAApi.GetPriceForOptions: failed with: ${error}`;
@@ -229,9 +226,8 @@ export async function GetPriceForOptions(userId, options) {
   }
 }
 
-export async function GetATMOptionChains(symbol) {
-  try {
-    const token = await GetAccessToken();
+export async function GetATMOptionChains(symbol, userId) {
+    const token = await GetAccessToken(userId);
     if (!token) return null;
     const fromDate = dayjs().subtract(1, 'day');
     const toDate = dayjs().add(2, 'day');
@@ -258,10 +254,6 @@ export async function GetATMOptionChains(symbol) {
     }
     const chains = await response.json();
     return chains;
-  } catch (error) {
-    console.error(error);
-    console.error(`TDAApi.GetATMOptionChains: tokenId:${tokenId}, symbol: ${symbol}`);
-  }
 }
 
 export async function PlaceOrder(userId, accountNumber, order) {
@@ -291,6 +283,26 @@ export async function PlaceOrder(userId, accountNumber, order) {
     console.error(msg);
     throw new Meteor.Error(msg);
   }
+}
+
+export async function IsOptionMarketOpenToday(userId) {
+  const token = await GetAccessToken(userId);
+  const options = {
+    method: 'GET',
+    headers: {
+      Authorization: `Bearer ${token}`,
+      'Content-Type': 'application/json'
+    },
+  };
+  const dateText = dayjs().format('YYYY-MM-DD');
+  const response = await fetch(`https://api.tdameritrade.com/v1/marketdata/OPTION/hours?date=${dateText}`, options);
+  if (!response.ok) {
+    const msg = `Error: IsOptionMarketOpen method status is: ${response.status}`;
+    console.error(msg);
+    throw new Meteor.Error(msg);
+  }
+  const results = await response.json();
+  return results?.option?.EQO?.isOpen || false;
 }
 
 export async function BuyStock(accountNumber, stockSymbol, quantity) {
@@ -347,8 +359,17 @@ function getCreditOnIC(buyCall, sellCall, buyPut, sellPut) {
   return sellCallPrice + sellPutPrice - buyCallPrice - buyPutPrice;
 }
 
-function GetIronCondorTradeOrders(chains, traderSettings) {
-  const {quantity, desiredDelta, percentGain, percentLoss} = traderSettings;
+function GetICLegClosingMarketOrders(buyCall, sellCall, buyPut, sellPut, quantity){
+  let isToClose = true;
+  let isBuy = true;
+  const buys = [optionOrderForm(buyCall.symbol, quantity, isToClose, isBuy), optionOrderForm(buyPut.symbol, quantity, isToClose, isBuy)];
+  isBuy = false;
+  const sells = [optionOrderForm(sellCall.symbol, quantity, isToClose, isBuy), optionOrderForm(sellPut.symbol, quantity, isToClose, isBuy)];
+  return {buys, sells};
+}
+
+export function GetIronCondorTradeOrders(chains, tradeSettings) {
+  const {quantity, desiredDelta, percentGain, percentLoss} = tradeSettings;
   // Get the shorted DTE option set.
   const putNames = Object.getOwnPropertyNames(chains.putExpDateMap);
   let putsName = '';
@@ -373,42 +394,11 @@ function GetIronCondorTradeOrders(chains, traderSettings) {
   const lossLimit = Math.trunc(credit * (1.0 + percentLoss) * 100) / 100.0; // loss limit
   const openingOrder = IronCondorMarketOrder(buyCall, sellCall, buyPut, sellPut, quantity, true);
   const closingOrder = IronCondorMarketOrder(sellCall, buyCall, sellPut, buyPut, quantity, false);
+  const closingLegOrders = GetICLegClosingMarketOrders(sellCall, buyCall, sellPut, buyPut, quantity);
   buyCall.isBuy = true;
   buyPut.isBuy = true;
   sellCall.isBuy = false;
   sellPut.isBuy = false;
   const options = {buyCall, sellCall, buyPut, sellPut};
-  return {openingOrder, closingOrder, options};
-}
-
-async function PlaceOpeningOrder(userId, traderSettings, openingOrder, options) {
-  const openingOrderId = await PlaceOrder(userId, traderSettings.accountNumber, openingOrder);
-  const openingPrice = await WaitForOrderCompleted(userId, traderSettings.accountNumber, openingOrderId);
-  // Record this opening order data.
-  Trades.insert({
-    _id: openingOrderId,
-    when: new Date(),
-    symbol: traderSettings.symbol,
-    quantity: traderSettings.quantity,
-    desiredDelta: traderSettings.desiredDelta,
-    percentGain: traderSettings.percentGain,
-    percentLoss: traderSettings.percentLoss,
-    earlyExitTime: traderSettings.earlyExitTime,
-    openingPrice,
-    options,
-  });
-  return {openingOrderId, openingPrice};
-}
-
-export async function PlaceModeledTrade(userId, traderSettings) {
-  if (!userId) {
-    const userRecord = Meteor.user();
-    userId = userRecord._id;
-    traderSettings = userRecord.services.traderSettings;
-  }
-  const chains = await GetATMOptionChains(traderSettings.symbol);
-  const {openingOrder, closingOrder, options} = GetIronCondorTradeOrders(chains, traderSettings);
-  const {openingOrderId, openingPrice} = await PlaceOpeningOrder(userId, traderSettings, openingOrder, options);
-  MonitorTradeToCloseItOut(userId, openingPrice, closingOrder, options);
-  return {openingOrderId, openingPrice, closingOrder, options};
+  return {openingOrder, closingLegOrders, options};
 }

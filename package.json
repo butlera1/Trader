@@ -12,10 +12,13 @@
     "@babel/runtime": "^7.17.9",
     "@marknokes/tdameritrade": "^1.2.12",
     "@polygon.io/client-js": "^6.0.4",
+    "antd": "^4.23.6",
     "bcrypt": "^5.0.1",
     "dayjs": "^1.11.5",
+    "later": "^1.2.0",
     "lodash": "^4.17.21",
     "meteor-node-stubs": "^1.2.1",
+    "moment": "^2.29.4",
     "react": "^17.0.2",
     "react-dom": "^17.0.2"
   },

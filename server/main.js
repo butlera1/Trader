@@ -1,24 +1,43 @@
 import {Meteor} from 'meteor/meteor';
+import { SyncedCron } from 'meteor/littledata:synced-cron';
 import './collections/straddleData';
 import './collections/stockData';
 import {
-  SetUserAccessInfo,
   BuyStock,
   GetAccessToken,
   GetATMOptionChains,
-  GetOrders,
+  GetOrders, IsOptionMarketOpenToday,
   PlaceModeledTrade,
-  SellStraddle
+  SellStraddle,
+  SetUserAccessInfo
 } from './TDAApi/TDAApi';
 import './SeedUser';
+import later from 'later';
+import {GetNewYorkTimeAt, PerformTradeForAllUsers, PerformTradeForUser} from './Trader';
 import dayjs from 'dayjs';
-import {GetNewYorkTimeAt} from './Trader';
+import {Users} from './collections/users';
 
 // Listen to incoming HTTP requests (can only be used on the server).
 WebApp.connectHandlers.use('/traderOAuthCallback', (req, res, next) => {
   res.writeHead(200);
   res.end(`Trader received a redirect callback. Received new access code: \n${decodeURI(req.query?.code)}`);
 });
+
+function SetUserTradeSettings(settings){
+  const user = Meteor.user();
+  if (user){
+    settings = {...user.services.tradeSettings, ...settings};
+    Meteor.users.update(user._id, {$set: {'services.tradeSettings': settings}});
+  }
+}
+
+function Test(){
+  const user = Users.findOne({username: 'Arch'});
+  const settings = user.services.tradeSettings;
+  settings.isTrading = true;
+  SetUserTradeSettings(settings);
+  PerformTradeForUser(user).then();
+}
 
 Meteor.methods({
   SetUserAccessInfo,
@@ -27,22 +46,23 @@ Meteor.methods({
   BuyStock,
   SellStraddle,
   GetATMOptionChains,
-  PlaceModeledTrade,
+  PerformTradeForAllUsers,
+  SetUserTradeSettings,
+  Test,
 });
 
+function schedule() {
+  const localTime = dayjs(GetNewYorkTimeAt(9, 25));
+  const timeText = localTime.format('hh:mma');
+  const scheduleText = `at ${timeText} every weekday`;
+  console.log(`Schedule text: ${scheduleText}`);
+  return later.parse.text(scheduleText);
+}
 
-const hour = 12;
-const minute = 30;
+SyncedCron.add({
+  name: 'Every weekday, run trader for everyone.',
+  schedule,
+  job: PerformTradeForAllUsers,
+});
 
-const nyTime = GetNewYorkTimeAt(hour, minute);
-
-console.log(`NewYork Time: ${nyTime.format('hh:mm:ss')} in LHC.`);
-
-
-
-// TODO (AWB) 1) Place orders for short straddle (maybe others)
-// TODO (AWB) 2) Track an order looking for value (particularly value of a straddle).
-// TODO (AWB) 3) Buy back (market) a short straddle to close when the straddle:
-//      - reaches a price based on percentage of original short sell value.
-//      - reaches a price based on stop loss percentage of original short sell value.
-//      - reaches a certain time of the day.
+SyncedCron.start();

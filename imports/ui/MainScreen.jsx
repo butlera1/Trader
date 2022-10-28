@@ -1,5 +1,6 @@
 import * as ReactDOM from 'react-dom';
 import React, {useState} from 'react';
+import {TradeSettingsEditor} from './TradeSettingsEditor';
 
 export const MainScreen = () => {
   const [codeValue, setCodeValue] = useState(null);
@@ -48,10 +49,10 @@ export const MainScreen = () => {
     });
   };
 
-  const placeTestOrder = () => {
+  const TestMethod = () => {
     setOrderPlaced(false);
     // call with underLyingSymbol, desiredDelta, gainLimit, lossLimit
-    Meteor.call('PlaceModeledTrade', (error, result) => {
+    Meteor.call('Test', (error, result) => {
       if (error){
         console.error(error);
       }else {
@@ -78,9 +79,9 @@ export const MainScreen = () => {
       <p disabled={!orders}>Orders are: {JSON.stringify(orders)}</p>
       <br/>
       <br/>
-      <button onClick={placeTestOrder}>Place an order</button>
+      <button onClick={TestMethod}>Run Test Method</button>
       {orderPlaced ? <p>Options: {orderPlaced}</p> : null}
-
+      <TradeSettingsEditor/>
     </div>
   );
 };
