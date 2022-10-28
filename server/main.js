@@ -46,7 +46,7 @@ Meteor.methods({
 });
 
 function schedule() {
-  const localTime = dayjs(GetNewYorkTimeAt(9, 25));
+  const localTime = GetNewYorkTimeAt(9, 26);
   const timeText = localTime.format('hh:mma');
   const scheduleText = `at ${timeText} every weekday`;
   console.log(`Schedule text: ${scheduleText}`);
@@ -56,7 +56,7 @@ function schedule() {
 SyncedCron.add({
   name: 'Every weekday, run trader for everyone.',
   schedule,
-  job: PerformTradeForAllUsers,
+  job: ()=>{},
 });
 
 SyncedCron.start();

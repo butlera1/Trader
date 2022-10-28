@@ -35,7 +35,11 @@ function clearInterval(timerHandle) {
 function GetNewYorkTimeAt(hour, minute) {
   const currentLocalTime = new Date();
   const currentNYTime = new Date(currentLocalTime.toLocaleString('en-US', {timeZone: 'America/New_York'}));
-  const timeZoneDifference = currentNYTime.getHours() - currentLocalTime.getHours();
+  let timeZoneDifference = currentNYTime.getHours() - currentLocalTime.getHours();
+  if (timeZoneDifference < 0){
+    // This happens when
+    timeZoneDifference = 24 + timeZoneDifference;
+  }
   const currentTimeZoneOffset = currentLocalTime.getTimezoneOffset() / 60;
   const nyTimeZoneOffsetFromCurrentTimeZone = currentTimeZoneOffset - timeZoneDifference;
   let amPm = 'AM';
