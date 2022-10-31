@@ -19,24 +19,28 @@ type Props = {
 }
 
 export const TradeSettingsEditor = ({tradeSettings}: Props) => {
-  const [isActive, setIsActive] = React.useState(tradeSettings?.isTrading);
-  const [accountNumber, setAccountNumber] = React.useState(tradeSettings?.accountNumber);
-  const [symbol, setSymbol] = React.useState(tradeSettings?.symbol);
-  const [entryTime, setEntryTime] = React.useState(`${tradeSettings.entryHour}:${tradeSettings.entryMinute}`);
-  const [exitTime, setExitTime] = React.useState(`${tradeSettings.exitHour}:${tradeSettings.exitMinute}`);
-  const [percentGain, setPercentGain] = React.useState(tradeSettings?.percentGain);
-  const [percentLoss, setPercentLoss] = React.useState(tradeSettings?.percentLoss);
-  const [dte, setDTE] = React.useState(tradeSettings?.dte);
-  const [quantity, setQuantity] = React.useState(tradeSettings?.quantity);
+  const [isActive, setIsActive] = React.useState(tradeSettings.isActive);
+  const [accountNumber, setAccountNumber] = React.useState(tradeSettings.accountNumber);
+  const [symbol, setSymbol] = React.useState(tradeSettings.symbol);
+  const [entryHour, setEntryHour] = React.useState(tradeSettings.entryHour);
+  const [entryMinute, setEntryMinute] = React.useState(tradeSettings.entryMinute);
+  const [exitHour, setExitHour] = React.useState(tradeSettings.exitHour);
+  const [exitMinute, setExitMinute] = React.useState(tradeSettings.exitMinute);
+  const [percentGain, setPercentGain] = React.useState(tradeSettings.percentGain);
+  const [percentLoss, setPercentLoss] = React.useState(tradeSettings.percentLoss);
+  const [dte, setDTE] = React.useState(tradeSettings.dte);
+  const [quantity, setQuantity] = React.useState(tradeSettings.quantity);
   const [errorText, setErrorText] = React.useState(null);
   const [saveHandle, setSaveHandle] = React.useState(null);
-
+  
   const setMap = {
     isActive: setIsActive,
     accountNumber: setAccountNumber,
     symbol: setSymbol,
-    entryTime: setEntryTime,
-    exitTime: setExitTime,
+    entryHour: setEntryHour,
+    entryMinute: setEntryMinute,
+    exitHour: setExitHour,
+    exitMinute: setExitMinute,
     percentGain: setPercentGain,
     percentLoss, setPercentLoss,
   };
@@ -56,8 +60,10 @@ export const TradeSettingsEditor = ({tradeSettings}: Props) => {
         isActive,
         accountNumber,
         symbol,
-        entryTime,
-        exitTime,
+        entryHour,
+        entryMinute,
+        exitHour,
+        exitMinute,
         percentGain,
         percentLoss,
         dte,
@@ -78,7 +84,6 @@ export const TradeSettingsEditor = ({tradeSettings}: Props) => {
       labelCol={{span: 6}}
       wrapperCol={{span: 8}}
       initialValues={{remember: true}}
-      onChange={onChange}
       autoComplete="off"
     >
       <Form.Item
@@ -87,7 +92,10 @@ export const TradeSettingsEditor = ({tradeSettings}: Props) => {
         rules={[{required: true, message: 'True if trading this patter. False to turn it off.'}]}
         valuePropName="checked"
       >
-        <Switch onChange={(value)=>onChange('isActive', value)} checked={isActive}/>
+        <Switch
+          onChange={(value)=>onChange('isActive', value)}
+          defaultValue={isActive}
+        />
       </Form.Item>
       
       <Form.Item
@@ -95,7 +103,12 @@ export const TradeSettingsEditor = ({tradeSettings}: Props) => {
         name="accountNumber"
         rules={[{required: true, message: 'Please define the TDA account number to trade in.'}]}
       >
-        <Input style={{width:200}}/>
+        <Input
+          defaultValue={accountNumber || 'None'}
+          style={{width: 200}}
+          onChange={(value) => onChange('accountNumber', value)}
+          checked={isActive}
+        />
       </Form.Item>
       
       <Form.Item
@@ -103,7 +116,7 @@ export const TradeSettingsEditor = ({tradeSettings}: Props) => {
         name="symbol"
         rules={[{required: true, message: 'Please define the TDA account number to trade in.'}]}
       >
-        <Select defaultValue="QQQ" style={{width: 120}}>
+        <Select defaultValue="QQQ" style={{width: 120}} onChange={(value) => onChange('symbol', value)}>
           <Select.Option value="QQQ">QQQ</Select.Option>
           <Select.Option value="SPY">SPY</Select.Option>
           <Select.Option value="SPX">SPX</Select.Option>
@@ -116,11 +129,16 @@ export const TradeSettingsEditor = ({tradeSettings}: Props) => {
         rules={[{required: true, message: 'Please define the entry time for the trade.'}]}
       >
         <TimePicker
-          initialValue={moment('12:03', 'HH:mm')}
+          defaultValue={moment(`${entryHour}:${entryMinute}`, 'HH:mm')}
           size="large"
           format="HH:mm"
           disabledTime={disabledTime}
           style={{width: '100px'}}
+          onChange={(value) => {
+            onChange('entryHour', value.hour());
+            onChange('entryMinute', value.minute());
+          }
+          }
         />
       </Form.Item>
       
@@ -130,10 +148,15 @@ export const TradeSettingsEditor = ({tradeSettings}: Props) => {
         rules={[{required: true, message: 'Please define the entry time for the trade.'}]}
       >
         <TimePicker
-          initialValue={moment('12:03', 'HH:mm')}
+          defaultValue={moment(`${exitHour}:${exitMinute}`, 'HH:mm')}
           size="large"
           format="HH:mm"
           style={{width: '100px'}}
+          onChange={(value) => {
+            onChange('exitHour', value.hour());
+            onChange('exitMinute', value.minute());
+          }
+          }
         />
       </Form.Item>
       
@@ -145,7 +168,14 @@ export const TradeSettingsEditor = ({tradeSettings}: Props) => {
           message: 'Please input the desired percent gain (0-100 where zero means no gain limit).'
         }]}
       >
-        <InputNumber min={0} max={100} addonAfter={'%'} style={{width: '100px'}}/>
+        <InputNumber
+          min={0}
+          max={100}
+          addonAfter={'%'}
+          style={{width: '100px'}}
+          defaultValue={percentGain * 100}
+          onChange={(value) => onChange('percentGain', value/100)}
+        />
       </Form.Item>
       
       <Form.Item
@@ -156,7 +186,14 @@ export const TradeSettingsEditor = ({tradeSettings}: Props) => {
           message: 'Please input the desired percent loss (0-300 where zero means no loss limit).'
         }]}
       >
-        <InputNumber min={0} max={400} addonAfter={'%'} style={{width: '100px'}}/>
+        <InputNumber
+          min={0}
+          max={400}
+          addonAfter={'%'}
+          style={{width: '100px'}}
+          defaultValue={percentLoss * 100}
+          onChange={(value) => onChange('percentLoss', value/100)}
+        />
       </Form.Item>
   
       <Form.Item
@@ -167,7 +204,14 @@ export const TradeSettingsEditor = ({tradeSettings}: Props) => {
           message: 'Please input the desired percent gain (0-100 where zero means no gain limit).'
         }]}
       >
-        <InputNumber min={0} max={100} addonAfter={'days'} style={{width: '100px'}}/>
+        <InputNumber
+          min={0}
+          max={100}
+          addonAfter={'days'}
+          style={{width: '100px'}}
+          defaultValue={dte}
+          onChange={(value) => onChange('dte', value)}
+        />
       </Form.Item>
   
       <Form.Item
@@ -178,7 +222,12 @@ export const TradeSettingsEditor = ({tradeSettings}: Props) => {
           message: 'Please input the quantity options to trade.'
         }]}
       >
-        <InputNumber min={0} max={200} style={{width: '100px'}}/>
+        <InputNumber
+          defaultValue={quantity}
+          min={1}
+          max={200}
+          style={{width: '100px'}}
+          onChange={(value) => onChange('quantity', value)}/>
       </Form.Item>
       
       <Form.Item
@@ -189,7 +238,7 @@ export const TradeSettingsEditor = ({tradeSettings}: Props) => {
           message: 'Please define Buy/Sell, Call/Put, Quantity, and Days To Expiration (DTE).',
         }]}
       >
-        <StrategyLegEditor/>
+        <StrategyLegEditor tradeSettings={tradeSettings}/>
       </Form.Item>
   
       {errorText ?

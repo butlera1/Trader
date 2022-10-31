@@ -2,6 +2,7 @@ import React from 'react';
 import {Button, Col, InputNumber, Row, Select} from 'antd';
 import ILegSettings from "../../Interfaces/ILegSettings";
 import {DeleteOutlined} from '@ant-design/icons';
+import ITradeSettings from "../../Interfaces/ITradeSettings";
 
 function GetUILegs({legs}: { legs: ILegSettings[] }) {
   const results = legs.map((leg) => {
@@ -36,7 +37,7 @@ function GetUILegs({legs}: { legs: ILegSettings[] }) {
   return results;
 }
 
-export const StrategyLegEditor = () => {
+export const StrategyLegEditor = ({tradeSettings}: {tradeSettings: ITradeSettings}) => {
     const onFinish = (values) => {
       console.log('Success:', values);
     };

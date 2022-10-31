@@ -17,7 +17,9 @@ import {GetNewYorkTimeAt, PerformTradeForAllUsers, PerformTradeForUser} from './
 import dayjs from 'dayjs';
 import {Users} from './collections/users';
 import {
+  DeleteUserTradeSettingsRecord,
   GetAllUserTradeSettings,
+  GetUserTradeSettings,
   GetNewUserTradeSettingsRecord,
   SetUserTradeSettings
 } from './collections/TradeSettings';
@@ -42,8 +44,10 @@ Meteor.methods({
   GetAccessToken,
   GetOrders,
   SetUserTradeSettings,
+  GetUserTradeSettings,
   GetAllUserTradeSettings,
   GetNewUserTradeSettingsRecord,
+  DeleteUserTradeSettingsRecord,
   ConfirmValidatedUser,
   BuyStock,
   SellStraddle,

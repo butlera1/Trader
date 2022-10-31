@@ -4,11 +4,25 @@ import _ from 'lodash';
 
 export const TradeSettings = new Mongo.Collection('tradeSettings');
 
+function DeleteUserTradeSettingsRecord(recordId) {
+  if (this.userId) {
+    return TradeSettings.remove(recordId);
+  }
+  return 'Must have valid user for DeleteUserTradeSettings.';
+}
+
 function GetAllUserTradeSettings() {
   if (this.userId) {
     return TradeSettings.find({userId: this.userId}).fetch();
   }
   return 'Must have valid user for GetAllUserTradeSettings.';
+}
+
+function GetUserTradeSettings(tradeSettingId) {
+  if (this.userId) {
+    return TradeSettings.findOne({_id: tradeSettingId});
+  }
+  return 'Must have valid user for GetUserTradeSettings.';
 }
 
 function GetNewUserTradeSettingsRecord() {
@@ -36,4 +50,4 @@ function SetUserTradeSettings(tradeSettings) {
   return null;
 }
 
-export {GetAllUserTradeSettings, SetUserTradeSettings, GetNewUserTradeSettingsRecord};
+export {GetAllUserTradeSettings, SetUserTradeSettings, GetNewUserTradeSettingsRecord, GetUserTradeSettings, DeleteUserTradeSettingsRecord};
