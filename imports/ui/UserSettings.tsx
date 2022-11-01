@@ -39,7 +39,7 @@ function UserSettings({userSettings}) {
   return (
     <>
       <h2>
-        <span style={{fontWeight:'normal', color:'lightblue'}}>User: </span>{Meteor.user().username}
+        <span style={{fontWeight:'normal', color:'blue'}}>User: </span>{Meteor.user().username}
         <Popconfirm
           title="Are you sure: CLOSE ALL TRADES?"
           icon={<QuestionCircleOutlined style={{color: 'red'}}/>}
@@ -57,7 +57,7 @@ function UserSettings({userSettings}) {
             Emergency: Close All Trades
           </Button>
         </Popconfirm>
-        <span style={{fontWeight:'normal', fontSize:20, color:'blue', position:'fixed', top:0, right:100}}>Version: 0.1</span>
+        <span style={{fontWeight:'normal', fontSize:15, color:'blue', position:'fixed', top:0, right:10}}>Version: 0.1</span>
       </h2>
       {errorText
         ?
