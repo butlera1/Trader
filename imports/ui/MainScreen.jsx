@@ -1,14 +1,23 @@
-import React, {useState} from 'react';
-import {TradeSettingsEditor} from './TradeSettings/TradeSettingsEditor';
-import {DefaultTradeSettings} from '../Interfaces/ITradeSettings';
+import React, {useState, useEffect} from 'react';
 import TabTradeSettings from './TradeSettings/TabTradeSettings';
+import UserSettings from './UserSettings';
+import {Meteor} from 'meteor/meteor';
 
 export const MainScreen = () => {
-  const [tradeSettings, setTradeSettings] = useState(DefaultTradeSettings);
+  const [userSettings, setUserSettings] = useState(null);
+  useEffect(() => {
+    Meteor.call('GetUserSettings', (error, userSettingsRecord) => {
+      if (error) {
+        setErrorText(`Failed to get user settings. Error: ${error}`);
+        return;
+      }
+      setUserSettings(userSettingsRecord);
+    });
+  }, []);
 
-  return (
-    <>
-      <TabTradeSettings/>
-    </>
-  );
+
+  return (<>
+    <UserSettings userSettings={userSettings}/>
+    <TabTradeSettings/>
+  </>);
 };

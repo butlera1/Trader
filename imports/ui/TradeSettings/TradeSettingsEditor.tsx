@@ -14,6 +14,8 @@ const disabledTime = () => {
   }
 };
 
+const timeoutHandles = {};
+
 type Props = {
   tradeSettings: ITradeSettings,
 }
@@ -31,7 +33,6 @@ export const TradeSettingsEditor = ({tradeSettings}: Props) => {
   const [dte, setDTE] = React.useState(tradeSettings.dte);
   const [quantity, setQuantity] = React.useState(tradeSettings.quantity);
   const [errorText, setErrorText] = React.useState(null);
-  const [saveHandle, setSaveHandle] = React.useState(null);
   
   const setMap = {
     isActive: setIsActive,
@@ -42,21 +43,24 @@ export const TradeSettingsEditor = ({tradeSettings}: Props) => {
     exitHour: setExitHour,
     exitMinute: setExitMinute,
     percentGain: setPercentGain,
-    percentLoss, setPercentLoss,
+    percentLoss: setPercentLoss,
+    dte:setDTE,
+    quantity: setQuantity,
   };
   
   const onChange = (name, value) => {
     console.log('Changing:', name, value);
     setMap[name](value);
-    if (saveHandle) {
-      Meteor.clearTimeout(saveHandle);
-      setSaveHandle(null);
+    if (timeoutHandle) {
+      Meteor.clearTimeout(timeoutHandle);
+      timeoutHandle = null;
     }
-    const tempHandle = Meteor.setTimeout(() => {
-      setSaveHandle(null);
+    timeoutHandle = Meteor.setTimeout(() => {
+      Meteor.clearTimeout(timeoutHandle);
+      timeoutHandle = null;
       console.log('Persisting changes');
       const strategy = {
-        ...DefaultTradeSettings,
+        _id: tradeSettings._id,
         isActive,
         accountNumber,
         symbol,
@@ -69,13 +73,12 @@ export const TradeSettingsEditor = ({tradeSettings}: Props) => {
         dte,
         quantity,
       };
-      Meteor.call('SetUserStrategy', strategy, (error, result) => {
+      Meteor.call('SetUserTradeSettings', strategy, (error, result) => {
         if (error) {
           setErrorText(error.toString());
         }
       });
     }, 3000);
-    setSaveHandle(tempHandle);
   };
   
   return (
@@ -86,6 +89,22 @@ export const TradeSettingsEditor = ({tradeSettings}: Props) => {
       initialValues={{remember: true}}
       autoComplete="off"
     >
+      {errorText ?
+        <Alert
+          message={errorText}
+          type="warning"
+          action={
+            <Space>
+              <Button size="small" type="ghost" onClick={() => setErrorText(null)}>
+                Done
+              </Button>
+            </Space>
+          }
+          closable
+        />
+        : null
+      }
+      
       <Form.Item
         label="Is Active"
         name="isActive"
@@ -106,7 +125,7 @@ export const TradeSettingsEditor = ({tradeSettings}: Props) => {
         <Input
           defaultValue={accountNumber || 'None'}
           style={{width: 200}}
-          onChange={(value) => onChange('accountNumber', value)}
+          onChange={(e) => onChange('accountNumber', e.target.value)}
           checked={isActive}
         />
       </Form.Item>
@@ -174,7 +193,7 @@ export const TradeSettingsEditor = ({tradeSettings}: Props) => {
           addonAfter={'%'}
           style={{width: '100px'}}
           defaultValue={percentGain * 100}
-          onChange={(value) => onChange('percentGain', value/100)}
+          onChange={(value) => onChange('percentGain', (value)/100)}
         />
       </Form.Item>
       
@@ -192,7 +211,7 @@ export const TradeSettingsEditor = ({tradeSettings}: Props) => {
           addonAfter={'%'}
           style={{width: '100px'}}
           defaultValue={percentLoss * 100}
-          onChange={(value) => onChange('percentLoss', value/100)}
+          onChange={(value) => onChange('percentLoss', (value)/100)}
         />
       </Form.Item>
   
@@ -240,22 +259,6 @@ export const TradeSettingsEditor = ({tradeSettings}: Props) => {
       >
         <StrategyLegEditor tradeSettings={tradeSettings}/>
       </Form.Item>
-  
-      {errorText ?
-        <Alert
-          message={errorText}
-          type="warning"
-          action={
-            <Space>
-              <Button size="small" type="ghost" onClick={() => setErrorText(null)}>
-                Done
-              </Button>
-            </Space>
-          }
-          closable
-        />
-          : null
-      }
     </Form>
   );
 };

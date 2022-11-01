@@ -1,8 +1,6 @@
 import {Meteor} from 'meteor/meteor';
 import {Accounts} from 'meteor/accounts-base';
-import {Users} from './collections/users';
-import {DefaultTradeSettings} from '../imports/Interfaces/ITradeSettings';
-import {TradeSettings} from './collections/TradeSettings';
+import {UserSettings} from './collections/UserSettings';
 
 function prepareAccounts(name, other) {
   let userRecord = Accounts.findUserByUsername(name);
@@ -11,6 +9,17 @@ function prepareAccounts(name, other) {
       username: name,
       password: other,
     });
+  }
+  userRecord = Accounts.findUserByUsername(name);
+  const usersSettingsRecord = UserSettings.findOne(userRecord._id);
+  if (!usersSettingsRecord) {
+    const defaultUserSettings = {
+      _id: userRecord._id,
+      accountNumber: 'None',
+      email: 'None',
+      phone: 'None',
+    };
+    UserSettings.insert(defaultUserSettings);
   }
 }
 

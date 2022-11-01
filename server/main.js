@@ -2,6 +2,7 @@ import {Meteor} from 'meteor/meteor';
 import { SyncedCron } from 'meteor/littledata:synced-cron';
 import './collections/straddleData';
 import './collections/stockData';
+import './collections/UserSettings';
 import {
   BuyStock,
   GetAccessToken,
@@ -24,6 +25,7 @@ import {
   SetUserTradeSettings
 } from './collections/TradeSettings';
 import ConfirmValidatedUser from './Methods/ConfirmValidatedUser';
+import {GetUserSettings, SaveUserSettings} from './collections/UserSettings';
 
 // Listen to incoming HTTP requests (can only be used on the server).
 WebApp.connectHandlers.use('/traderOAuthCallback', (req, res, next) => {
@@ -43,6 +45,8 @@ Meteor.methods({
   SetUserAccessInfo,
   GetAccessToken,
   GetOrders,
+  GetUserSettings,
+  SaveUserSettings,
   SetUserTradeSettings,
   GetUserTradeSettings,
   GetAllUserTradeSettings,

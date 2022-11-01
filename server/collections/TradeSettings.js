@@ -50,4 +50,10 @@ function SetUserTradeSettings(tradeSettings) {
   return null;
 }
 
-export {GetAllUserTradeSettings, SetUserTradeSettings, GetNewUserTradeSettingsRecord, GetUserTradeSettings, DeleteUserTradeSettingsRecord};
+export {
+  GetAllUserTradeSettings,
+  SetUserTradeSettings,
+  GetNewUserTradeSettingsRecord,
+  GetUserTradeSettings,
+  DeleteUserTradeSettingsRecord
+};
