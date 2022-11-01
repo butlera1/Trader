@@ -57,6 +57,7 @@ function UserSettings({userSettings}) {
             Emergency: Close All Trades
           </Button>
         </Popconfirm>
+        <span style={{fontWeight:'normal', fontSize:20, color:'blue', position:'fixed', top:0, right:100}}>Version: 0.1</span>
       </h2>
       {errorText
         ?
