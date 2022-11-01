@@ -47,7 +47,7 @@ function SetUserTradeSettings(tradeSettings) {
     delete tradeSettings._id;
   }
   TradeSettings.update(_id, {$set: {...tradeSettings}});
-  return null;
+  return true;
 }
 
 export {

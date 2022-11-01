@@ -2,15 +2,13 @@
 interface ILegSettings {
   buySell: string,
   callPut: string,
-  quantity: number,
   delta: number,
 }
 
-export const DefaultLegSettings = {
+const DefaultLegSettings = {
   buySell: 'Buy',
   callPut: 'Call',
-  quantity: 1,
-  delta: 50,
+  delta: 0.50,
 };
 
-export default ILegSettings;
+export {ILegSettings as default, DefaultLegSettings};

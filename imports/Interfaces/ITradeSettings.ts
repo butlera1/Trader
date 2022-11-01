@@ -4,6 +4,7 @@ interface ITradeSettings {
   _id?: string,
   userId?: string;
   isActive: boolean,
+  isMocked: boolean,
   dte: number,
   percentGain: number,
   percentLoss: number,
@@ -20,7 +21,8 @@ interface ITradeSettings {
 }
 
 export const DefaultTradeSettings: ITradeSettings = {
-  isActive: false,
+  isActive: true,
+  isMocked: false,
   dte: 1,
   percentGain: 0.26,
   percentLoss: 1.00,
