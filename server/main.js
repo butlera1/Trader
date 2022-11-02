@@ -1,31 +1,25 @@
-import {Meteor} from 'meteor/meteor';
+import later from 'later';
 import { SyncedCron } from 'meteor/littledata:synced-cron';
-import './collections/straddleData';
+import { Meteor } from 'meteor/meteor';
 import './collections/stockData';
+import './collections/straddleData';
+import {
+  DeleteUserTradeSettingsRecord,
+  GetAllUserTradeSettings, GetNewUserTradeSettingsRecord, GetUserTradeSettings, SetUserTradeSettings
+} from './collections/TradeSettings';
+import { Users } from './collections/users';
 import './collections/UserSettings';
+import { GetUserSettings, SaveUserSettings } from './collections/UserSettings';
+import ConfirmValidatedUser from './Methods/ConfirmValidatedUser';
+import './SeedUser';
 import {
   BuyStock,
   GetAccessToken,
   GetATMOptionChains,
-  GetOrders, IsOptionMarketOpenToday,
-  PlaceModeledTrade,
-  SellStraddle,
+  GetOrders, SellStraddle,
   SetUserAccessInfo
 } from './TDAApi/TDAApi';
-import './SeedUser';
-import later from 'later';
-import {GetNewYorkTimeAt, PerformTradeForAllUsers, PerformTradeForUser} from './Trader';
-import dayjs from 'dayjs';
-import {Users} from './collections/users';
-import {
-  DeleteUserTradeSettingsRecord,
-  GetAllUserTradeSettings,
-  GetUserTradeSettings,
-  GetNewUserTradeSettingsRecord,
-  SetUserTradeSettings
-} from './collections/TradeSettings';
-import ConfirmValidatedUser from './Methods/ConfirmValidatedUser';
-import {GetUserSettings, SaveUserSettings} from './collections/UserSettings';
+import { GetNewYorkTimeAt, PerformTradeForAllUsers, PerformTradeForUser } from './Trader';
 
 // Listen to incoming HTTP requests (can only be used on the server).
 WebApp.connectHandlers.use('/traderOAuthCallback', (req, res, next) => {
@@ -33,8 +27,8 @@ WebApp.connectHandlers.use('/traderOAuthCallback', (req, res, next) => {
   res.end(`Trader received a redirect callback. Received new access code: \n${decodeURI(req.query?.code)}`);
 });
 
-function Test(){
-  const user = Users.findOne({username: 'Arch'});
+function Test() {
+  const user = Users.findOne({ username: 'Arch' });
   const settings = user.services.tradeSettings;
   settings.isTrading = true;
   SetUserTradeSettings(settings);
@@ -71,7 +65,7 @@ function schedule() {
 SyncedCron.add({
   name: 'Every weekday, run trader for everyone.',
   schedule,
-  job: ()=>{},
+  job: () => { },
 });
 
 SyncedCron.start();
