@@ -1,5 +1,1 @@
 node_modules/
-/.meteor/
-
-/private/selfsigned.crt
-/private/selfsigned.key

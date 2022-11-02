@@ -1,5 +1,5 @@
 {
-  "name": "Trader",
+  "name": "trader",
   "private": true,
   "scripts": {
     "preparNpm": "nvm install 6.14",
