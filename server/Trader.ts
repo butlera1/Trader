@@ -1,4 +1,6 @@
+// @ts-ignore
 import {Meteor} from 'meteor/meteor';
+// @ts-ignore
 import {Email} from 'meteor/email';
 import {
   GetATMOptionChains,
@@ -12,8 +14,8 @@ import {Users} from './collections/users';
 import dayjs from 'dayjs';
 import duration from 'dayjs/plugin/duration';
 import {Trades} from './collections/trades';
-import ITradeSettings, {DefaultTradeSettings} from '../imports/Interfaces/ITradeSettings';
-import { TradeSettings } from './collections/TradeSettings';
+import ITradeSettings from '../imports/Interfaces/ITradeSettings';
+import {TradeSettings} from './collections/TradeSettings';
 
 dayjs.extend(duration);
 const tenSeconds = 10000;
@@ -38,7 +40,7 @@ function GetNewYorkTimeAt(hour, minute) {
   const currentLocalTime = new Date();
   const currentNYTime = new Date(currentLocalTime.toLocaleString('en-US', {timeZone: 'America/New_York'}));
   let timeZoneDifference = currentNYTime.getHours() - currentLocalTime.getHours();
-  if (timeZoneDifference < 0){
+  if (timeZoneDifference < 0) {
     // This happens when
     timeZoneDifference = 24 + timeZoneDifference;
   }
@@ -95,7 +97,7 @@ async function CloseICViaMarketOrders(userId, accountNumber, closingLegOrders) {
   return price;
 }
 
-async function GetOptionsPriceLoop(userId, options){
+async function GetOptionsPriceLoop(userId, options) {
   let result = null;
   let currentPrice = Number.NaN;
   let quoteTime = null;
@@ -116,7 +118,7 @@ async function GetOptionsPriceLoop(userId, options){
   return {currentPrice, quoteTime};
 }
 
-function sendOutInfo(text: string, subject: string, to: string, phone: string){
+function sendOutInfo(text: string, subject: string, to: string, phone: string) {
   // TODO (AWB) Need a mail service set into MAIL_URL env var for the following to work.
   const emailOptions = {
     to,
@@ -127,6 +129,7 @@ function sendOutInfo(text: string, subject: string, to: string, phone: string){
   Email.send(emailOptions);
   // TODO (AWB) Send SMS to mobile
   // Use phone here to send SMS messages.
+  console.log(`Could be sms'ing to ${phone}`);
 }
 
 function MonitorTradeToCloseItOut(tradeSettings, openingPrice, closingLegOrders, options, tradeRecordId) {
@@ -189,7 +192,7 @@ function calculateFillPrice(order) {
   let price = 0;
   // Define isBuyMap, so we know which legId is buy or a sell.
   order.orderLegCollection.forEach((item) => {
-    isBuyMap[item.legId] = item.instruction.startsWith('BUY') ? true : false;
+    isBuyMap[item.legId] = item.instruction.startsWith('BUY');
   });
   // For all the executed legs, calculate the final price.
   order.orderActivityCollection.forEach((item) => {
@@ -287,7 +290,7 @@ async function PerformTradeForAllUsers() {
   }
   const users = Users.find().fetch();
   users.forEach((async (user) => {
-    const tradeSettingsSet = TradeSettings.find({userId:user._id}).fetch();
+    const tradeSettingsSet = TradeSettings.find({userId: user._id}).fetch();
     tradeSettingsSet.forEach((tradeSettings) => {
       const desiredTradeTime = dayjs(GetNewYorkTimeAt(tradeSettings.openHour, tradeSettings.openMinute));
       let delayInMilliseconds = dayjs.duration(desiredTradeTime.diff(dayjs())).asMilliseconds();
@@ -296,7 +299,7 @@ async function PerformTradeForAllUsers() {
       }
       console.log(`Scheduling opening trade for ${user.username} at ${desiredTradeTime.format('hh:mm a')}.`);
       Meteor.setTimeout(() => PerformTradeForUser(tradeSettings), delayInMilliseconds);
-      });
+    });
   }));
 }
 
