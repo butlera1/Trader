@@ -35,7 +35,7 @@ function GetNewUserTradeSettingsRecord() {
   return data;
 }
 
-function SetUserTradeSettings(tradeSettings) {
+const SetUserTradeSettings = (tradeSettings) => {
   if (!this.userId) {
     return 'Must have valid user for SetUserTradeSettings.';
   }
@@ -48,7 +48,7 @@ function SetUserTradeSettings(tradeSettings) {
   }
   TradeSettings.update(_id, {$set: {...tradeSettings}});
   return true;
-}
+};
 
 export {
   GetAllUserTradeSettings,
