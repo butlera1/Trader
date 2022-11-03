@@ -21,7 +21,7 @@ interface ITradeSettings {
 }
 
 export const DefaultTradeSettings: ITradeSettings = {
-  isActive: true,
+  isActive: false,
   isMocked: false,
   dte: 1,
   percentGain: 0.26,

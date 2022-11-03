@@ -13,7 +13,7 @@ export const LoginForm = () => {
   return (
     <form onSubmit={submit} className="login-form">
       <div>
-        <h3>AJ Tool</h3>
+        <h3>Trader Tool</h3>
       </div>
       <div>
         <label htmlFor="username">Username</label>

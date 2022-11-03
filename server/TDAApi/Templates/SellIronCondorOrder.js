@@ -1,4 +1,5 @@
 import _ from 'lodash';
+import StuffLegParams from './StuffLegParams';
 
 const SellIronCondorOrderForm = {
   'session': 'NORMAL',
@@ -43,19 +44,13 @@ const SellIronCondorOrderForm = {
   ],
 };
 
-function stuffParams(leg, symbol, quantity, instruction) {
-  leg.quantity = quantity;
-  leg.instrument.symbol = symbol;
-  leg.instruction = instruction;
-}
-
 function IronCondorMarketOrder(buyCall, sellCall, buyPut, sellPut, quantity, isToOpen) {
   const form = _.cloneDeep(SellIronCondorOrderForm);
   const text = isToOpen ? '_TO_OPEN' : '_TO_CLOSE';
-  stuffParams(form.orderLegCollection[0], buyCall.symbol, quantity, `BUY${text}`);
-  stuffParams(form.orderLegCollection[1], sellCall.symbol, quantity, `SELL${text}`);
-  stuffParams(form.orderLegCollection[2], buyPut.symbol, quantity, `BUY${text}`);
-  stuffParams(form.orderLegCollection[3], sellPut.symbol, quantity, `SELL${text}`);
+  StuffLegParams(form.orderLegCollection[0], buyCall.symbol, quantity, `BUY${text}`);
+  StuffLegParams(form.orderLegCollection[1], sellCall.symbol, quantity, `SELL${text}`);
+  StuffLegParams(form.orderLegCollection[2], buyPut.symbol, quantity, `BUY${text}`);
+  StuffLegParams(form.orderLegCollection[3], sellPut.symbol, quantity, `SELL${text}`);
   return form;
 }
 

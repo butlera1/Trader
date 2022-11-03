@@ -3,7 +3,7 @@
     <option name="envs">
       <entry key="MONGO_URL" value="mongodb://localhost:27017/trader" />
     </option>
-    <option name="exePath" value="/usr/local/bin/meteor" />
+    <option name="exePath" value="$USER_HOME$/.meteor/meteor" />
     <option name="startBrowserSettings">
       <browser url="http://localhost:3000" />
     </option>
