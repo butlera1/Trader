@@ -1,8 +1,10 @@
-import ILegSettings from "./ILegSettings";
+import ILegSettings from './ILegSettings';
 
 interface ITradeSettings {
   _id?: string,
   userId?: string;
+  accountNumber?: string;
+  userName?: string;
   isActive: boolean,
   isMocked: boolean,
   dte: number,
@@ -12,12 +14,22 @@ interface ITradeSettings {
   entryMinute: number,
   exitHour: number,
   exitMinute: number,
-  accountNumber: string,
   quantity: number,
   symbol: string,
   emailAddress?: string,
   phone?: string,
   legs: ILegSettings[],
+  openingOrder?: any,
+  closingOrder?: any,
+  whenOpened?: string,
+  whenClosed?: string,
+  whyClosed?: string,
+  gainLoss?: number,
+  openingOrderId?: string,
+  closingOrderId?: string,
+  openingPrice?: number,
+  closingPrice?: number,
+  csvSymbols?: string,
 }
 
 export const DefaultTradeSettings: ITradeSettings = {
@@ -30,7 +42,6 @@ export const DefaultTradeSettings: ITradeSettings = {
   entryMinute: 45,
   exitHour: 11,
   exitMinute: 45,
-  accountNumber: 'none',
   quantity: 1,
   symbol: 'SPY',
   legs: [],

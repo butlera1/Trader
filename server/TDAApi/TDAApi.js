@@ -3,10 +3,10 @@ import {fetch} from 'meteor/fetch';
 import dayjs from 'dayjs';
 import BuyStockOrderForm from './Templates/BuyStockOrderForm';
 import SellStraddleOrderForm from './Templates/SellStraddleOrderForm';
-import {IronCondorMarketOrder} from './Templates/SellIronCondorOrder';
 import {Users} from '../collections/users';
-import optionOrderForm from './Templates/OptionOrderForm';
-import {DefaultTradeSettings} from '../../imports/Interfaces/ITradeSettings';
+import OptionOrderForm from './Templates/OptionOrderForm';
+import ITradeSettings, {DefaultTradeSettings} from '../../imports/Interfaces/ITradeSettings';
+import ILegSettings, {BuySell, OptionType} from '../../imports/Interfaces/ILegSettings';
 
 const clientId = 'PFVYW5LYNPRZH6Y1ZCY5OTBGINDLZDW8@AMER.OAUTHAP';
 const redirectUrl = 'https://localhost/traderOAuthCallback';
@@ -183,16 +183,12 @@ export async function GetOrders(userId, accountNumber = '755541528', orderId) {
   }
 }
 
-export async function GetPriceForOptions(userId, options) {
+export async function GetPriceForOptions(tradeSettings: ITradeSettings) {
   try {
-    const token = await GetAccessToken(userId);
+    const token = await GetAccessToken(tradeSettings.userId);
     if (!token) return null;
-    let symbol = '';
-    const optionsArray = Object.values(options);
-    optionsArray.forEach((option) => symbol += `,${option.symbol}`);
-    symbol = symbol.slice(1); // Remove leading comma
     const queryParams = new URLSearchParams({
-      symbol,
+      symbol: tradeSettings.csvSymbols,
       apikey: clientId,
     });
     const url = `https://api.tdameritrade.com/v1/marketdata/quotes?${queryParams}`;
@@ -208,11 +204,13 @@ export async function GetPriceForOptions(userId, options) {
     let currentPrice = 0;
     const quotes = Object.values(quotesData);
     quotes.forEach((quote) => {
-      const option = optionsArray.find((item) => item.symbol === quote.symbol);
-      if (option.isBuy) {
-        currentPrice = currentPrice - quote.mark;
-      } else {
+      const option = tradeSettings.legs.find((leg: ILegSettings) => leg.option.symbol === quote.symbol);
+      // Below does the opposite math because we have already Opened these options, so we are looking at
+      // "TO_CLOSE" pricing where we buy back something we sold and sell something we previously purchased.
+      if (leg.buySell === BuySell.BUY) {
         currentPrice = currentPrice + quote.mark;
+      } else {
+        currentPrice = currentPrice - quote.mark;
       }
     });
     // Get quote time in local hours.
@@ -225,34 +223,34 @@ export async function GetPriceForOptions(userId, options) {
   }
 }
 
-export async function GetATMOptionChains(symbol, userId) {
-    const token = await GetAccessToken(userId);
-    if (!token) return null;
-    const fromDate = dayjs().subtract(1, 'day');
-    const toDate = dayjs().add(2, 'day');
-    const queryParams = new URLSearchParams({
-      symbol,
-      range: 'ALL',
-      includeQuotes: 'TRUE',
-      fromDate: fromDate.format('YYYY-MM-DD'),
-      toDate: toDate.format('YYYY-MM-DD'),
-      strikeCount: 40,
-    });
-    const url = `https://api.tdameritrade.com/v1/marketdata/chains?${queryParams}`;
-    const options = {
-      method: 'GET',
-      headers: {
-        Authorization: `Bearer ${token}`,
-      },
-    };
-    const response = await fetch(url, options);
-    if (!response.ok) {
-      const msg = `Error: GetATMOptionChains method status is: ${response.status}`;
-      console.error(msg);
-      throw new Meteor.Error(msg);
-    }
-    const chains = await response.json();
-    return chains;
+export async function GetATMOptionChains(symbol: string, userId) {
+  const token = await GetAccessToken(userId);
+  if (!token) return null;
+  const fromDate = dayjs().subtract(1, 'day');
+  const toDate = dayjs().add(2, 'day');
+  const queryParams = new URLSearchParams({
+    symbol,
+    range: 'ALL',
+    includeQuotes: 'TRUE',
+    fromDate: fromDate.format('YYYY-MM-DD'),
+    toDate: toDate.format('YYYY-MM-DD'),
+    strikeCount: 40,
+  });
+  const url = `https://api.tdameritrade.com/v1/marketdata/chains?${queryParams}`;
+  const options = {
+    method: 'GET',
+    headers: {
+      Authorization: `Bearer ${token}`,
+    },
+  };
+  const response = await fetch(url, options);
+  if (!response.ok) {
+    const msg = `Error: GetATMOptionChains method status is: ${response.status}`;
+    console.error(msg);
+    throw new Meteor.Error(msg);
+  }
+  const chains = await response.json();
+  return chains;
 }
 
 export async function PlaceOrder(userId, accountNumber, order) {
@@ -341,35 +339,9 @@ function getOptionAtDelta(options, desiredDelta) {
   return null;
 }
 
-function getAveragePrice(option) {
-  if (option) {
-    option.midPrice = (option.bid + option.ask) / 2.0;
-    return option.midPrice;
-  }
-  console.error('Missing option to calculate midPrice for.');
-  return 0.0;
-}
-
-function getCreditOnIC(buyCall, sellCall, buyPut, sellPut) {
-  const buyCallPrice = getAveragePrice(buyCall);
-  const sellCallPrice = getAveragePrice(sellCall);
-  const buyPutPrice = getAveragePrice(buyPut);
-  const sellPutPrice = getAveragePrice(sellPut);
-  return sellCallPrice + sellPutPrice - buyCallPrice - buyPutPrice;
-}
-
-function GetICLegClosingMarketOrders(buyCall, sellCall, buyPut, sellPut, quantity){
-  let isToClose = true;
-  let isBuy = true;
-  const buys = [optionOrderForm(buyCall.symbol, quantity, isToClose, isBuy), optionOrderForm(buyPut.symbol, quantity, isToClose, isBuy)];
-  isBuy = false;
-  const sells = [optionOrderForm(sellCall.symbol, quantity, isToClose, isBuy), optionOrderForm(sellPut.symbol, quantity, isToClose, isBuy)];
-  return {buys, sells};
-}
-
-export function GetIronCondorTradeOrders(chains, tradeSettings) {
-  const {quantity, desiredDelta, percentGain, percentLoss} = tradeSettings;
-  // Get the shorted DTE option set.
+export function CreateMarketOrdersToOpenAndToClose(chains, tradeSettings: ITradeSettings) {
+  const {quantity, percentGain, percentLoss} = tradeSettings;
+  // Get the shorter DTE option set.
   const putNames = Object.getOwnPropertyNames(chains.putExpDateMap);
   let putsName = '';
   if (putNames.length === 2) {
@@ -377,27 +349,27 @@ export function GetIronCondorTradeOrders(chains, tradeSettings) {
   } else {
     putsName = putNames[0];
   }
-  const puts = chains.putExpDateMap[putsName];
-  const calls = chains.callExpDateMap[putsName]; // Same name for both is correct.
-  // Find the legs at about desireDelta.
-  const buyCall = getOptionAtDelta(calls, 0.02);
-  const sellCall = getOptionAtDelta(calls, desiredDelta);
-  const buyPut = getOptionAtDelta(puts, -0.02);
-  const sellPut = getOptionAtDelta(puts, -desiredDelta);
-  if (!(buyCall && sellCall && buyPut && sellPut)) {
-    throw new Meteor.Error('GetIronCondorTradeOrder: Could not get all IC legs to form the trade.');
-  }
-  // Calculate expected credit
-  const credit = getCreditOnIC(buyCall, sellCall, buyPut, sellPut);
-  const gainLimit = Math.trunc(credit * (1.0 - percentGain) * 100) / 100.0; // gain
-  const lossLimit = Math.trunc(credit * (1.0 + percentLoss) * 100) / 100.0; // loss limit
-  const openingOrder = IronCondorMarketOrder(buyCall, sellCall, buyPut, sellPut, quantity, true);
-  const closingOrder = IronCondorMarketOrder(sellCall, buyCall, sellPut, buyPut, quantity, false);
-  const closingLegOrders = GetICLegClosingMarketOrders(sellCall, buyCall, sellPut, buyPut, quantity);
-  buyCall.isBuy = true;
-  buyPut.isBuy = true;
-  sellCall.isBuy = false;
-  sellPut.isBuy = false;
-  const options = {buyCall, sellCall, buyPut, sellPut};
-  return {openingOrder, closingLegOrders, options};
+  const putsChain = chains.putExpDateMap[putsName];
+  const callsChain = chains.callExpDateMap[putsName]; // Same name for both is correct.
+  // For each leg, find the closest option based on Delta
+  let csvSymbols = '';
+  let openingPrice = 0.0;
+  tradeSettings.legs.forEach((leg: ILegSettings) => {
+    if (leg.callPut === OptionType.CALL) {
+      leg.option = getOptionAtDelta(callsChain, leg.delta);
+    } else {
+      leg.option = getOptionAtDelta(putsChain, leg.delta);
+    }
+    csvSymbols = `${csvSymbols},${leg.option.symbol}`;
+    if (leg.buySell === BuySell.BUY) {
+      openingPrice = openingPrice - leg.option.markPrice;
+    } else {
+      openingPrice = openingPrice + leg.option.markPrice;
+    }
+  });
+  tradeSettings.csvSymbols = csvSymbols.slice(1); // Remove leading comma and save for later.
+  tradeSettings.openingPrice = openingPrice; // Expected openingPrice. Will be used if isMocked. Order filled replaces.
+  tradeSettings.openingOrder = OptionOrderForm(tradeSettings.legs, tradeSettings.quantity, false);
+  tradeSettings.closingOrder = OptionOrderForm(tradeSettings.legs, tradeSettings.quantity, true);
+  return tradeSettings;
 }
