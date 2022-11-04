@@ -1,7 +1,7 @@
 import {Meteor} from 'meteor/meteor';
 import React, {useState} from 'react';
 import {Alert, Button, Col, InputNumber, Row, Select, Space} from 'antd';
-import ILegSettings, {DefaultLegSettings} from "../../Interfaces/ILegSettings";
+import ILegSettings, {BuySell, DefaultLegSettings, OptionType} from '../../Interfaces/ILegSettings';
 import {DeleteOutlined} from '@ant-design/icons';
 
 
@@ -33,7 +33,7 @@ export const LegsEditor = ({legs, legsChangedCallback}: { legs: ILegSettings[], 
       if (leg.callPut !== type) {
         return null;
       }
-      const marginLeft = (type === 'Put') ? 25 : 15;
+      const marginLeft = (type === OptionType.PUT) ? 25 : 15;
       return (
           <Row key={`leg${index}`} style={{marginTop:5, marginLeft}}>
             <Col span={4}>
@@ -41,8 +41,8 @@ export const LegsEditor = ({legs, legsChangedCallback}: { legs: ILegSettings[], 
                 defaultValue={leg.buySell}
                 style={{width: 70}}
                 onChange={(value) => onChange('buySell', index, value)}>
-                <Select.Option value="Buy">Buy</Select.Option>
-                <Select.Option value="Sell">Sell</Select.Option>
+                <Select.Option value={BuySell.BUY}>Buy</Select.Option>
+                <Select.Option value={BuySell.SELL}>Sell</Select.Option>
               </Select>
             </Col>
             <Col span={4} offset={4}>
@@ -73,12 +73,12 @@ export const LegsEditor = ({legs, legsChangedCallback}: { legs: ILegSettings[], 
   };
   
   const onClickCallsAdd = () => {
-    legs.push({...DefaultLegSettings, callPut:'Call'});
+    legs.push({...DefaultLegSettings, callPut: OptionType.CALL});
     legsChangedCallback([...legs]);
   };
   
   const onClickPutsAdd = () => {
-    legs.push({...DefaultLegSettings, callPut:'Put'});
+    legs.push({...DefaultLegSettings, callPut: OptionType.PUT});
     legsChangedCallback([...legs]);
   };
   
@@ -104,20 +104,21 @@ export const LegsEditor = ({legs, legsChangedCallback}: { legs: ILegSettings[], 
         <Col span={12}>
           <div style={{background: 'green', color: 'white', marginRight: 10}}>
             <center>
-              <Button size={'small'} style={{background: 'green', color: 'white', marginRight:10}} onClick={onClickCallsAdd}> +</Button>
+              <Button size={'small'} style={{background: 'green', color: 'white', marginRight: 10}}
+                      onClick={onClickCallsAdd}> +</Button>
               CALLS
             </center>
           </div>
-          <GetUILegs type={'Call'}/>
+          <GetUILegs type={OptionType.CALL}/>
         </Col>
         <Col span={12}>
           <div style={{background: 'red', color: 'white', marginLeft: 10}}>
             <center>
               PUTS
-              <Button size="small" style={{background: 'red', color: 'white', marginLeft:10}}
-                                 onClick={onClickPutsAdd}> +</Button></center>
+              <Button size="small" style={{background: 'red', color: 'white', marginLeft: 10}}
+                      onClick={onClickPutsAdd}> +</Button></center>
           </div>
-          <GetUILegs type={'Put'}/>
+          <GetUILegs type={OptionType.PUT}/>
         </Col>
       </Row>
     </div>

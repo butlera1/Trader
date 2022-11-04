@@ -36,6 +36,7 @@ interface ITradeSettings {
 export const DefaultTradeSettings: ITradeSettings = {
   isActive: false,
   isMocked: false,
+  days: [],
   dte: 1,
   percentGain: 0.26,
   percentLoss: 1.00,

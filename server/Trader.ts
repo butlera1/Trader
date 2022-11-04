@@ -13,14 +13,19 @@ import {
 import {Users} from './collections/users';
 import dayjs from 'dayjs';
 import duration from 'dayjs/plugin/duration';
+import isoWeek from 'dayjs/plugin/isoWeek';
 import {Trades} from './collections/trades';
 import ITradeSettings from '../imports/Interfaces/ITradeSettings';
 import {TradeSettings} from './collections/TradeSettings';
 import UserSettings from './collections/UserSettings';
 // @ts-ignore
 import {Random} from 'meteor/random';
+import _ from 'lodash';
 
 dayjs.extend(duration);
+dayjs.extend(isoWeek);
+const isoWeekdayNames = ['skip', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'];
+
 const tenSeconds = 10000;
 
 function clearInterval(timerHandle) {
@@ -71,9 +76,9 @@ async function GetOptionsPriceLoop(tradeSettings: ITradeSettings) {
     } catch (ex) {
       console.error(`GetOptionsPriceLoop: Failed GetPriceForOptions.`, ex);
     }
-    currentPrice = result?.currentPrice || Number.NaN;
-    quoteTime = result?.quoteTime;
-    if (currentPrice !== Number.NaN) {
+    if (result?.currentPrice) {
+      currentPrice = result?.currentPrice || Number.NaN;
+      quoteTime = result?.quoteTime;
       return {currentPrice, quoteTime};
     }
     count++;
@@ -226,22 +231,27 @@ async function PlaceOpeningOrderAndMonitorToClose(tradeSettings: ITradeSettings)
     tradeSettings.openingOrderId = await PlaceOrder(tradeSettings.userId, tradeSettings.accountNumber, tradeSettings.openingOrder);
     tradeSettings.openingPrice = await WaitForOrderCompleted(tradeSettings.userId, tradeSettings.accountNumber, tradeSettings.openingOrderId);
   }
+  tradeSettings._id = _id; // Switch _id for storing into Trades collection.
   // @ts-ignore
   tradeSettings.whenOpened = Date.now().toLocaleString('en-US', {timeZone: 'America/New_York'});
   // Record this opening order data.
-  Trades.insert({_id, ...tradeSettings});
-  if (tradeSettings.openingPrice) {
+  Trades.insert({...tradeSettings});
+  if (_.isNumber(tradeSettings.openingPrice)) {
     MonitorTradeToCloseItOut(tradeSettings);
   }
   return;
 }
 
-async function PerformTradeForUser(tradeSettings: ITradeSettings) {
+async function ExecuteTrade(tradeSettings: ITradeSettings, forceTheTrade = false) {
   const now = dayjs();
   const nowText = dayjs().format('hh:mma MMM DD, YYYY');
+  const currentDayOfTheWeek = isoWeekdayNames[now.isoWeekday()];
   const justBeforeClose = GetNewYorkTimeAt(15, 55);
   const notTooLateToTrade = now.isBefore(justBeforeClose);
-  if (tradeSettings.isActive && notTooLateToTrade) {
+  const tradePatternIncludesThisDayOfTheWeek = tradeSettings.days?.includes(currentDayOfTheWeek);
+  const hasLegsInTrade = tradeSettings.legs.length > 0;
+  const performTheTrade = (tradeSettings.isActive && notTooLateToTrade && tradePatternIncludesThisDayOfTheWeek && hasLegsInTrade);
+  if (forceTheTrade || performTheTrade) {
     try {
       console.log(`Trading for ${tradeSettings.userName} @ ${nowText} with ${JSON.stringify(tradeSettings)}`);
       // Place the opening trade and monitor it to later close it out.
@@ -251,7 +261,7 @@ async function PerformTradeForUser(tradeSettings: ITradeSettings) {
       await PlaceOpeningOrderAndMonitorToClose(tradeSettings);
     } catch (ex) {
       const when = dayjs();
-      const msg = `PerformTradeForAllUsers failed with user ${tradeSettings.userName} at ${when.format('MMM DD, YYYY hh:mm:ssa')}. Exception: ${ex}`;
+      const msg = `ExecuteTrade failed with user ${tradeSettings.userName} at ${when.format('MMM DD, YYYY hh:mm:ssa')}. Exception: ${ex}`;
       console.error(msg);
     }
   } else {
@@ -279,7 +289,7 @@ async function PerformTradeForAllUsers() {
       console.log(`Scheduling opening trade for ${user.username} at ${desiredTradeTime.format('hh:mm a')}.`);
       tradeSettings.accountNumber = accountNumber;
       tradeSettings.userName = user.username;
-      Meteor.setTimeout(() => PerformTradeForUser(tradeSettings), delayInMilliseconds);
+      Meteor.setTimeout(() => ExecuteTrade(tradeSettings), delayInMilliseconds);
     });
   }));
 }
@@ -289,5 +299,5 @@ export {
   MonitorTradeToCloseItOut,
   GetNewYorkTimeAt,
   PerformTradeForAllUsers,
-  PerformTradeForUser
+  ExecuteTrade
 };

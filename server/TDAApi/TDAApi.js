@@ -343,6 +343,9 @@ export function CreateMarketOrdersToOpenAndToClose(chains, tradeSettings) {
   const {quantity, percentGain, percentLoss} = tradeSettings;
   // Get the shorter DTE option set.
   const putNames = Object.getOwnPropertyNames(chains.putExpDateMap);
+  if (putNames.length === 0) {
+    throw new Meteor.Error(`No matching option chains in CreateMarketOrdersToOpenAndToClose.`);
+  }
   let putsName = '';
   if (putNames.length === 2) {
     putsName = putNames.find((name) => name.includes(':0'));
@@ -360,16 +363,18 @@ export function CreateMarketOrdersToOpenAndToClose(chains, tradeSettings) {
     } else {
       leg.option = getOptionAtDelta(putsChain, leg.delta);
     }
-    csvSymbols = `${csvSymbols},${leg.option.symbol}`;
+    if (!csvSymbols.includes(leg.option.symbol)) {
+      csvSymbols = `${csvSymbols},${leg.option.symbol}`;
+    }
     if (leg.buySell === BuySell.BUY) {
-      openingPrice = openingPrice - leg.option.markPrice;
+      openingPrice = openingPrice - leg.option.mark;
     } else {
-      openingPrice = openingPrice + leg.option.markPrice;
+      openingPrice = openingPrice + leg.option.mark;
     }
   });
   tradeSettings.csvSymbols = csvSymbols.slice(1); // Remove leading comma and save for later.
   tradeSettings.openingPrice = openingPrice; // Expected openingPrice. Will be used if isMocked. Order filled replaces.
   tradeSettings.openingOrder = OptionOrderForm(tradeSettings.legs, tradeSettings.quantity, false);
   tradeSettings.closingOrder = OptionOrderForm(tradeSettings.legs, tradeSettings.quantity, true);
-  return tradeSettings;
+  return true;
 }

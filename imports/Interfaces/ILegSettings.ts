@@ -1,11 +1,11 @@
 enum OptionType {
-  PUT,
-  CALL
+  PUT = 'Put',
+  CALL = 'Call'
 }
 
 enum BuySell {
-  BUY,
-  SELL
+  BUY = 'Buy',
+  SELL = 'Sell'
 }
 
 interface IOption {

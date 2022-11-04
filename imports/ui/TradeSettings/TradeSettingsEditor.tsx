@@ -69,7 +69,7 @@ export const TradeSettingsEditor = ({tradeSettings}: Props) => {
       Meteor.clearTimeout(timeoutHandle);
       timeoutHandle = null;
       const strategy = {
-        _id: tradeSettings._id,
+        ...tradeSettings,
         isActive,
         isMocked,
         symbol,
@@ -97,6 +97,14 @@ export const TradeSettingsEditor = ({tradeSettings}: Props) => {
     setMap[name](value);
   };
 
+  const testRun = () => {
+    Meteor.call('TestStrategy', tradeSettings._id, (error) => {
+      if (error) {
+        setErrorText(`Problem in testRun: ${error.toString()}`);
+      }
+    });
+  };
+
   return (
     <>
       <Row>
@@ -115,7 +123,8 @@ export const TradeSettingsEditor = ({tradeSettings}: Props) => {
           />
           : null
         }
-        <Button type="primary" danger shape={'round'} style={{float: 'right', margin: 2}}>Run Now</Button>
+        <Button type="primary" danger shape={'round'} style={{float: 'right', margin: 2}} onClick={testRun}>Run
+          Now</Button>
       </Row>
       <Row style={{margin: generalMargins}}>
         <Col span={6}>
@@ -204,7 +213,7 @@ export const TradeSettingsEditor = ({tradeSettings}: Props) => {
             <span>Percent Gain:</span>
             <InputNumber
               min={0}
-              defaultValue={percentGain}
+              defaultValue={Math.trunc(percentGain * 100)}
               max={100}
               addonAfter={'%'}
               style={{width: '100px'}}
@@ -214,7 +223,7 @@ export const TradeSettingsEditor = ({tradeSettings}: Props) => {
             <InputNumber
               min={0}
               max={400}
-              defaultValue={percentLoss}
+              defaultValue={Math.trunc(percentLoss * 100)}
               addonAfter={'%'}
               style={{width: '100px'}}
               onChange={(value) => onChange('percentLoss', (value) / 100)}

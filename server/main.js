@@ -5,9 +5,12 @@ import './collections/stockData';
 import './collections/straddleData';
 import {
     DeleteUserTradeSettingsRecord,
-    GetAllUserTradeSettings, GetNewUserTradeSettingsRecord, GetUserTradeSettings, SetUserTradeSettings
+    GetAllUserTradeSettings,
+    GetNewUserTradeSettingsRecord,
+    GetUserTradeSettings,
+    SetUserTradeSettings,
+    TradeSettings
 } from './collections/TradeSettings';
-import {Users} from './collections/users';
 import './collections/UserSettings';
 import {GetUserSettings, SaveUserSettings} from './collections/UserSettings';
 import ConfirmValidatedUser from './Methods/ConfirmValidatedUser';
@@ -16,10 +19,11 @@ import {
     BuyStock,
     GetAccessToken,
     GetATMOptionChains,
-    GetOrders, SellStraddle,
+    GetOrders,
+    SellStraddle,
     SetUserAccessInfo
 } from './TDAApi/TDAApi';
-import {GetNewYorkTimeAt, PerformTradeForAllUsers, PerformTradeForUser} from './Trader';
+import {ExecuteTrade, GetNewYorkTimeAt, PerformTradeForAllUsers} from './Trader';
 import {WebApp} from 'meteor/webapp';
 
 // Listen to incoming HTTP requests (can only be used on the server).
@@ -28,13 +32,16 @@ WebApp.connectHandlers.use('/traderOAuthCallback', (req, res) => {
     res.end(`Trader received a redirect callback. Received new access code: \n${decodeURI(req.query?.code)}`);
 });
 
-function Test() {
-    const user = Users.findOne({username: 'Arch'});
-    const settings = user.services.tradeSettings;
-    settings.isTrading = true;
-    SetUserTradeSettings(settings);
-    PerformTradeForUser(user).then();
+function TestStrategy(tradeSettingsId) {
+    if (!Meteor.userId()) {
+        throw new Meteor.Error('Must have valid user in TestStrategy.');
+    }
+    const forceTheTrade = true;
+    const tradeSettings = TradeSettings.findOne(tradeSettingsId);
+    ExecuteTrade(tradeSettings, forceTheTrade).then();
 }
+
+
 
 Meteor.methods({
     SetUserAccessInfo,
@@ -52,7 +59,7 @@ Meteor.methods({
     SellStraddle,
     GetATMOptionChains,
     PerformTradeForAllUsers,
-    Test,
+    TestStrategy,
 });
 
 function schedule() {
