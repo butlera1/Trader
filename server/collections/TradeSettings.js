@@ -5,29 +5,29 @@ import _ from 'lodash';
 export const TradeSettings = new Mongo.Collection('tradeSettings');
 
 function DeleteUserTradeSettingsRecord(recordId) {
-  if (this.userId) {
+  if (Meteor.userId()) {
     return TradeSettings.remove(recordId);
   }
-  return 'Must have valid user for DeleteUserTradeSettings.';
+  throw new Meteor.Error('Must have valid user for DeleteUserTradeSettings.');
 }
 
 function GetAllUserTradeSettings() {
-  if (this.userId) {
+  if (Meteor.userId()) {
     return TradeSettings.find({userId: this.userId}).fetch();
   }
-  return 'Must have valid user for GetAllUserTradeSettings.';
+  throw new Meteor.Error('Must have valid user for GetAllUserTradeSettings.');
 }
 
 function GetUserTradeSettings(tradeSettingId) {
-  if (this.userId) {
+  if (Meteor.userId()) {
     return TradeSettings.findOne({_id: tradeSettingId});
   }
-  return 'Must have valid user for GetUserTradeSettings.';
+  throw new Meteor.Error('Must have valid user for GetUserTradeSettings.');
 }
 
 function GetNewUserTradeSettingsRecord() {
-  if (!this.userId) {
-    return 'Must have valid user for this GetNewUserTradeSettingsRecord.';
+  if (!Meteor.userId()) {
+    throw new Meteor.Error('Must have valid user for this GetNewUserTradeSettingsRecord.');
   }
   const data = _.cloneDeep(DefaultTradeSettings);
   data.userId = this.userId;
@@ -36,11 +36,11 @@ function GetNewUserTradeSettingsRecord() {
 }
 
 const SetUserTradeSettings = (tradeSettings) => {
-  if (!this.userId) {
-    return 'Must have valid user for SetUserTradeSettings.';
+  if (!Meteor.userId()) {
+    throw new Meteor.Error('Must have valid user for SetUserTradeSettings.');
   }
   if (!(tradeSettings?._id)) {
-    return 'Error: called SetUserTradeSettings without an _id in the record.';
+    throw new Meteor.Error('Error: called SetUserTradeSettings without an _id in the record.');
   }
   const _id = tradeSettings?._id;
   if (tradeSettings._id) {

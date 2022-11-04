@@ -16,6 +16,7 @@ interface ITradeSettings {
   exitMinute: number,
   quantity: number,
   symbol: string,
+  days: string[],
   emailAddress?: string,
   phone?: string,
   legs: ILegSettings[],
