@@ -5,8 +5,8 @@ import BuyStockOrderForm from './Templates/BuyStockOrderForm';
 import SellStraddleOrderForm from './Templates/SellStraddleOrderForm';
 import {Users} from '../collections/users';
 import OptionOrderForm from './Templates/OptionOrderForm';
-import ITradeSettings, {DefaultTradeSettings} from '../../imports/Interfaces/ITradeSettings';
-import ILegSettings, {BuySell, OptionType} from '../../imports/Interfaces/ILegSettings';
+import {DefaultTradeSettings} from '../../imports/Interfaces/ITradeSettings';
+import {BuySell, OptionType} from '../../imports/Interfaces/ILegSettings';
 
 const clientId = 'PFVYW5LYNPRZH6Y1ZCY5OTBGINDLZDW8@AMER.OAUTHAP';
 const redirectUrl = 'https://localhost/traderOAuthCallback';
@@ -183,7 +183,7 @@ export async function GetOrders(userId, accountNumber = '755541528', orderId) {
   }
 }
 
-export async function GetPriceForOptions(tradeSettings: ITradeSettings) {
+export async function GetPriceForOptions(tradeSettings) {
   try {
     const token = await GetAccessToken(tradeSettings.userId);
     if (!token) return null;
@@ -204,7 +204,7 @@ export async function GetPriceForOptions(tradeSettings: ITradeSettings) {
     let currentPrice = 0;
     const quotes = Object.values(quotesData);
     quotes.forEach((quote) => {
-      const option = tradeSettings.legs.find((leg: ILegSettings) => leg.option.symbol === quote.symbol);
+      const option = tradeSettings.legs.find((leg) => leg.option.symbol === quote.symbol);
       // Below does the opposite math because we have already Opened these options, so we are looking at
       // "TO_CLOSE" pricing where we buy back something we sold and sell something we previously purchased.
       if (leg.buySell === BuySell.BUY) {
@@ -223,7 +223,7 @@ export async function GetPriceForOptions(tradeSettings: ITradeSettings) {
   }
 }
 
-export async function GetATMOptionChains(symbol: string, userId) {
+export async function GetATMOptionChains(symbol, userId) {
   const token = await GetAccessToken(userId);
   if (!token) return null;
   const fromDate = dayjs().subtract(1, 'day');
@@ -339,7 +339,7 @@ function getOptionAtDelta(options, desiredDelta) {
   return null;
 }
 
-export function CreateMarketOrdersToOpenAndToClose(chains, tradeSettings: ITradeSettings) {
+export function CreateMarketOrdersToOpenAndToClose(chains, tradeSettings) {
   const {quantity, percentGain, percentLoss} = tradeSettings;
   // Get the shorter DTE option set.
   const putNames = Object.getOwnPropertyNames(chains.putExpDateMap);
@@ -354,7 +354,7 @@ export function CreateMarketOrdersToOpenAndToClose(chains, tradeSettings: ITrade
   // For each leg, find the closest option based on Delta
   let csvSymbols = '';
   let openingPrice = 0.0;
-  tradeSettings.legs.forEach((leg: ILegSettings) => {
+  tradeSettings.legs.forEach((leg) => {
     if (leg.callPut === OptionType.CALL) {
       leg.option = getOptionAtDelta(callsChain, leg.delta);
     } else {
