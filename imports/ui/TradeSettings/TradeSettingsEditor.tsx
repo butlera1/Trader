@@ -10,9 +10,9 @@ import {LegsEditor} from './LegsEditor';
 const CheckboxGroup = Checkbox.Group;
 const generalMargins = 40;
 
-const disabledTime = () => {
+const disabledTimeAm = () => {
   return {
-    disabledHours: () => [0, 1, 2, 3, 4, 5, 6, 7, 8, 16, 17, 18, 19, 20, 21, 22, 23],
+    disabledHours: () => [0, 1, 2, 3, 4, 5, 6, 7, 8],
     disabledMinutes: () => [],
     disabledSeconds: () => [],
   };
@@ -173,12 +173,11 @@ export const TradeSettingsEditor = ({tradeSettings}: Props) => {
       <Row style={{margin: generalMargins}}>
         <Col span={24}>
           <Space>
-            <span>Entry Time:</span>
+            <span>Entry Time (NY):</span>
             <TimePicker
               size="large"
               use12Hours
               format="h:mm a"
-              disabledTime={disabledTime}
               style={{width: '120px'}}
               defaultValue={moment(`${entryHour}:${entryMinute} ${entryAmPm}`, 'h:mm a')}
               onChange={(value) => {
@@ -188,10 +187,9 @@ export const TradeSettingsEditor = ({tradeSettings}: Props) => {
               }
               }
             />
-            <span style={{marginLeft: 50}}>Exit Time:</span>
+            <span style={{marginLeft: 50}}>Exit Time (NY):</span>
             <TimePicker
               size="large"
-              disabledTime={disabledTime}
               use12Hours
               format="h:mm a"
               style={{width: '120px'}}
