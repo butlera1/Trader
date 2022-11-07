@@ -4,9 +4,10 @@ import dayjs from 'dayjs';
 import BuyStockOrderForm from './Templates/BuyStockOrderForm';
 import SellStraddleOrderForm from './Templates/SellStraddleOrderForm';
 import {Users} from '../collections/users';
-import OptionOrderForm from './Templates/OptionOrderForm';
+import GetOptionOrder from './Templates/GetOptionOrder';
 import {DefaultTradeSettings} from '../../imports/Interfaces/ITradeSettings';
 import {BuySell, OptionType} from '../../imports/Interfaces/ILegSettings';
+import {LogData, LogType} from "../collections/Logs";
 
 const clientId = 'PFVYW5LYNPRZH6Y1ZCY5OTBGINDLZDW8@AMER.OAUTHAP';
 const redirectUrl = 'https://localhost/traderOAuthCallback';
@@ -204,7 +205,7 @@ export async function GetPriceForOptions(tradeSettings) {
     let currentPrice = 0;
     const quotes = Object.values(quotesData);
     quotes.forEach((quote) => {
-      const option = tradeSettings.legs.find((leg) => leg.option.symbol === quote.symbol);
+      const leg = tradeSettings.legs.find((leg) => leg.option.symbol === quote.symbol);
       // Below does the opposite math because we have already Opened these options, so we are looking at
       // "TO_CLOSE" pricing where we buy back something we sold and sell something we previously purchased.
       if (leg.buySell === BuySell.BUY) {
@@ -330,8 +331,14 @@ function getOptionAtDelta(options, desiredDelta) {
   for (let i = 1; i < items.length; i++) {
     const option = items[i][0];
     if (option.delta !== 0.0) {
-      if (option.delta <= desiredDelta) {
-        return pickClosest(option, lastOption, desiredDelta);
+      if (option.putCall === 'PUT') {
+        if (Math.abs(option.delta) >= desiredDelta) {
+          return pickClosest(option, lastOption, desiredDelta);
+        }
+      } else {
+        if (option.delta <= desiredDelta) {
+          return pickClosest(option, lastOption, desiredDelta);
+        }
       }
     }
     lastOption = option;
@@ -341,19 +348,16 @@ function getOptionAtDelta(options, desiredDelta) {
 
 export function CreateMarketOrdersToOpenAndToClose(chains, tradeSettings) {
   const {quantity, percentGain, percentLoss} = tradeSettings;
-  // Get the shorter DTE option set.
+  // Get the DTE-specific option set.
   const putNames = Object.getOwnPropertyNames(chains.putExpDateMap);
-  if (putNames.length === 0) {
-    throw new Meteor.Error(`No matching option chains in CreateMarketOrdersToOpenAndToClose.`);
+  const chainName = putNames.find((name) => name.includes(`:${tradeSettings.dte}`));
+  if (!chainName) {
+    // No matching chain found so return false.
+    LogData(tradeSettings, 'No DTE-specific option chains found in CreateMarketOrdersToOpenAndToClose.', LogType.Info);
+    return false;
   }
-  let putsName = '';
-  if (putNames.length === 2) {
-    putsName = putNames.find((name) => name.includes(':0'));
-  } else {
-    putsName = putNames[0];
-  }
-  const putsChain = chains.putExpDateMap[putsName];
-  const callsChain = chains.callExpDateMap[putsName]; // Same name for both is correct.
+  const putsChain = chains.putExpDateMap[chainName];
+  const callsChain = chains.callExpDateMap[chainName]; // Same name for both is correct.
   // For each leg, find the closest option based on Delta
   let csvSymbols = '';
   let openingPrice = 0.0;
@@ -374,7 +378,7 @@ export function CreateMarketOrdersToOpenAndToClose(chains, tradeSettings) {
   });
   tradeSettings.csvSymbols = csvSymbols.slice(1); // Remove leading comma and save for later.
   tradeSettings.openingPrice = openingPrice; // Expected openingPrice. Will be used if isMocked. Order filled replaces.
-  tradeSettings.openingOrder = OptionOrderForm(tradeSettings.legs, tradeSettings.quantity, false);
-  tradeSettings.closingOrder = OptionOrderForm(tradeSettings.legs, tradeSettings.quantity, true);
+  tradeSettings.openingOrder = GetOptionOrder(tradeSettings.legs, tradeSettings.quantity, false);
+  tradeSettings.closingOrder = GetOptionOrder(tradeSettings.legs, tradeSettings.quantity, true);
   return true;
 }

@@ -20,7 +20,7 @@ const OptionTemplate = {
   orderLegCollection: [],
 };
 
-function OptionOrderForm(legs: ILegSettings[], quantity, isToClose) {
+function GetOptionOrder(legs: ILegSettings[], quantity, isToClose) {
   const buyForm = _.cloneDeep(OptionTemplate);
   const sellForm = _.cloneDeep(OptionTemplate);
   legs.forEach((leg) => {
@@ -41,6 +41,8 @@ function OptionOrderForm(legs: ILegSettings[], quantity, isToClose) {
   });
   const firstTriggersSecondOrder = WrapFirstTriggersSecond(buyForm, sellForm);
   return firstTriggersSecondOrder;
+  // const ordersArray = [buyForm, sellForm];
+  // return ordersArray;
 }
 
-export default OptionOrderForm;
+export default GetOptionOrder;
