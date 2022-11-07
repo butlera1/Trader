@@ -118,7 +118,7 @@ function MonitorTradeToCloseItOut(tradeSettings: ITradeSettings) {
       const isGainLimit = (Math.abs(currentPrice) <= gainLimit);
       const isLossLimit = (currentPrice >= lossLimit);
       const possibleGainLoss = currentPrice + openingPrice; // Adding: one will be credit/sold and the other debit/bought.
-      const message = `MonitorTradeToCloseItOut: Entry: $${openingPrice.toFixed(2)}, Current: $${currentPrice.toFixed(2)}, Possible G/L $${possibleGainLoss.toFixed(2)} ${quoteTime?.format('hh:mm:ss a')} for record ${tradeSettings.openingOrderId}`;
+      const message = `MonitorTradeToCloseItOut: Entry: $${openingPrice.toFixed(2)}, Current: $${currentPrice.toFixed(2)}, Possible G/L $${possibleGainLoss.toFixed(2)} ${localNow?.format('hh:mm:ss a')} for record ${tradeSettings.openingOrderId}`;
       LogData(tradeSettings, message);
       if (isGainLimit || isLossLimit || isEndOfDay) {
         timerHandle = clearInterval(timerHandle);
