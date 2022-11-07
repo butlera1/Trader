@@ -214,12 +214,6 @@ async function WaitForOrderCompleted(userId, accountNumber, orderId) {
   });
 }
 
-function catchError(reason) {
-  const when = dayjs();
-  const msg = `PerformTradeForAllUsers failed at ${when.format('dd-mm-mmmm HH:MM:SS')}. Exception: ${reason}`;
-  console.error(msg);
-}
-
 async function PlaceOpeningOrderAndMonitorToClose(tradeSettings: ITradeSettings) {
   let _id = Random.id();
   if (tradeSettings.isMocked) {
@@ -277,7 +271,7 @@ async function ExecuteTrade(tradeSettings: ITradeSettings, forceTheTrade = false
 
 async function PerformTradeForAllUsers() {
   const userArch = Users.findOne({username: 'Arch'});
-  const isMarketOpened = await IsOptionMarketOpenToday(userArch._id).catch(catchError);
+  const isMarketOpened = await IsOptionMarketOpenToday(userArch._id);
   if (!isMarketOpened) {
     console.log('Market is closed today');
     return;
@@ -292,7 +286,7 @@ async function PerformTradeForAllUsers() {
       if (delayInMilliseconds < 0) {
         delayInMilliseconds = 0;
       }
-      console.log(`Scheduling opening trade for ${user.username} at ${desiredTradeTime.format('hh:mm a')}.`);
+      LogData(null, `Scheduling opening trade for ${user.username} at ${desiredTradeTime.format('hh:mm a')}.`);
       tradeSettings.accountNumber = accountNumber;
       tradeSettings.userName = user.username;
       Meteor.setTimeout(() => ExecuteTrade(tradeSettings), delayInMilliseconds);
