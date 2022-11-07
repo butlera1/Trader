@@ -201,7 +201,7 @@ async function WaitForOrderCompleted(userId, accountNumber, orderId) {
     timerHandle = Meteor.setInterval(async () => {
       const order = await GetOrders(userId, accountNumber, orderId);
       const isOrderFilled = calculateIfOrderIsFilled(order);
-      if (order.status === 'FILLED') {
+      if (isOrderFilled) {
         Meteor.clearInterval(timerHandle);
         resolve(calculateFillPrice(order));
       }
