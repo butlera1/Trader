@@ -90,7 +90,7 @@ export const TradeSettingsEditor = ({tradeSettings}: Props) => {
           setErrorText(error.toString());
         }
       });
-    }, 2000);
+    }, 1000);
   }, [isActive, isMocked, symbol, days, entryHour, entryMinute, exitHour, exitMinute, percentGain, percentLoss, dte, quantity, legs]);
 
   const onChange = (name, value) => {

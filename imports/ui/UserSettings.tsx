@@ -58,7 +58,7 @@ function UserSettings({userSettings}) {
           setErrorText(error.toString());
         }
       });
-    }, 3000);
+    }, 1000);
 
   };
 
