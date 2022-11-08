@@ -1,4 +1,4 @@
-import React, {useState, useEffect} from 'react';
+import React, {useEffect, useState} from 'react';
 import TabTradeSettings from './TradeSettings/TabTradeSettings';
 import UserSettings from './UserSettings';
 import {Meteor} from 'meteor/meteor';

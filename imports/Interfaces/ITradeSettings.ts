@@ -1,5 +1,10 @@
 import ILegSettings from './ILegSettings';
 
+interface IPrice {
+  price: number,
+  when: Date,
+}
+
 interface ITradeSettings {
   _id?: string,
   userId?: string;
@@ -31,6 +36,7 @@ interface ITradeSettings {
   openingPrice?: number,
   closingPrice?: number,
   csvSymbols?: string,
+  monitoredPrices?:IPrice[],
 }
 
 export const DefaultTradeSettings: ITradeSettings = {

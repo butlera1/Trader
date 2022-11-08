@@ -255,7 +255,6 @@ export async function GetATMOptionChains(symbol, userId) {
 }
 
 export async function PlaceOrder(userId, accountNumber, order) {
-  try {
     const token = await GetAccessToken(userId);
     const options = {
       method: 'POST',
@@ -276,11 +275,6 @@ export async function PlaceOrder(userId, accountNumber, order) {
     const index = location?.lastIndexOf('/');
     const orderId = location?.substring(index + 1);
     return orderId;
-  } catch (error) {
-    const msg = `TDAApi.PlaceOrder: account: ${accountNumber}: ${error}`;
-    console.error(msg);
-    throw new Meteor.Error(msg);
-  }
 }
 
 export async function IsOptionMarketOpenToday(userId) {

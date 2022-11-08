@@ -19,7 +19,7 @@ function LogData(tradeSettings: ITradeSettings | null, message: string, error: E
   };
   const NYTimeText = currentLocalTime.toLocaleString('en-US', {timeZone: 'America/New_York'});
   const when_NY = new Date(NYTimeText);
-  let finalMessage = `${message}\nWhen NY: ${NYTimeText}`;
+  let finalMessage = `${message}, When NY: ${NYTimeText}`;
   let logType = LogType.Info;
   if (error) {
     finalMessage = `${finalMessage}\n${error.toString()}\nStack:\n${error.stack}`;

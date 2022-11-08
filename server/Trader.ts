@@ -21,19 +21,25 @@ import {UserSettings} from './collections/UserSettings';
 // @ts-ignore
 import {Random} from 'meteor/random';
 import _ from 'lodash';
-import {LogData, LogType} from "./collections/Logs";
+import {LogData} from "./collections/Logs";
 
 dayjs.extend(duration);
 dayjs.extend(isoWeek);
 const isoWeekdayNames = ['skip', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'];
 
-const tenSeconds = 10000;
+const fiveSeconds = 5000;
 
 function clearInterval(timerHandle) {
   if (timerHandle) {
     Meteor.clearInterval(timerHandle);
   }
   return null;
+}
+
+function GetNewYorkTimeNowAsText() {
+  const currentLocalTime = new Date();
+  const NYTimeText = currentLocalTime.toLocaleString('en-US', {timeZone: 'America/New_York'});
+  return NYTimeText;
 }
 
 /**
@@ -62,8 +68,8 @@ function GetNewYorkTimeAt(hour, minute) {
       hour = hour - 12;
     }
   }
-  const newYorkTimeAtGivenhourAndMinuteText = `${dayjs().format('YYYY-MM-DD')}, ${hour}:${minute}:00 ${amPm} GMT-0${nyTimeZoneOffsetFromCurrentTimeZone}00`;
-  return dayjs(newYorkTimeAtGivenhourAndMinuteText);
+  const newYorkTimeAtGivenHourAndMinuteText = `${dayjs().format('YYYY-MM-DD')}, ${hour}:${minute}:00 ${amPm} GMT-0${nyTimeZoneOffsetFromCurrentTimeZone}00`;
+  return dayjs(newYorkTimeAtGivenHourAndMinuteText);
 }
 
 async function GetOptionsPriceLoop(tradeSettings: ITradeSettings) {
@@ -90,45 +96,95 @@ async function GetOptionsPriceLoop(tradeSettings: ITradeSettings) {
   return Number.NaN;
 }
 
+async function CloseTrade(tradeSettings: ITradeSettings, whyClosed: string, currentPrice: number) {
+  tradeSettings.whyClosed = whyClosed;
+  const {isMocked, userId, accountNumber, closingOrder, openingPrice} = tradeSettings;
+  if (isMocked) {
+    tradeSettings.closingOrderId = Random.id() + '_MOCKED';
+    tradeSettings.closingPrice = currentPrice;
+  } else {
+    tradeSettings.closingOrderId = await PlaceOrder(userId, accountNumber, closingOrder).catch(error => {
+      LogData(tradeSettings, error.toString(), error);
+      return null;
+    });
+    if (tradeSettings.closingOrderId) {
+      tradeSettings.closingPrice = await WaitForOrderCompleted(userId, accountNumber, tradeSettings.closingOrderId).catch(error => {
+        LogData(tradeSettings, error.toString(), error);
+        return 0;
+      });
+    }
+  }
+  tradeSettings.whenClosed = GetNewYorkTimeNowAsText();
+  // OpeningPrice will be positive since it was sold and closePrice will be negative buyback.
+  tradeSettings.gainLoss = openingPrice + tradeSettings.closingPrice; // Adding: one credit/sold, other debit/bought.
+  const message = `Trade closed (${whyClosed}): Entry: $${openingPrice.toFixed(2)}, ` +
+    `Exit: $${tradeSettings.closingPrice?.toFixed(2)}, ` +
+    `G/L $${tradeSettings.gainLoss?.toFixed(2)} ID: ${tradeSettings._id}`;
+  LogData(tradeSettings, message);
+  Trades.update(tradeSettings._id, {
+    $set: {
+      closingOrderId: tradeSettings.closingOrderId,
+      closingPrice: tradeSettings.closingPrice,
+      whyClosed: tradeSettings.whyClosed,
+      whenClosed: tradeSettings.whenClosed,
+      gainLoss: tradeSettings.gainLoss,
+    }
+  });
+}
+
+function EmergencyCloseAllTrades() {
+  if (!Meteor.userId()) {
+    throw new Meteor.Error(`EmergencyCloseAllTrades: Must have valid user.`);
+  }
+  let result = '';
+  try {
+    // Find all live trades for this user.
+    const liveTrades = Trades.find({userId: Meteor.userId(), whyClosed: {$exists: false}}).fetch();
+    result = `Found ${liveTrades.label} trades.`;
+    liveTrades.forEach(async (tradeSettings) => {
+      await CloseTrade(tradeSettings, 'emergencyExit', tradeSettings.openingPrice).catch(error => {
+        LogData(tradeSettings, error.toString(), error);
+      });
+    });
+    return `${result} Closed them all down.`;
+  } catch (ex) {
+    throw new Meteor.Error(`EmergencyCloseAllTrades: ${result}. Closing them failed with ${ex}`);
+  }
+}
+
 function MonitorTradeToCloseItOut(tradeSettings: ITradeSettings) {
   let timerHandle = null;
   const {
-    userId,
-    isMocked,
     percentGain,
     percentLoss,
-    accountNumber,
     exitHour,
     exitMinute,
     openingPrice,
-    closingOrder,
   } = tradeSettings;
-  const gainLimit = openingPrice - openingPrice * percentGain;
-  const lossLimit = openingPrice + openingPrice * percentLoss;
+  // If long entry, the openingPrice is negative (debit) and positive if short (credit).
+  let gainLimit = Math.abs(openingPrice) - openingPrice * percentGain;
+  let lossLimit = Math.abs(openingPrice) + openingPrice * percentLoss;
   const localEarlyExitTime = GetNewYorkTimeAt(exitHour, exitMinute);
   timerHandle = Meteor.setInterval(async () => {
     try {
-      // Read the trades value.
+      // Get the current price for the trade.
       const currentPrice = await GetOptionsPriceLoop(tradeSettings);
       if (currentPrice === Number.NaN) {
         return; // Try again on next interval timeout.
       }
+      // Record price value for historical reference and charting.
+      const whenNY = GetNewYorkTimeNowAsText();
+      Trades.update(tradeSettings._id, {$addToSet: {monitoredPrices: {price: currentPrice, whenNY}}});
       const localNow = dayjs();
       const isEndOfDay = localEarlyExitTime.isBefore(localNow);
-      const isGainLimit = (Math.abs(currentPrice) <= gainLimit);
-      const isLossLimit = (currentPrice >= lossLimit);
-      const possibleGainLoss = currentPrice + openingPrice; // Adding: one will be credit/sold and the other debit/bought.
-      const message = `MonitorTradeToCloseItOut: Entry: $${openingPrice.toFixed(2)}, Current: $${currentPrice.toFixed(2)}, Possible G/L $${possibleGainLoss.toFixed(2)} ${localNow?.format('hh:mm:ss a')} for record ${tradeSettings.openingOrderId}`;
-      LogData(tradeSettings, message);
+      let isGainLimit = (currentPrice <= gainLimit);
+      let isLossLimit = (currentPrice >= lossLimit);
+      if (openingPrice < 0) { // Means we are long the trade (we want values to go up).
+        isGainLimit = (currentPrice >= gainLimit);
+        isLossLimit = (currentPrice <= lossLimit);
+      }
       if (isGainLimit || isLossLimit || isEndOfDay) {
         timerHandle = clearInterval(timerHandle);
-        if (isMocked) {
-          tradeSettings.closingOrderId = Random.id() + '_MOCKED';
-          tradeSettings.closingPrice = currentPrice;
-        } else {
-          tradeSettings.closingOrderId = await PlaceOrder(userId, accountNumber, closingOrder);
-          tradeSettings.closingPrice = await WaitForOrderCompleted(userId, accountNumber, tradeSettings.closingOrderId);
-        }
         let whyClosed = 'gainLimit';
         if (isLossLimit) {
           whyClosed = 'lossLimit';
@@ -136,22 +192,14 @@ function MonitorTradeToCloseItOut(tradeSettings: ITradeSettings) {
         if (isEndOfDay) {
           whyClosed = 'earlyExit';
         }
-        tradeSettings.whyClosed = whyClosed;
-        // @ts-ignore
-        tradeSettings.whenClosed = Date.now().toLocaleString('en-US', {timeZone: 'America/New_York'});
-        // OpeningPrice will be positive since it was sold and closePrice will be negative buyback.
-        tradeSettings.gainLoss = openingPrice + tradeSettings.closingPrice; // Adding: one credit/sold, other debit/bought.
-        const message = `Trade closing (${whyClosed}): Entry: $${openingPrice.toFixed(2)}, Exit: $${tradeSettings.closingPrice.toFixed(2)}, G/L $${tradeSettings.gainLoss.toFixed(2)} ${tradeSettings.whenClosed} (NY) for record ${tradeSettings.openingOrderId}`;
+        await CloseTrade(tradeSettings, whyClosed, currentPrice);
+      } else {
+        const possibleGainLoss = currentPrice + openingPrice;
+        const message = `MonitorTradeToCloseItOut: Entry: $${openingPrice.toFixed(2)}, ` +
+          `Current: $${currentPrice.toFixed(2)}, ` +
+          `GainLimit: $${gainLimit.toFixed(2)}, LossLimit: $${lossLimit.toFixed(2)}, ` +
+          `G/L $${possibleGainLoss.toFixed(2)}, ID: ${tradeSettings._id}`;
         LogData(tradeSettings, message);
-        Trades.update(tradeSettings._id, {
-          $set: {
-            closingOrderId: tradeSettings.closingOrderId,
-            closingPrice: tradeSettings.closingPrice,
-            whyClosed: tradeSettings.whyClosed,
-            whenClosed: tradeSettings.whenClosed,
-            gainLoss: tradeSettings.gainLoss,
-          }
-        });
       }
     } catch (ex) {
       timerHandle = clearInterval(timerHandle);
@@ -159,7 +207,7 @@ function MonitorTradeToCloseItOut(tradeSettings: ITradeSettings) {
       const message = `Trader has an exception in MonitorTradeToCloseItOut.`;
       LogData(tradeSettings, message, ex);
     }
-  }, tenSeconds);
+  }, fiveSeconds);
 }
 
 function calculateFillPrice(order) {
@@ -173,9 +221,9 @@ function calculateFillPrice(order) {
   order.orderActivityCollection?.forEach((item) => {
     item.executionLegs.forEach((leg) => {
       if (isBuyMap[leg.legId]) {
-        price = price - leg.price;
-      } else {
         price = price + leg.price;
+      } else {
+        price = price - leg.price;
       }
     });
   });
@@ -183,7 +231,7 @@ function calculateFillPrice(order) {
   if (order.childOrderStrategies) {
     order.childOrderStrategies.forEach((childOrder) => {
       price = price + calculateFillPrice(childOrder);
-    })
+    });
   }
   return price;
 }
@@ -225,8 +273,7 @@ async function PlaceOpeningOrderAndMonitorToClose(tradeSettings: ITradeSettings)
     tradeSettings.openingPrice = await WaitForOrderCompleted(tradeSettings.userId, tradeSettings.accountNumber, tradeSettings.openingOrderId);
   }
   tradeSettings._id = _id; // Switch _id for storing into Trades collection.
-  // @ts-ignore
-  tradeSettings.whenOpened = Date.now().toLocaleString('en-US', {timeZone: 'America/New_York'});
+  tradeSettings.whenOpened = GetNewYorkTimeNowAsText();
   // Record this opening order data.
   Trades.insert({...tradeSettings});
   if (_.isNumber(tradeSettings.openingPrice)) {
@@ -299,5 +346,6 @@ export {
   MonitorTradeToCloseItOut,
   GetNewYorkTimeAt,
   PerformTradeForAllUsers,
-  ExecuteTrade
+  ExecuteTrade,
+  EmergencyCloseAllTrades,
 };
