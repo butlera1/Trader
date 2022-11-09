@@ -14,7 +14,7 @@ import {Users} from './collections/users';
 import dayjs from 'dayjs';
 import duration from 'dayjs/plugin/duration';
 import isoWeek from 'dayjs/plugin/isoWeek';
-import {Trades} from './collections/trades';
+import {Trades} from './collections/Trades';
 import ITradeSettings from '../imports/Interfaces/ITradeSettings';
 import {TradeSettings} from './collections/TradeSettings';
 import {UserSettings} from './collections/UserSettings';
@@ -164,6 +164,8 @@ function MonitorTradeToCloseItOut(tradeSettings: ITradeSettings) {
   // If long entry, the openingPrice is negative (debit) and positive if short (credit).
   let gainLimit = Math.abs(openingPrice) - openingPrice * percentGain;
   let lossLimit = Math.abs(openingPrice) + openingPrice * percentLoss;
+  // Save limits to trades DB.
+  Trades.update(tradeSettings._id, {$set: {gainLimit, lossLimit}});
   const localEarlyExitTime = GetNewYorkTimeAt(exitHour, exitMinute);
   timerHandle = Meteor.setInterval(async () => {
     try {

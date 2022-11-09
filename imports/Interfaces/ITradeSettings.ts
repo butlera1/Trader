@@ -2,7 +2,7 @@ import ILegSettings from './ILegSettings';
 
 interface IPrice {
   price: number,
-  when: Date,
+  whenNY: Date,
 }
 
 interface ITradeSettings {
@@ -37,6 +37,8 @@ interface ITradeSettings {
   closingPrice?: number,
   csvSymbols?: string,
   monitoredPrices?:IPrice[],
+  gainLimit?: number,
+  lossLimit?: number,
 }
 
 export const DefaultTradeSettings: ITradeSettings = {
@@ -57,4 +59,4 @@ export const DefaultTradeSettings: ITradeSettings = {
   phone: 'none'
 };
 
-export default ITradeSettings;
+export {ITradeSettings as default, IPrice};
