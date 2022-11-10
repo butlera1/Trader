@@ -3,6 +3,7 @@ import ILegSettings from './ILegSettings';
 interface IPrice {
   price: number,
   whenNY: Date,
+  gain: number,
 }
 
 interface ITradeSettings {

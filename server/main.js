@@ -13,7 +13,6 @@ import {
 } from './collections/TradeSettings';
 import './collections/UserSettings';
 import {GetUserSettings, SaveUserSettings} from './collections/UserSettings';
-import ConfirmValidatedUser from './Methods/ConfirmValidatedUser';
 import './SeedUser';
 import {
   BuyStock,
@@ -23,8 +22,17 @@ import {
   SellStraddle,
   SetUserAccessInfo
 } from './TDAApi/TDAApi';
-import {EmergencyCloseAllTrades, ExecuteTrade, GetNewYorkTimeAt, PerformTradeForAllUsers} from './Trader';
+import {
+  EmergencyCloseAllTrades,
+  ExecuteTrade,
+  GetNewYorkTimeAt,
+  MonitorTradeToCloseItOut,
+  PerformTradeForAllUsers
+} from './Trader';
 import {WebApp} from 'meteor/webapp';
+import {Trades} from './collections/Trades';
+import {LogData} from './collections/Logs';
+import SendOutInfo from './SendOutInfo';
 
 // Listen to incoming HTTP requests (can only be used on the server).
 WebApp.connectHandlers.use('/traderOAuthCallback', (req, res) => {
@@ -41,6 +49,16 @@ function TestStrategy(tradeSettingsId) {
   ExecuteTrade(tradeSettings, forceTheTrade).then();
 }
 
+function CheckForAnyExistingTradesAndMonitorThem() {
+  // Find all live trades for this user.
+  const liveTrades = Trades.find({whyClosed: {$exists: false}}).fetch();
+  const text = `Trader rebooting: Found ${liveTrades.length} existing trades to start monitoring.`;
+  SendOutInfo(text, text); // Send to admin
+  liveTrades.forEach(async (tradeSettings) => {
+    LogData(tradeSettings, `BootTime: Start monitoring existing trade ${tradeSettings._id}.`);
+    MonitorTradeToCloseItOut(tradeSettings);
+  });
+}
 
 Meteor.methods({
   SetUserAccessInfo,
@@ -53,7 +71,6 @@ Meteor.methods({
   GetAllUserTradeSettings,
   GetNewUserTradeSettingsRecord,
   DeleteUserTradeSettingsRecord,
-  ConfirmValidatedUser,
   BuyStock,
   SellStraddle,
   GetATMOptionChains,
@@ -78,3 +95,6 @@ SyncedCron.add({
 });
 
 SyncedCron.start();
+
+CheckForAnyExistingTradesAndMonitorThem();
+

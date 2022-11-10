@@ -29,10 +29,10 @@ export const TradeSettingsEditor = ({tradeSettings}: Props) => {
   const [isMocked, setIsMocked] = React.useState(tradeSettings.isMocked);
   const [symbol, setSymbol] = React.useState(tradeSettings.symbol);
   const [days, setDays] = React.useState(tradeSettings.days);
-  const [entryHour, setEntryHour] = React.useState(tradeSettings.entryHour > 12 ? tradeSettings.entryHour - 12 : tradeSettings.entryHour);
+  const [entryHour, setEntryHour] = React.useState(tradeSettings.entryHour );
   const [entryMinute, setEntryMinute] = React.useState(tradeSettings.entryMinute);
   const [entryAmPm, setEntryAmPm] = React.useState(tradeSettings.entryHour > 11 ? 'pm' : 'am');
-  const [exitHour, setExitHour] = React.useState(tradeSettings.exitHour > 12 ? tradeSettings.exitHour - 12 : tradeSettings.exitHour);
+  const [exitHour, setExitHour] = React.useState(tradeSettings.exitHour);
   const [exitMinute, setExitMinute] = React.useState(tradeSettings.exitMinute);
   const [exitAmPm, setExitAmPm] = React.useState(tradeSettings.exitHour > 11 ? 'pm' : 'am');
   const [percentGain, setPercentGain] = React.useState(tradeSettings.percentGain);
@@ -123,8 +123,9 @@ export const TradeSettingsEditor = ({tradeSettings}: Props) => {
           />
           : null
         }
-        <Button type="primary" danger shape={'round'} style={{float: 'right', margin: 2}} onClick={testRun}>Run
-          Now</Button>
+        <Button type="primary" shape={'round'} style={{margin: 2, marginLeft: 550, backgroundColor:'green'}} onClick={testRun}>
+          Run Now
+        </Button>
       </Row>
       <Row style={{margin: generalMargins}}>
         <Col span={6}>

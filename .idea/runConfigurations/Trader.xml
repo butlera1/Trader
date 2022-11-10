@@ -1,6 +1,7 @@
 <component name="ProjectRunConfigurationManager">
   <configuration default="false" name="Trader" type="meteor-app-runner" factoryName="Meteor">
     <option name="envs">
+      <entry key="MAIL_URL" value="smtps:apikey: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@smtp-relay.sendinblue.com:465" />
       <entry key="MONGO_URL" value="mongodb://localhost:27017/trader" />
     </option>
     <option name="exePath" value="$USER_HOME$/.meteor/meteor" />

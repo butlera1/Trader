@@ -12,6 +12,7 @@ function publishLiveTrades() {
         monitoredPrices: 1,
         gainLimit: 1,
         lossLimit: 1,
+        openingPrice: 1,
       }
     });
 }

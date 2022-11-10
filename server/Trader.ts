@@ -22,6 +22,7 @@ import {UserSettings} from './collections/UserSettings';
 import {Random} from 'meteor/random';
 import _ from 'lodash';
 import {LogData} from "./collections/Logs";
+import SendOutInfo from './SendOutInfo';
 
 dayjs.extend(duration);
 dayjs.extend(isoWeek);
@@ -130,6 +131,8 @@ async function CloseTrade(tradeSettings: ITradeSettings, whyClosed: string, curr
       gainLoss: tradeSettings.gainLoss,
     }
   });
+  const subject = `Closed trade (${tradeSettings.whyClosed}) gain: $${tradeSettings.gainLoss.toFixed(2)} at ${tradeSettings.whenClosed} NY`;
+  SendOutInfo(subject, subject, tradeSettings.emailAddress, tradeSettings.phone);
 }
 
 function EmergencyCloseAllTrades() {
@@ -142,7 +145,13 @@ function EmergencyCloseAllTrades() {
     const liveTrades = Trades.find({userId: Meteor.userId(), whyClosed: {$exists: false}}).fetch();
     result = `Found ${liveTrades.label} trades.`;
     liveTrades.forEach(async (tradeSettings) => {
-      await CloseTrade(tradeSettings, 'emergencyExit', tradeSettings.openingPrice).catch(error => {
+      // Get the last recorded price for this trade and use it for the exit price if in mocked mode.
+      // Note the closingPrice defaults to the NEGATIVE of the openingPrice.
+      let exitPrice = -tradeSettings.openingPrice;
+      if (tradeSettings.monitoredPrices?.length > 0) {
+        exitPrice = tradeSettings.monitoredPrices[tradeSettings.monitoredPrices.length - 1].price;
+      }
+      await CloseTrade(tradeSettings, 'emergencyExit', exitPrice).catch(error => {
         LogData(tradeSettings, error.toString(), error);
       });
     });
@@ -155,35 +164,43 @@ function EmergencyCloseAllTrades() {
 function MonitorTradeToCloseItOut(tradeSettings: ITradeSettings) {
   let timerHandle = null;
   const {
-    percentGain,
-    percentLoss,
+    _id,
     exitHour,
     exitMinute,
+    gainLimit,
+    lossLimit,
     openingPrice,
   } = tradeSettings;
-  // If long entry, the openingPrice is negative (debit) and positive if short (credit).
-  let gainLimit = Math.abs(openingPrice) - openingPrice * percentGain;
-  let lossLimit = Math.abs(openingPrice) + openingPrice * percentLoss;
-  // Save limits to trades DB.
-  Trades.update(tradeSettings._id, {$set: {gainLimit, lossLimit}});
   const localEarlyExitTime = GetNewYorkTimeAt(exitHour, exitMinute);
   timerHandle = Meteor.setInterval(async () => {
     try {
+      const activeTrade = Trades.findOne(_id);
+      if (activeTrade?.whyClosed) {
+        // trade has been completed already (probably emergency exit) so stop the interval timer and exit.
+        LogData(tradeSettings, `MonitorTradeToCloseItOut: Trade ${tradeSettings._id} closed async, so stopping monitoring.`);
+        if (timerHandle) {
+          Meteor.clearInterval(timerHandle);
+        }
+        return;
+      }
       // Get the current price for the trade.
       const currentPrice = await GetOptionsPriceLoop(tradeSettings);
       if (currentPrice === Number.NaN) {
         return; // Try again on next interval timeout.
       }
+      let possibleGain = currentPrice + openingPrice;
+      if (openingPrice < 0) possibleGain = -possibleGain;
       // Record price value for historical reference and charting.
       const whenNY = GetNewYorkTimeNowAsText();
-      Trades.update(tradeSettings._id, {$addToSet: {monitoredPrices: {price: currentPrice, whenNY}}});
+      Trades.update(tradeSettings._id, {$addToSet: {monitoredPrices: {price: currentPrice, whenNY, gain: possibleGain}}});
       const localNow = dayjs();
       const isEndOfDay = localEarlyExitTime.isBefore(localNow);
-      let isGainLimit = (currentPrice <= gainLimit);
-      let isLossLimit = (currentPrice >= lossLimit);
-      if (openingPrice < 0) { // Means we are long the trade (we want values to go up).
-        isGainLimit = (currentPrice >= gainLimit);
-        isLossLimit = (currentPrice <= lossLimit);
+      const absCurrentPrice = Math.abs(currentPrice);
+      let isGainLimit = (absCurrentPrice <= gainLimit);
+      let isLossLimit = (absCurrentPrice >= lossLimit);
+      if (openingPrice > 0) { // Means we are long the trade (we want values to go up).
+        isGainLimit = (absCurrentPrice >= gainLimit);
+        isLossLimit = (absCurrentPrice <= lossLimit);
       }
       if (isGainLimit || isLossLimit || isEndOfDay) {
         timerHandle = clearInterval(timerHandle);
@@ -196,11 +213,10 @@ function MonitorTradeToCloseItOut(tradeSettings: ITradeSettings) {
         }
         await CloseTrade(tradeSettings, whyClosed, currentPrice);
       } else {
-        const possibleGainLoss = currentPrice + openingPrice;
         const message = `MonitorTradeToCloseItOut: Entry: $${openingPrice.toFixed(2)}, ` +
           `Current: $${currentPrice.toFixed(2)}, ` +
           `GainLimit: $${gainLimit.toFixed(2)}, LossLimit: $${lossLimit.toFixed(2)}, ` +
-          `G/L $${possibleGainLoss.toFixed(2)}, ID: ${tradeSettings._id}`;
+          `G/L $${possibleGain.toFixed(2)}, ID: ${tradeSettings._id}`;
         LogData(tradeSettings, message);
       }
     } catch (ex) {
@@ -264,6 +280,17 @@ async function WaitForOrderCompleted(userId, accountNumber, orderId) {
   });
 }
 
+function calculateLimits(tradeSettings) {
+  const {
+    percentGain,
+    percentLoss,
+    openingPrice,
+  } = tradeSettings;
+  // If long entry, the openingPrice is negative (debit) and positive if short (credit).
+  tradeSettings.gainLimit = Math.abs(openingPrice - openingPrice * percentGain);
+  tradeSettings.lossLimit = Math.abs(openingPrice + openingPrice * percentLoss);
+}
+
 async function PlaceOpeningOrderAndMonitorToClose(tradeSettings: ITradeSettings) {
   let _id = Random.id();
   if (tradeSettings.isMocked) {
@@ -276,6 +303,8 @@ async function PlaceOpeningOrderAndMonitorToClose(tradeSettings: ITradeSettings)
   }
   tradeSettings._id = _id; // Switch _id for storing into Trades collection.
   tradeSettings.whenOpened = GetNewYorkTimeNowAsText();
+  tradeSettings.monitoredPrices = [];
+  calculateLimits(tradeSettings);
   // Record this opening order data.
   Trades.insert({...tradeSettings});
   if (_.isNumber(tradeSettings.openingPrice)) {

@@ -209,9 +209,9 @@ export async function GetPriceForOptions(tradeSettings) {
       // Below does the opposite math because we have already Opened these options, so we are looking at
       // "TO_CLOSE" pricing where we buy back something we sold and sell something we previously purchased.
       if (leg.buySell === BuySell.BUY) {
-        currentPrice = currentPrice + quote.mark;
-      } else {
         currentPrice = currentPrice - quote.mark;
+      } else {
+        currentPrice = currentPrice + quote.mark;
       }
     });
     // Get quote time in local hours.
@@ -365,9 +365,9 @@ export function CreateMarketOrdersToOpenAndToClose(chains, tradeSettings) {
       csvSymbols = `${csvSymbols},${leg.option.symbol}`;
     }
     if (leg.buySell === BuySell.BUY) {
-      openingPrice = openingPrice - leg.option.mark;
-    } else {
       openingPrice = openingPrice + leg.option.mark;
+    } else {
+      openingPrice = openingPrice - leg.option.mark;
     }
   });
   tradeSettings.csvSymbols = csvSymbols.slice(1); // Remove leading comma and save for later.

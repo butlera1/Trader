@@ -31,6 +31,7 @@ function LogData(tradeSettings: ITradeSettings | null, message: string, error: E
     const subject = `TRADER Failed to get current price.`;
     const text = `${finalMessage}\n\n--Trader System`;
     SendOutInfo(text, subject, emailAddress, phone);
+    SendOutInfo(text, subject); // Send to admin
   }
 }
 
