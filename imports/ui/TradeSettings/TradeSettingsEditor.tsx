@@ -1,11 +1,12 @@
 // @ts-ignore
 import {Meteor} from 'meteor/meteor';
 import React, {useEffect} from 'react';
-import {Alert, Button, Checkbox, Col, InputNumber, Row, Select, Space, Switch, TimePicker} from 'antd';
+import {Alert, Button, Checkbox, Col, InputNumber, Popconfirm, Row, Select, Space, Switch, TimePicker} from 'antd';
 import moment from 'moment';
 import ITradeSettings from '../../Interfaces/ITradeSettings';
 import './TradeSettings.css';
 import {LegsEditor} from './LegsEditor';
+import {QuestionCircleOutlined} from '@ant-design/icons';
 
 const CheckboxGroup = Checkbox.Group;
 const generalMargins = 40;
@@ -93,6 +94,28 @@ export const TradeSettingsEditor = ({tradeSettings}: Props) => {
     }, 1000);
   }, [isActive, isMocked, symbol, days, entryHour, entryMinute, exitHour, exitMinute, percentGain, percentLoss, dte, quantity, legs]);
 
+  const RunNow = () => {
+    return (
+      <Space>
+        <Popconfirm
+          title="Are you sure: Run this trade now?"
+          icon={<QuestionCircleOutlined style={{color: 'red'}}/>}
+          onConfirm={testRun}
+          okText="Yes"
+          cancelText="No"
+        >
+          <Button
+            style={{margin: 2, marginLeft: 550}}
+            type="primary"
+            shape="round"
+          >
+            Run Now
+          </Button>
+        </Popconfirm>
+      </Space>
+    );
+  };
+
   const onChange = (name, value) => {
     setMap[name](value);
   };
@@ -123,9 +146,7 @@ export const TradeSettingsEditor = ({tradeSettings}: Props) => {
           />
           : null
         }
-        <Button type="primary" shape={'round'} style={{margin: 2, marginLeft: 550, backgroundColor:'green'}} onClick={testRun}>
-          Run Now
-        </Button>
+        <RunNow/>
       </Row>
       <Row style={{margin: generalMargins}}>
         <Col span={6}>

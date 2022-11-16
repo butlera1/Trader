@@ -1,8 +1,9 @@
 // @ts-ignore
 import {Email} from "meteor/email";
 import twilio from 'twilio';
+import process from 'process';
 
-function SendOutInfo(text: string, subject: string, to: string = 'spockab@gmail.com', phone: string = '+19523938719') {
+function SendOutInfo(text: string, subject: string, to: string, phone: string) {
     // TODO (AWB) Need a mail service set into MAIL_URL env var for the following to work.
     const emailOptions = {
         to,
@@ -15,7 +16,7 @@ function SendOutInfo(text: string, subject: string, to: string = 'spockab@gmail.
     }
     if (phone) {
         // @ts-ignore
-        const client = new twilio('AC05d463b29666265c785d81ac08b71f0b', 'e372aea5b9351cf2780549c215449352');
+        const client = new twilio(process.env.smsID, process.env.smsPW);
         client.messages
           .create({
               body: text,

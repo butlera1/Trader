@@ -15,6 +15,7 @@ import dayjs from 'dayjs';
 import duration from 'dayjs/plugin/duration';
 import isoWeek from 'dayjs/plugin/isoWeek';
 import {Trades} from './collections/Trades';
+import {TradeResults} from './collections/TradeResults';
 import ITradeSettings from '../imports/Interfaces/ITradeSettings';
 import {TradeSettings} from './collections/TradeSettings';
 import {UserSettings} from './collections/UserSettings';
@@ -97,6 +98,20 @@ async function GetOptionsPriceLoop(tradeSettings: ITradeSettings) {
   return Number.NaN;
 }
 
+async function GetSmartOptionsPrice(tradeSettings: ITradeSettings){
+  const sampleSize = 4;
+  let prices = [];
+  for (let i = 0; i < sampleSize; i++) {
+    prices.push(await GetOptionsPriceLoop(tradeSettings));
+  }
+  // Remove the smallest number
+  prices = prices.sort().filter((_,i) => i);
+  // Remove the largest number
+  prices = prices.slice(0, prices.length-1);
+  const average = (array) => array.reduce((a, b) => a + b) / array.length;
+  return average(prices);
+}
+
 async function CloseTrade(tradeSettings: ITradeSettings, whyClosed: string, currentPrice: number) {
   tradeSettings.whyClosed = whyClosed;
   const {isMocked, userId, accountNumber, closingOrder, openingPrice} = tradeSettings;
@@ -116,8 +131,11 @@ async function CloseTrade(tradeSettings: ITradeSettings, whyClosed: string, curr
     }
   }
   tradeSettings.whenClosed = GetNewYorkTimeNowAsText();
-  // OpeningPrice will be positive since it was sold and closePrice will be negative buyback.
-  tradeSettings.gainLoss = openingPrice + tradeSettings.closingPrice; // Adding: one credit/sold, other debit/bought.
+  // Adding: one credit/sold, other debit/bought.
+  tradeSettings.gainLoss = (openingPrice + tradeSettings.closingPrice) * tradeSettings.quantity * 100.0;
+  if (openingPrice < 0) {
+    tradeSettings.gainLoss = -tradeSettings.gainLoss;
+  }
   const message = `Trade closed (${whyClosed}): Entry: $${openingPrice.toFixed(2)}, ` +
     `Exit: $${tradeSettings.closingPrice?.toFixed(2)}, ` +
     `G/L $${tradeSettings.gainLoss?.toFixed(2)} ID: ${tradeSettings._id}`;
@@ -131,6 +149,19 @@ async function CloseTrade(tradeSettings: ITradeSettings, whyClosed: string, curr
       gainLoss: tradeSettings.gainLoss,
     }
   });
+  const result: ITradeResults = {
+    tradeId: tradeSettings._id,
+    userId: tradeSettings.userId,
+    symbol: tradeSettings.symbol,
+    quantity: tradeSettings.quantity,
+    openingPrice: tradeSettings.openingPrice,
+    closingPrice: tradeSettings.closingPrice,
+    whenOpened: tradeSettings.whenOpened,
+    whenClosed: tradeSettings.whenClosed,
+    gainLoss: tradeSettings.gainLoss,
+    isMocked: tradeSettings.isMocked,
+  };
+  TradeResults.insert(result);
   const subject = `Closed trade (${tradeSettings.whyClosed}) gain: $${tradeSettings.gainLoss.toFixed(2)} at ${tradeSettings.whenClosed} NY`;
   SendOutInfo(subject, subject, tradeSettings.emailAddress, tradeSettings.phone);
 }
@@ -184,11 +215,11 @@ function MonitorTradeToCloseItOut(tradeSettings: ITradeSettings) {
         return;
       }
       // Get the current price for the trade.
-      const currentPrice = await GetOptionsPriceLoop(tradeSettings);
+      const currentPrice = await GetSmartOptionsPrice(tradeSettings);
       if (currentPrice === Number.NaN) {
         return; // Try again on next interval timeout.
       }
-      let possibleGain = currentPrice + openingPrice;
+      let possibleGain = (currentPrice + openingPrice) * tradeSettings.quantity * 100.0;
       if (openingPrice < 0) possibleGain = -possibleGain;
       // Record price value for historical reference and charting.
       const whenNY = GetNewYorkTimeNowAsText();

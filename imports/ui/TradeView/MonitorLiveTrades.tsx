@@ -4,6 +4,9 @@ import {useTracker} from 'meteor/react-meteor-data';
 import LiveTrades from '../../Collections/LiveTrades';
 import ITradeSettings from '../../Interfaces/ITradeSettings';
 import Chart from "react-apexcharts";
+import TradeResultsTable from './TradeResultsTable';
+import {Divider} from 'antd';
+import ActiveTradesView from './ActiveTradesView';
 
 function MonitorLiveTrades() {
 
@@ -26,28 +29,17 @@ function MonitorLiveTrades() {
 
   return (
     <>
-      <h1>{`Current live trades (${liveTrades.length}).`}</h1>
-      <ul>
-        {liveTrades.map((trade, index) => {
-          let price = 'None';
-          let gain = 0;
-          if (trade?.monitoredPrices?.length > 0) {
-            const item = trade.monitoredPrices[trade.monitoredPrices?.length - 1];
-            price = item.price.toFixed(2);
-            gain = item.gain;
-          }
-          return <li
-            key={index}>{`(${trade._id}) Entry: ${trade.openingPrice.toFixed(2)}, Current Price: ${price}, Gain: ${gain.toFixed(2)}`}</li>;
-        })
-        }
-      </ul>
-      <Chart
-        options={options}
-        series={series}
-        type="line"
-        width="500"
-        height="100"
-      />    </>
+      <ActiveTradesView/>
+      <Divider />
+      {/*<Chart*/}
+      {/*  options={options}*/}
+      {/*  series={series}*/}
+      {/*  type="line"*/}
+      {/*  width="500"*/}
+      {/*  height="100"*/}
+      {/*/>*/}
+      <TradeResultsTable/>
+    </>
   );
 }
 
