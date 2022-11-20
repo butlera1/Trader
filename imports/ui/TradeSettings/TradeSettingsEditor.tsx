@@ -1,11 +1,12 @@
 // @ts-ignore
 import {Meteor} from 'meteor/meteor';
 import React, {useEffect} from 'react';
-import {Alert, Button, Checkbox, Col, InputNumber, Row, Select, Space, Switch, TimePicker} from 'antd';
+import {Alert, Button, Checkbox, Col, InputNumber, Popconfirm, Row, Select, Space, Switch, TimePicker} from 'antd';
 import moment from 'moment';
 import ITradeSettings from '../../Interfaces/ITradeSettings';
 import './TradeSettings.css';
 import {LegsEditor} from './LegsEditor';
+import {QuestionCircleOutlined} from '@ant-design/icons';
 
 const CheckboxGroup = Checkbox.Group;
 const generalMargins = 40;
@@ -29,10 +30,10 @@ export const TradeSettingsEditor = ({tradeSettings}: Props) => {
   const [isMocked, setIsMocked] = React.useState(tradeSettings.isMocked);
   const [symbol, setSymbol] = React.useState(tradeSettings.symbol);
   const [days, setDays] = React.useState(tradeSettings.days);
-  const [entryHour, setEntryHour] = React.useState(tradeSettings.entryHour > 12 ? tradeSettings.entryHour - 12 : tradeSettings.entryHour);
+  const [entryHour, setEntryHour] = React.useState(tradeSettings.entryHour );
   const [entryMinute, setEntryMinute] = React.useState(tradeSettings.entryMinute);
   const [entryAmPm, setEntryAmPm] = React.useState(tradeSettings.entryHour > 11 ? 'pm' : 'am');
-  const [exitHour, setExitHour] = React.useState(tradeSettings.exitHour > 12 ? tradeSettings.exitHour - 12 : tradeSettings.exitHour);
+  const [exitHour, setExitHour] = React.useState(tradeSettings.exitHour);
   const [exitMinute, setExitMinute] = React.useState(tradeSettings.exitMinute);
   const [exitAmPm, setExitAmPm] = React.useState(tradeSettings.exitHour > 11 ? 'pm' : 'am');
   const [percentGain, setPercentGain] = React.useState(tradeSettings.percentGain);
@@ -90,8 +91,30 @@ export const TradeSettingsEditor = ({tradeSettings}: Props) => {
           setErrorText(error.toString());
         }
       });
-    }, 2000);
+    }, 1000);
   }, [isActive, isMocked, symbol, days, entryHour, entryMinute, exitHour, exitMinute, percentGain, percentLoss, dte, quantity, legs]);
+
+  const RunNow = () => {
+    return (
+      <Space>
+        <Popconfirm
+          title="Are you sure: Run this trade now?"
+          icon={<QuestionCircleOutlined style={{color: 'red'}}/>}
+          onConfirm={testRun}
+          okText="Yes"
+          cancelText="No"
+        >
+          <Button
+            style={{margin: 2, marginLeft: 550}}
+            type="primary"
+            shape="round"
+          >
+            Run Now
+          </Button>
+        </Popconfirm>
+      </Space>
+    );
+  };
 
   const onChange = (name, value) => {
     setMap[name](value);
@@ -123,8 +146,7 @@ export const TradeSettingsEditor = ({tradeSettings}: Props) => {
           />
           : null
         }
-        <Button type="primary" danger shape={'round'} style={{float: 'right', margin: 2}} onClick={testRun}>Run
-          Now</Button>
+        <RunNow/>
       </Row>
       <Row style={{margin: generalMargins}}>
         <Col span={6}>

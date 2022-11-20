@@ -1,7 +1,10 @@
 <component name="ProjectRunConfigurationManager">
   <configuration default="false" name="Trader" type="meteor-app-runner" factoryName="Meteor">
     <option name="envs">
+      <entry key="MAIL_URL" value="smtps:apikey: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@smtp-relay.sendinblue.com:465" />
       <entry key="MONGO_URL" value="mongodb://localhost:27017/trader" />
+      <entry key="smsID" value="AC05d463b29666265c785d81ac08b71f0b" />
+      <entry key="smsPW" value="4be3795531e39dc1e4c5edd44922390b" />
     </option>
     <option name="exePath" value="$USER_HOME$/.meteor/meteor" />
     <option name="startBrowserSettings">

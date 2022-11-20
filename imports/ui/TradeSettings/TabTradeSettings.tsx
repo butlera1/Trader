@@ -1,8 +1,9 @@
+// @ts-ignore
 import {Meteor} from 'meteor/meteor';
 import React, {useEffect, useState} from 'react';
 import {Alert, Button, Space, Tabs} from "antd";
 import {TradeSettingsEditor} from "./TradeSettingsEditor";
-import ITradeSettings, {DefaultTradeSettings} from "../../Interfaces/ITradeSettings";
+import ITradeSettings from "../../Interfaces/ITradeSettings";
 
 function createTabItem(tradeSettings: ITradeSettings, index: number) {
   return {
@@ -16,7 +17,7 @@ function TabTradeSettings() {
   const [activeKey, setActiveKey] = useState(null);
   const [items, setItems] = useState([]);
   const [errorText, setErrorText] = useState(null);
-  
+
   useEffect(() => {
     Meteor.call('GetAllUserTradeSettings', (error, tradeSettingsArray) => {
       if (error) {
@@ -32,11 +33,11 @@ function TabTradeSettings() {
       }
     });
   }, []);
-  
+
   const onChange = (key: string) => {
     setActiveKey(key);
   };
-  
+
   const add = () => {
     Meteor.call('GetNewUserTradeSettingsRecord', (error, settings) => {
       if (error) {
@@ -47,7 +48,7 @@ function TabTradeSettings() {
       setActiveKey(settings._id);
     });
   };
-  
+
   const remove = (targetKey: string) => {
     const targetIndex = items.findIndex(pane => pane.key === targetKey);
     const newPanes = items.filter(pane => pane.key !== targetKey);
@@ -58,7 +59,7 @@ function TabTradeSettings() {
     setItems(newPanes);
     Meteor.call('DeleteUserTradeSettingsRecord', targetKey);
   };
-  
+
   const onEdit = (targetKey: string, action: 'add' | 'remove') => {
     if (action === 'add') {
       add();
@@ -66,11 +67,11 @@ function TabTradeSettings() {
       remove(targetKey);
     }
   };
-  
+
   return (
     <div>
       <div style={{marginBottom: 16}}>
-        <Button type='primary' shape='round' onClick={add}>Add new strategy</Button>
+        <Button type="primary" shape="round" onClick={add}>Add new strategy</Button>
       </div>
       <Tabs
         hideAdd

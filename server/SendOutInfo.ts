@@ -1,5 +1,7 @@
 // @ts-ignore
 import {Email} from "meteor/email";
+import twilio from 'twilio';
+import process from 'process';
 
 function SendOutInfo(text: string, subject: string, to: string, phone: string) {
     // TODO (AWB) Need a mail service set into MAIL_URL env var for the following to work.
@@ -10,12 +12,17 @@ function SendOutInfo(text: string, subject: string, to: string, phone: string) {
         text,
     };
     if (to) {
-        Email.send(emailOptions);
+        // Email.send(emailOptions);
     }
     if (phone) {
-        // TODO (AWB) Send SMS to mobile
-        // Use phone here to send SMS messages.
-        console.log(`Could be sms'ing to ${phone}`);
+        // @ts-ignore
+        const client = new twilio(process.env.smsID, process.env.smsPW);
+        client.messages
+          .create({
+              body: text,
+              to: phone,
+              from: '+14793703254', // Twilio validated phone number
+          });
     }
 }
 

@@ -209,9 +209,9 @@ export async function GetPriceForOptions(tradeSettings) {
       // Below does the opposite math because we have already Opened these options, so we are looking at
       // "TO_CLOSE" pricing where we buy back something we sold and sell something we previously purchased.
       if (leg.buySell === BuySell.BUY) {
-        currentPrice = currentPrice + quote.mark;
-      } else {
         currentPrice = currentPrice - quote.mark;
+      } else {
+        currentPrice = currentPrice + quote.mark;
       }
     });
     // Get quote time in local hours.
@@ -224,11 +224,11 @@ export async function GetPriceForOptions(tradeSettings) {
   }
 }
 
-export async function GetATMOptionChains(symbol, userId) {
+export async function GetATMOptionChains(symbol, userId, dte) {
   const token = await GetAccessToken(userId);
   if (!token) return null;
   const fromDate = dayjs().subtract(1, 'day');
-  const toDate = dayjs().add(2, 'day');
+  const toDate = dayjs().add(dte+1, 'day');
   const queryParams = new URLSearchParams({
     symbol,
     range: 'ALL',
@@ -255,7 +255,6 @@ export async function GetATMOptionChains(symbol, userId) {
 }
 
 export async function PlaceOrder(userId, accountNumber, order) {
-  try {
     const token = await GetAccessToken(userId);
     const options = {
       method: 'POST',
@@ -276,11 +275,6 @@ export async function PlaceOrder(userId, accountNumber, order) {
     const index = location?.lastIndexOf('/');
     const orderId = location?.substring(index + 1);
     return orderId;
-  } catch (error) {
-    const msg = `TDAApi.PlaceOrder: account: ${accountNumber}: ${error}`;
-    console.error(msg);
-    throw new Meteor.Error(msg);
-  }
 }
 
 export async function IsOptionMarketOpenToday(userId) {
@@ -371,9 +365,9 @@ export function CreateMarketOrdersToOpenAndToClose(chains, tradeSettings) {
       csvSymbols = `${csvSymbols},${leg.option.symbol}`;
     }
     if (leg.buySell === BuySell.BUY) {
-      openingPrice = openingPrice - leg.option.mark;
-    } else {
       openingPrice = openingPrice + leg.option.mark;
+    } else {
+      openingPrice = openingPrice - leg.option.mark;
     }
   });
   tradeSettings.csvSymbols = csvSymbols.slice(1); // Remove leading comma and save for later.
