@@ -160,6 +160,7 @@ async function CloseTrade(tradeSettings: ITradeSettings, whyClosed: string, curr
     whenClosed: tradeSettings.whenClosed,
     gainLoss: tradeSettings.gainLoss,
     isMocked: tradeSettings.isMocked,
+    whyClosed: tradeSettings.whyClosed,
   };
   TradeResults.insert(result);
   const subject = `Closed trade (${tradeSettings.whyClosed}) gain: $${tradeSettings.gainLoss.toFixed(2)} at ${tradeSettings.whenClosed} NY`;
@@ -219,7 +220,7 @@ function MonitorTradeToCloseItOut(tradeSettings: ITradeSettings) {
       if (currentPrice === Number.NaN) {
         return; // Try again on next interval timeout.
       }
-      let possibleGain = (currentPrice + openingPrice) * tradeSettings.quantity * 100.0;
+      let possibleGain = (currentPrice + openingPrice) ;
       if (openingPrice < 0) possibleGain = -possibleGain;
       // Record price value for historical reference and charting.
       const whenNY = GetNewYorkTimeNowAsText();
@@ -362,7 +363,7 @@ async function ExecuteTrade(tradeSettings: ITradeSettings, forceTheTrade = false
       tradeSettings.emailAddress = userSettings.email;
       console.log(`Trading for ${tradeSettings.userName} @ ${nowText} with ${JSON.stringify(tradeSettings)}`);
       // Place the opening trade and monitor it to later close it out.
-      const chains = await GetATMOptionChains(tradeSettings.symbol, tradeSettings.userId);
+      const chains = await GetATMOptionChains(tradeSettings.symbol, tradeSettings.userId, tradeSettings.dte);
       // The trade orders are assigned to the tradeSettings object.
       const ordersReady = CreateMarketOrdersToOpenAndToClose(chains, tradeSettings);
       if (ordersReady) {

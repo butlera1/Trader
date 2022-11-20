@@ -3,10 +3,10 @@ import React from 'react';
 import {useTracker} from 'meteor/react-meteor-data';
 import LiveTrades from '../../Collections/LiveTrades';
 import ITradeSettings from '../../Interfaces/ITradeSettings';
-import Chart from "react-apexcharts";
 import TradeResultsTable from './TradeResultsTable';
-import {Divider} from 'antd';
+import {Divider, Space} from 'antd';
 import ActiveTradesView from './ActiveTradesView';
+import ActiveTradesTable from './ActiveTradesTable';
 
 function MonitorLiveTrades() {
 
@@ -28,18 +28,18 @@ function MonitorLiveTrades() {
   ];
 
   return (
-    <>
-      <ActiveTradesView/>
-      <Divider />
-      {/*<Chart*/}
-      {/*  options={options}*/}
-      {/*  series={series}*/}
-      {/*  type="line"*/}
-      {/*  width="500"*/}
-      {/*  height="100"*/}
-      {/*/>*/}
-      <TradeResultsTable/>
-    </>
+    <div>
+        {/*<ActiveTradesView key={0}/>*/}
+      <ActiveTradesTable key={1}/>
+        {/*<Chart*/}
+        {/*  options={options}*/}
+        {/*  series={series}*/}
+        {/*  type="line"*/}
+        {/*  width="500"*/}
+        {/*  height="100"*/}
+        {/*/>*/}
+        <TradeResultsTable key={3} />
+    </div>
   );
 }
 

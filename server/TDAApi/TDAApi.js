@@ -224,11 +224,11 @@ export async function GetPriceForOptions(tradeSettings) {
   }
 }
 
-export async function GetATMOptionChains(symbol, userId) {
+export async function GetATMOptionChains(symbol, userId, dte) {
   const token = await GetAccessToken(userId);
   if (!token) return null;
   const fromDate = dayjs().subtract(1, 'day');
-  const toDate = dayjs().add(2, 'day');
+  const toDate = dayjs().add(dte+1, 'day');
   const queryParams = new URLSearchParams({
     symbol,
     range: 'ALL',
