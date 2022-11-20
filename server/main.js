@@ -90,9 +90,7 @@ function schedule() {
 SyncedCron.add({
   name: 'Every weekday, run trader for everyone.',
   schedule,
-  job: () => {
-    console.log(`Mocked out PerformTradesForAllUsers: Not doing anything right now.`);
-  },
+  job: PerformTradeForAllUsers,
 });
 
 SyncedCron.start();

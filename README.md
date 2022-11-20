@@ -8,7 +8,7 @@ https://auth.tdameritrade.com/auth?response_type=code&redirect_uri=https://local
 After valid signing in, the system will attempt to redirect the URL and fail. In the failed URL will be en encrypted code. Copy everything in the URL after the "?code=" and take it to the following link to decode it.
 
 ```
-https://www.base64decode.org/
+https://www.url-encode-decode.com/
 ```
 Then take the decoded information and paste it into the "Enter code here:" location in the option trader application and click the "Store Data" button.
 
