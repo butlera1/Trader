@@ -1,6 +1,7 @@
 // @ts-ignore
 import {Email} from "meteor/email";
 import twilio from 'twilio';
+// @ts-ignore
 import process from 'process';
 
 function SendOutInfo(text: string, subject: string, to: string, phone: string) {

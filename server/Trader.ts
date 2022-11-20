@@ -380,6 +380,7 @@ async function ExecuteTrade(tradeSettings: ITradeSettings, forceTheTrade = false
 }
 
 async function PerformTradeForAllUsers() {
+  console.log(`Entering Perform Trade For All Users...`);
   const userArch = Users.findOne({username: 'Arch'});
   const isMarketOpened = await IsOptionMarketOpenToday(userArch._id);
   if (!isMarketOpened) {
