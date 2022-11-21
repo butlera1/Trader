@@ -5,11 +5,11 @@ import process from 'process';
 import {LogData} from './collections/Logs';
 import {atob} from 'buffer';
 
-const twilioPW = atob('YjNjYzU4NDE3YjMxYTJiMjE3YmRmNTEwM2Y4MjhmZjk=');
-const twilioID = atob('QUMwNWQ0NjNiMjk2NjYyNjVjNzg1ZDgxYWMwOGI3MWYwYg==');
-const sendInBlueAppKey = atob('eGtleXNpYi1mOTRjMzQxMDg4OWQzODQxMDllZTAwZjAyMTM4MTAyNDJmYzFiZWU1NzI4YTc3OGExNDkxYzBhYWEzOGVmNDRjLU9qd05MMnIwYkFIWFNGcEs=');
+const pw = atob('YjNjYzU4NDE3YjMxYTJiMjE3YmRmNTEwM2Y4MjhmZjk=');
+const Id = atob('QUMwNWQ0NjNiMjk2NjYyNjVjNzg1ZDgxYWMwOGI3MWYwYg==');
+const key = atob('eGtleXNpYi1mOTRjMzQxMDg4OWQzODQxMDllZTAwZjAyMTM4MTAyNDJmYzFiZWU1NzI4YTc3OGExNDkxYzBhYWEzOGVmNDRjLU9qd05MMnIwYkFIWFNGcEs=');
 
-SibApiV3Sdk.ApiClient.instance.authentications['api-key'].apiKey = sendInBlueAppKey;
+SibApiV3Sdk.ApiClient.instance.authentications['api-key'].apiKey = key;
 
 function SendEmail(toEmail, subject, text){
   const sendSmtpEmail = new SibApiV3Sdk.SendSmtpEmail();
@@ -30,7 +30,7 @@ function SendOutInfo(text: string, subject: string, to: string, phone: string) {
   }
   if (phone) {
     // @ts-ignore
-    const client = new twilio(twilioID, twilioPW);
+    const client = new twilio(Id, pw);
     client.messages
       .create({
         body: text,
