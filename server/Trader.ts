@@ -331,7 +331,8 @@ async function PlaceOpeningOrderAndMonitorToClose(tradeSettings: ITradeSettings)
     // tradeSettings.openingPrice has already been estimated when orders were created.
   } else {
     tradeSettings.openingOrderId = await PlaceOrder(tradeSettings.userId, tradeSettings.accountNumber, tradeSettings.openingOrder);
-    tradeSettings.openingPrice = await WaitForOrderCompleted(tradeSettings.userId, tradeSettings.accountNumber, tradeSettings.openingOrderId);
+    tradeSettings.openingPrice = await WaitForOrderCompleted(tradeSettings.userId, tradeSettings.accountNumber, tradeSettings.openingOrderId)
+      .catch(() => null);
   }
   tradeSettings._id = _id; // Switch _id for storing into Trades collection.
   tradeSettings.whenOpened = GetNewYorkTimeNowAsText();
@@ -339,6 +340,8 @@ async function PlaceOpeningOrderAndMonitorToClose(tradeSettings: ITradeSettings)
   calculateLimits(tradeSettings);
   // Record this opening order data.
   Trades.insert({...tradeSettings});
+  const subject = `Opened trade ${tradeSettings.symbol}: ${tradeSettings.openingPrice}) at ${tradeSettings.whenOpened} NY`;
+  SendOutInfo(subject, subject, tradeSettings.emailAddress, tradeSettings.phone);
   if (_.isNumber(tradeSettings.openingPrice)) {
     MonitorTradeToCloseItOut(tradeSettings);
   }
