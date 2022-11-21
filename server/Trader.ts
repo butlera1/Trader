@@ -389,7 +389,8 @@ async function PerformTradeForAllUsers() {
   }
   const users = Users.find().fetch();
   users.forEach((async (user) => {
-    const accountNumber = UserSettings.findOne({userId: user._id}).accountNumber;
+    const accountNumber = UserSettings.findOne({userId: user._id})?.accountNumber;
+    if (!accountNumber) return;
     const tradeSettingsSet = TradeSettings.find({userId: user._id}).fetch();
     tradeSettingsSet.forEach((tradeSettings: ITradeSettings) => {
       const desiredTradeTime = dayjs(GetNewYorkTimeAt(tradeSettings.entryHour, tradeSettings.entryMinute));
