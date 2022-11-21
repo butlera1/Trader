@@ -7,7 +7,7 @@ import {atob} from 'buffer';
 
 const twilioPW = atob('YjNjYzU4NDE3YjMxYTJiMjE3YmRmNTEwM2Y4MjhmZjk=');
 const twilioID = atob('QUMwNWQ0NjNiMjk2NjYyNjVjNzg1ZDgxYWMwOGI3MWYwYg==');
-const sendInBlueAppKey = atob('eGtleXNpYi1mOTRjMzQxMDg4OWQzODQxMDllZTAwZjAyMTM4MTAyNDJmYzFiZWU1NzI4YTc3OGExNDkxYzBhYWEzOGVmNDRjLWRKeUFjbVBYTlQ1WXhCVVM=');
+const sendInBlueAppKey = atob('eGtleXNpYi1mOTRjMzQxMDg4OWQzODQxMDllZTAwZjAyMTM4MTAyNDJmYzFiZWU1NzI4YTc3OGExNDkxYzBhYWEzOGVmNDRjLU9qd05MMnIwYkFIWFNGcEs=');
 
 SibApiV3Sdk.ApiClient.instance.authentications['api-key'].apiKey = sendInBlueAppKey;
 
