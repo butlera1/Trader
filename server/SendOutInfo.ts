@@ -3,6 +3,7 @@ import {Email} from "meteor/email";
 import twilio from 'twilio';
 // @ts-ignore
 import process from 'process';
+import {LogData} from './collections/Logs';
 
 function SendOutInfo(text: string, subject: string, to: string, phone: string) {
     // TODO (AWB) Need a mail service set into MAIL_URL env var for the following to work.
@@ -13,9 +14,9 @@ function SendOutInfo(text: string, subject: string, to: string, phone: string) {
         text,
     };
     if (to) {
-        // Email.send(emailOptions);
+        Email.send(emailOptions);
     }
-    if (phone) {
+    if (phone && process.env.smsID && process.env.smsPW) {
         // @ts-ignore
         const client = new twilio(process.env.smsID, process.env.smsPW);
         client.messages
@@ -23,7 +24,9 @@ function SendOutInfo(text: string, subject: string, to: string, phone: string) {
               body: text,
               to: phone,
               from: '+14793703254', // Twilio validated phone number
-          });
+          })
+          .then()
+          .catch(reason => LogData(null, `Failed Twilio message: ${reason}`));
     }
 }
 

@@ -361,7 +361,7 @@ async function ExecuteTrade(tradeSettings: ITradeSettings, forceTheTrade = false
       tradeSettings.accountNumber = userSettings.accountNumber;
       tradeSettings.phone = userSettings.phone;
       tradeSettings.emailAddress = userSettings.email;
-      console.log(`Trading for ${tradeSettings.userName} @ ${nowText} with ${JSON.stringify(tradeSettings)}`);
+      LogData(tradeSettings, `Trading for ${tradeSettings.userName} @ ${nowText} with ${JSON.stringify(tradeSettings)}`);
       // Place the opening trade and monitor it to later close it out.
       const chains = await GetATMOptionChains(tradeSettings.symbol, tradeSettings.userId, tradeSettings.dte);
       // The trade orders are assigned to the tradeSettings object.
@@ -375,16 +375,16 @@ async function ExecuteTrade(tradeSettings: ITradeSettings, forceTheTrade = false
       LogData(tradeSettings, msg, ex);
     }
   } else {
-    console.log(`Trading is off for ${tradeSettings.userId} or too late in the day @ ${nowText} with ${JSON.stringify(tradeSettings)}`);
+    LogData(tradeSettings, `Trading is off for ${tradeSettings.userId} or too late in the day @ ${nowText} with ${JSON.stringify(tradeSettings)}`);
   }
 }
 
 async function PerformTradeForAllUsers() {
-  console.log(`Entering Perform Trade For All Users...`);
+  LogData(null, `Entering Perform Trade For All Users...`, null);
   const userArch = Users.findOne({username: 'Arch'});
   const isMarketOpened = await IsOptionMarketOpenToday(userArch._id);
   if (!isMarketOpened) {
-    console.log('Market is closed today');
+    LogData(null, 'Market is closed today');
     return;
   }
   const users = Users.find().fetch();
