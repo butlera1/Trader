@@ -98,7 +98,5 @@ SyncedCron.add({
 
 SyncedCron.start();
 
-SendOutInfo('Test', 'Test Subject', 'spockab@gmail.com', '+19523938719');
-
 CheckForAnyExistingTradesAndMonitorThem();
 
