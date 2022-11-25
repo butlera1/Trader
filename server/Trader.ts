@@ -67,6 +67,7 @@ function GetNewYorkTimeAt(hour: number, minute: number) {
     }
   }
   const newYorkTimeAtGivenHourAndMinuteText = `${dayjs().format('YYYY-MM-DD')}, ${hour}:${minute}:00 ${amPm} GMT-0${nyTimeZoneOffsetFromCurrentTimeZone}00`;
+  console.log(`Time in New York given the hour and minute: ${newYorkTimeAtGivenHourAndMinuteText}`);
   return dayjs(newYorkTimeAtGivenHourAndMinuteText);
 }
 
