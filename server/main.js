@@ -83,7 +83,7 @@ function schedule() {
   const localTime = GetNewYorkTimeAt(9, 26);
   const timeText = localTime.format('hh:mma');
   const scheduleText = `at ${timeText} every weekday`;
-  console.log(`Schedule text: ${scheduleText}`);
+  console.log(`Scheduling time text: ${scheduleText} (local time).`);
   return later.parse.text(scheduleText);
 }
 
@@ -97,6 +97,8 @@ SyncedCron.add({
 });
 
 SyncedCron.start();
+
+console.log(`Current local time is ${new Date()}.`);
 
 CheckForAnyExistingTradesAndMonitorThem();
 

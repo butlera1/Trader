@@ -53,16 +53,12 @@ function GetNewYorkTimeNowAsText() {
  * @param minute
  * @returns {dayjs.Dayjs}
  */
-function GetNewYorkTimeAt(hour, minute) {
+function GetNewYorkTimeAt(hour: number, minute: number) {
   const currentLocalTime = new Date();
   const currentNYTime = new Date(currentLocalTime.toLocaleString('en-US', {timeZone: 'America/New_York'}));
   let timeZoneDifference = currentNYTime.getHours() - currentLocalTime.getHours();
-  if (timeZoneDifference < 0) {
-    // This happens when
-    timeZoneDifference = 24 + timeZoneDifference;
-  }
   const currentTimeZoneOffset = currentLocalTime.getTimezoneOffset() / 60;
-  const nyTimeZoneOffsetFromCurrentTimeZone = currentTimeZoneOffset - timeZoneDifference;
+  const nyTimeZoneOffsetFromCurrentTimeZone = Math.abs(currentTimeZoneOffset - timeZoneDifference);
   let amPm = 'AM';
   if (hour > 11) {
     amPm = 'PM';
@@ -401,9 +397,9 @@ async function PerformTradeForAllUsers() {
       if (delayInMilliseconds < 0) {
         delayInMilliseconds = 0;
       }
-      LogData(null, `Scheduling opening trade for ${user.username} at ${desiredTradeTime.format('hh:mm a')}.`);
       tradeSettings.accountNumber = accountNumber;
       tradeSettings.userName = user.username;
+      LogData(tradeSettings, `Scheduling opening trade for ${user.username} at ${desiredTradeTime.format('hh:mm a')}.`);
       Meteor.setTimeout(() => ExecuteTrade(tradeSettings), delayInMilliseconds);
     });
   }));
