@@ -67,7 +67,6 @@ function GetNewYorkTimeAt(hour: number, minute: number) {
     }
   }
   const newYorkTimeAtGivenHourAndMinuteText = `${dayjs().format('YYYY-MM-DD')}, ${hour}:${minute}:00 ${amPm} GMT-0${nyTimeZoneOffsetFromCurrentTimeZone}00`;
-  console.log(`Time in New York given the hour and minute: ${newYorkTimeAtGivenHourAndMinuteText}`);
   return dayjs(newYorkTimeAtGivenHourAndMinuteText);
 }
 
@@ -380,7 +379,7 @@ async function ExecuteTrade(tradeSettings: ITradeSettings, forceTheTrade = false
 }
 
 async function PerformTradeForAllUsers() {
-  LogData(null, `Entering Perform Trade For All Users...`, null);
+  LogData(null, `Entering "Perform Trade For All Users"...`, null);
   const userArch = Users.findOne({username: 'Arch'});
   const isMarketOpened = await IsOptionMarketOpenToday(userArch._id);
   if (!isMarketOpened) {
@@ -390,7 +389,9 @@ async function PerformTradeForAllUsers() {
   const users = Users.find().fetch();
   users.forEach((async (user) => {
     const accountNumber = UserSettings.findOne({userId: user._id})?.accountNumber;
+    LogData(null, `Checking user ${user.username} for active trade settings ...`, null);
     if (!accountNumber) return;
+    let countOfUsersTradesStarted = 0;
     const tradeSettingsSet = TradeSettings.find({userId: user._id}).fetch();
     tradeSettingsSet.forEach((tradeSettings: ITradeSettings) => {
       const desiredTradeTime = dayjs(GetNewYorkTimeAt(tradeSettings.entryHour, tradeSettings.entryMinute));
@@ -400,10 +401,13 @@ async function PerformTradeForAllUsers() {
       }
       tradeSettings.accountNumber = accountNumber;
       tradeSettings.userName = user.username;
+      countOfUsersTradesStarted++;
       LogData(tradeSettings, `Scheduling opening trade for ${user.username} at ${desiredTradeTime.format('hh:mm a')}.`);
       Meteor.setTimeout(() => ExecuteTrade(tradeSettings), delayInMilliseconds);
     });
+    LogData(null, `Scheduled ${countOfUsersTradesStarted} trades for user ${user.username} today.`);
   }));
+  LogData(null, `Completed "Perform Trade For All Users"...`, null);
 }
 
 export {
