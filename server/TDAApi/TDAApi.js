@@ -160,7 +160,7 @@ export async function GetAccessToken(userId) {
 
 export async function GetOrders(userId, accountNumber = '755541528', orderId) {
   try {
-    userId = userId || this.userId;
+    userId = userId || Meteor.userId();
     const token = await GetAccessToken(userId);
     if (!token) return null;
     let orderIdPart = '';

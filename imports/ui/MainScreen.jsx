@@ -4,6 +4,7 @@ import UserSettings from './UserSettings';
 import {Meteor} from 'meteor/meteor';
 import {Space} from 'antd';
 import MonitorLiveTrades from './TradeView/MonitorLiveTrades';
+import Tools from './Tools';
 
 export const MainScreen = () => {
   const [userSettings, setUserSettings] = useState(null);
@@ -20,6 +21,7 @@ export const MainScreen = () => {
 
   return (<>
     <UserSettings userSettings={userSettings}/>
+    <Tools/>
     <Space>
       <TabTradeSettings/>
       <MonitorLiveTrades/>

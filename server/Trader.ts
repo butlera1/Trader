@@ -15,6 +15,7 @@ import dayjs from 'dayjs';
 import duration from 'dayjs/plugin/duration';
 import isoWeek from 'dayjs/plugin/isoWeek';
 import {Trades} from './collections/Trades';
+import {TradeOrders} from './collections/TradeOrders';
 import {TradeResults} from './collections/TradeResults';
 import ITradeSettings from '../imports/Interfaces/ITradeSettings';
 import {TradeSettings} from './collections/TradeSettings';
@@ -94,16 +95,16 @@ async function GetOptionsPriceLoop(tradeSettings: ITradeSettings) {
   return Number.NaN;
 }
 
-async function GetSmartOptionsPrice(tradeSettings: ITradeSettings){
+async function GetSmartOptionsPrice(tradeSettings: ITradeSettings) {
   const sampleSize = 4;
   let prices = [];
   for (let i = 0; i < sampleSize; i++) {
     prices.push(await GetOptionsPriceLoop(tradeSettings));
   }
   // Remove the smallest number
-  prices = prices.sort().filter((_,i) => i);
+  prices = prices.sort().filter((_, i) => i);
   // Remove the largest number
-  prices = prices.slice(0, prices.length-1);
+  prices = prices.slice(0, prices.length - 1);
   const average = (array) => array.reduce((a, b) => a + b) / array.length;
   return average(prices);
 }
@@ -216,11 +217,19 @@ function MonitorTradeToCloseItOut(tradeSettings: ITradeSettings) {
       if (currentPrice === Number.NaN) {
         return; // Try again on next interval timeout.
       }
-      let possibleGain = (currentPrice + openingPrice) ;
+      let possibleGain = (currentPrice + openingPrice);
       if (openingPrice < 0) possibleGain = -possibleGain;
       // Record price value for historical reference and charting.
       const whenNY = GetNewYorkTimeNowAsText();
-      Trades.update(tradeSettings._id, {$addToSet: {monitoredPrices: {price: currentPrice, whenNY, gain: possibleGain}}});
+      Trades.update(tradeSettings._id, {
+        $addToSet: {
+          monitoredPrices: {
+            price: currentPrice,
+            whenNY,
+            gain: possibleGain
+          }
+        }
+      });
       const localNow = dayjs();
       const isEndOfDay = localEarlyExitTime.isBefore(localNow);
       const absCurrentPrice = Math.abs(currentPrice);
@@ -256,30 +265,40 @@ function MonitorTradeToCloseItOut(tradeSettings: ITradeSettings) {
   }, fiveSeconds);
 }
 
-function calculateFillPrice(order) {
+function CalculateGrossOrderBuysAndSells(order) {
   const isBuyMap = {};
   let price = 0;
-  // Define isBuyMap, so we know which legId is buy or a sell.
+  // Define isBuyMap, so we know which legId is buy or sell.
   order.orderLegCollection.forEach((item) => {
     isBuyMap[item.legId] = item.instruction.startsWith('BUY');
   });
+  let buyPrice = 0;
+  let sellPrice = 0;
   // For all the executed legs, calculate the final price.
   order.orderActivityCollection?.forEach((item) => {
     item.executionLegs.forEach((leg) => {
       if (isBuyMap[leg.legId]) {
-        price = price + leg.price;
+        buyPrice += (leg.price * leg.quantity);
       } else {
-        price = price - leg.price;
+        sellPrice -= (leg.price * leg.quantity);
       }
     });
   });
   // For trigger orders, we recurse into the triggered childOrders
   if (order.childOrderStrategies) {
     order.childOrderStrategies.forEach((childOrder) => {
-      price = price + calculateFillPrice(childOrder);
+      const subCalcs = CalculateGrossOrderBuysAndSells(childOrder);
+      buyPrice += subCalcs.buyPrice;
+      sellPrice += subCalcs.sellPrice;
     });
   }
-  return price;
+  return {buyPrice, sellPrice};
+}
+
+function CalculateFilledOrderPrice(order){
+  const grossPrices = CalculateGrossOrderBuysAndSells(order);
+  const finalPrice = grossPrices.buyPrice/order.quantity + grossPrices.sellPrice/order.quantity;
+  return finalPrice;
 }
 
 function calculateIfOrderIsFilled(order) {
@@ -297,12 +316,16 @@ async function WaitForOrderCompleted(userId, accountNumber, orderId) {
       const isOrderFilled = calculateIfOrderIsFilled(order);
       if (isOrderFilled) {
         Meteor.clearInterval(timerHandle);
-        resolve(calculateFillPrice(order));
+        const calculatedFillPrice = CalculateFilledOrderPrice(order);
+        TradeOrders.insert({_id: orderId, calculatedFillPrice, order});
+        resolve(calculatedFillPrice);
       }
       counter++;
       if (counter === 20) {
         Meteor.clearInterval(timerHandle);
-        reject(`Order ${orderId} has failed to fill within the desired time.`);
+        const msg = `Order ${orderId} has failed to fill within the desired time.`;
+        LogData(null, msg, null);
+        reject(msg);
       }
     }, 6000);
   });
