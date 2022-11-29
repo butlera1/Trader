@@ -417,16 +417,20 @@ async function PerformTradeForAllUsers() {
     let countOfUsersTradesStarted = 0;
     const tradeSettingsSet = TradeSettings.find({userId: user._id}).fetch();
     tradeSettingsSet.forEach((tradeSettings: ITradeSettings) => {
-      const desiredTradeTime = dayjs(GetNewYorkTimeAt(tradeSettings.entryHour, tradeSettings.entryMinute));
-      let delayInMilliseconds = dayjs.duration(desiredTradeTime.diff(dayjs())).asMilliseconds();
-      if (delayInMilliseconds < 0) {
-        delayInMilliseconds = 0;
+      try {
+        const desiredTradeTime = GetNewYorkTimeAt(tradeSettings.entryHour, tradeSettings.entryMinute);
+        let delayInMilliseconds = dayjs.duration(desiredTradeTime.diff(dayjs())).asMilliseconds();
+        if (delayInMilliseconds < 0) {
+          delayInMilliseconds = 0;
+        }
+        tradeSettings.accountNumber = accountNumber;
+        tradeSettings.userName = user.username;
+        countOfUsersTradesStarted++;
+        LogData(tradeSettings, `Scheduling opening trade for ${user.username} at ${desiredTradeTime.format('hh:mm a')}.`);
+        Meteor.setTimeout(() => ExecuteTrade(tradeSettings), delayInMilliseconds);
+      } catch (ex) {
+        LogData(tradeSettings, `Failed to schedule opening trade ${user.username}.)
       }
-      tradeSettings.accountNumber = accountNumber;
-      tradeSettings.userName = user.username;
-      countOfUsersTradesStarted++;
-      LogData(tradeSettings, `Scheduling opening trade for ${user.username} at ${desiredTradeTime.format('hh:mm a')}.`);
-      Meteor.setTimeout(() => ExecuteTrade(tradeSettings), delayInMilliseconds);
     });
     LogData(null, `Scheduled ${countOfUsersTradesStarted} trades for user ${user.username} today.`);
   }));
