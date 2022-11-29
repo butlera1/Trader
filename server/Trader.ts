@@ -277,10 +277,12 @@ function CalculateGrossOrderBuysAndSells(order) {
   // For all the executed legs, calculate the final price.
   order.orderActivityCollection?.forEach((item) => {
     item.executionLegs.forEach((leg) => {
-      if (isBuyMap[leg.legId]) {
-        buyPrice += (leg.price * leg.quantity);
-      } else {
-        sellPrice -= (leg.price * leg.quantity);
+      if (leg.price && leg.quantity) {
+        if (isBuyMap[leg.legId]) {
+          buyPrice += (leg.price * leg.quantity);
+        } else {
+          sellPrice -= (leg.price * leg.quantity);
+        }
       }
     });
   });
@@ -314,18 +316,16 @@ async function WaitForOrderCompleted(userId, accountNumber, orderId) {
     timerHandle = Meteor.setInterval(async () => {
       const order = await GetOrders(userId, accountNumber, orderId);
       const isOrderFilled = calculateIfOrderIsFilled(order);
-      if (isOrderFilled) {
+      counter++;
+      if (isOrderFilled || counter === 20) {
         Meteor.clearInterval(timerHandle);
         const calculatedFillPrice = CalculateFilledOrderPrice(order);
         TradeOrders.insert({_id: orderId, calculatedFillPrice, order});
+        if (counter === 20) {
+          const msg = `Order ${orderId} has failed to fill within the desired time. Using what completed.`;
+          LogData(null, msg, null);
+        }
         resolve(calculatedFillPrice);
-      }
-      counter++;
-      if (counter === 20) {
-        Meteor.clearInterval(timerHandle);
-        const msg = `Order ${orderId} has failed to fill within the desired time.`;
-        LogData(null, msg, null);
-        reject(msg);
       }
     }, 6000);
   });

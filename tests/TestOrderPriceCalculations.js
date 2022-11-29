@@ -241,5 +241,140 @@ const order = {
   ]
 };
 
+const orderNotDone = {
+  "session": "NORMAL",
+  "duration": "DAY",
+  "orderType": "MARKET",
+  "complexOrderStrategyType": "STRADDLE",
+  "quantity": 1,
+  "filledQuantity": 1,
+  "remainingQuantity": 0,
+  "requestedDestination": "AUTO",
+  "destinationLinkName": "WEXM",
+  "orderLegCollection": [
+    {
+      "orderLegType": "OPTION",
+      "legId": 1,
+      "instrument": {
+        "assetType": "OPTION",
+        "cusip": "0QQQ..KT20282000",
+        "symbol": "QQQ_112922C282",
+        "description": "QQQ Nov 29 2022 282.0 Call",
+        "type": "VANILLA",
+        "putCall": "CALL",
+        "underlyingSymbol": "QQQ"
+      },
+      "instruction": "BUY_TO_CLOSE",
+      "positionEffect": "CLOSING",
+      "quantity": 1
+    },
+    {
+      "orderLegType": "OPTION",
+      "legId": 2,
+      "instrument": {
+        "assetType": "OPTION",
+        "cusip": "0QQQ..WT20282000",
+        "symbol": "QQQ_112922P282",
+        "description": "QQQ Nov 29 2022 282.0 Put",
+        "type": "VANILLA",
+        "putCall": "PUT",
+        "underlyingSymbol": "QQQ"
+      },
+      "instruction": "BUY_TO_CLOSE",
+      "positionEffect": "CLOSING",
+      "quantity": 1
+    }
+  ],
+  "orderStrategyType": "TRIGGER",
+  "orderId": 9861957977,
+  "cancelable": false,
+  "editable": false,
+  "status": "FILLED",
+  "enteredTime": "2022-11-29T15:36:49+0000",
+  "closeTime": "2022-11-29T15:36:50+0000",
+  "tag": "AA_butlera1",
+  "accountId": 755541528,
+  "orderActivityCollection": [
+    {
+      "activityType": "EXECUTION",
+      "activityId": 49868727907,
+      "executionType": "FILL",
+      "quantity": 1,
+      "orderRemainingQuantity": 0,
+      "executionLegs": [
+        {
+          "legId": 2,
+          "quantity": 1,
+          "mismarkedQuantity": 0,
+          "price": 0.67,
+          "time": "2022-11-29T15:36:50+0000"
+        },
+        {
+          "legId": 1,
+          "quantity": 1,
+          "mismarkedQuantity": 0,
+          "price": 1.25,
+          "time": "2022-11-29T15:36:50+0000"
+        }
+      ]
+    }
+  ],
+  "childOrderStrategies": [
+    {
+      "session": "NORMAL",
+      "duration": "DAY",
+      "orderType": "MARKET",
+      "complexOrderStrategyType": "STRANGLE",
+      "quantity": 1,
+      "filledQuantity": 0,
+      "remainingQuantity": 1,
+      "requestedDestination": "AUTO",
+      "destinationLinkName": "WEXM",
+      "orderLegCollection": [
+        {
+          "orderLegType": "OPTION",
+          "legId": 1,
+          "instrument": {
+            "assetType": "OPTION",
+            "cusip": "0QQQ..KT20289000",
+            "symbol": "QQQ_112922C289",
+            "description": "QQQ Nov 29 2022 289.0 Call",
+            "type": "VANILLA",
+            "putCall": "CALL",
+            "underlyingSymbol": "QQQ"
+          },
+          "instruction": "SELL_TO_CLOSE",
+          "positionEffect": "CLOSING",
+          "quantity": 1
+        },
+        {
+          "orderLegType": "OPTION",
+          "legId": 2,
+          "instrument": {
+            "assetType": "OPTION",
+            "cusip": "0QQQ..WT20272000",
+            "symbol": "QQQ_112922P272",
+            "description": "QQQ Nov 29 2022 272.0 Put",
+            "type": "VANILLA",
+            "putCall": "PUT",
+            "underlyingSymbol": "QQQ"
+          },
+          "instruction": "SELL_TO_CLOSE",
+          "positionEffect": "CLOSING",
+          "quantity": 1
+        }
+      ],
+      "orderStrategyType": "SINGLE",
+      "orderId": 9861957978,
+      "cancelable": true,
+      "editable": false,
+      "status": "WORKING",
+      "enteredTime": "2022-11-29T15:36:49+0000",
+      "tag": "AA_butlera1",
+      "accountId": 755541528
+    }
+  ]
+};
+
 const price = CalculateFilledOrderPrice(order);
 console.log('Price: ', price);
