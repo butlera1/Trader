@@ -429,7 +429,7 @@ async function PerformTradeForAllUsers() {
         LogData(tradeSettings, `Scheduling opening trade for ${user.username} at ${desiredTradeTime.format('hh:mm a')}.`);
         Meteor.setTimeout(() => ExecuteTrade(tradeSettings), delayInMilliseconds);
       } catch (ex) {
-        LogData(tradeSettings, `Failed to schedule opening trade ${user.username}.)
+        LogData(tradeSettings, `Failed to schedule opening trade ${user.username}.`);
       }
     });
     LogData(null, `Scheduled ${countOfUsersTradesStarted} trades for user ${user.username} today.`);
