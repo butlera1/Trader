@@ -2,8 +2,12 @@
 import {Mongo} from 'meteor/mongo';
 import ITradeSettings from "../../imports/Interfaces/ITradeSettings";
 import SendOutInfo from "../SendOutInfo";
+import {atob} from 'buffer';
 
 export const Logs = new Mongo.Collection('logs');
+
+const adminEmail = atob('c3BvY2thYkBnbWFpbC5jb20=');
+const adminPhone = atob('KzE5NTIzOTM4NzE5');
 
 enum LogType {
   Info = 'Info',
@@ -14,8 +18,8 @@ function LogData(tradeSettings: ITradeSettings | null, message: string, error: E
   const currentLocalTime = new Date();
   const {_id, emailAddress, phone} = tradeSettings || {
     _id: 'System',
-    emailAddress: 'spockab@gmail.com',
-    phone: '952-393-8719'
+    emailAddress: adminEmail,
+    phone: adminPhone
   };
   const NYTimeText = currentLocalTime.toLocaleString('en-US', {timeZone: 'America/New_York'});
   const when_NY = new Date(NYTimeText);
@@ -31,7 +35,9 @@ function LogData(tradeSettings: ITradeSettings | null, message: string, error: E
     const subject = `TRADER Failed to get current price.`;
     const text = `${finalMessage}\n\n--Trader System`;
     SendOutInfo(text, subject, emailAddress, phone);
-    SendOutInfo(text, subject); // Send to admin
+    if (emailAddress !== adminEmail) {
+      SendOutInfo(text, subject, adminEmail, adminPhone);
+    }
   }
 }
 
