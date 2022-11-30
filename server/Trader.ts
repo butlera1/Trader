@@ -41,8 +41,7 @@ function clearInterval(timerHandle) {
 
 function GetNewYorkTimeNowAsText() {
   const currentLocalTime = new Date();
-  const NYTimeText = currentLocalTime.toLocaleString('en-US', {timeZone: 'America/New_York'});
-  return NYTimeText;
+  return currentLocalTime.toLocaleString('en-US', {timeZone: 'America/New_York'});
 }
 
 /**
@@ -121,8 +120,8 @@ async function CloseTrade(tradeSettings: ITradeSettings, whyClosed: string, curr
       return null;
     });
     if (tradeSettings.closingOrderId) {
-      tradeSettings.closingPrice = await WaitForOrderCompleted(userId, accountNumber, tradeSettings.closingOrderId).catch(error => {
-        LogData(tradeSettings, error.toString(), error);
+      tradeSettings.closingPrice = await WaitForOrderCompleted(userId, accountNumber, tradeSettings.closingOrderId).catch(reason => {
+        LogData(tradeSettings, reason, null);
         return 0;
       });
     }
@@ -166,7 +165,7 @@ async function CloseTrade(tradeSettings: ITradeSettings, whyClosed: string, curr
 
 function EmergencyCloseAllTrades() {
   if (!Meteor.userId()) {
-    throw new Meteor.Error(`EmergencyCloseAllTrades: Must have valid user.`);
+    throw new Meteor.Error('EmergencyCloseAllTrades: Must have valid user.');
   }
   let result = '';
   try {
@@ -267,7 +266,6 @@ function MonitorTradeToCloseItOut(tradeSettings: ITradeSettings) {
 
 function CalculateGrossOrderBuysAndSells(order) {
   const isBuyMap = {};
-  let price = 0;
   // Define isBuyMap, so we know which legId is buy or sell.
   order.orderLegCollection.forEach((item) => {
     isBuyMap[item.legId] = item.instruction.startsWith('BUY');
@@ -297,10 +295,9 @@ function CalculateGrossOrderBuysAndSells(order) {
   return {buyPrice, sellPrice};
 }
 
-function CalculateFilledOrderPrice(order){
+function CalculateFilledOrderPrice(order) {
   const grossPrices = CalculateGrossOrderBuysAndSells(order);
-  const finalPrice = grossPrices.buyPrice/order.quantity + grossPrices.sellPrice/order.quantity;
-  return finalPrice;
+  return grossPrices.buyPrice / order.quantity + grossPrices.sellPrice / order.quantity;
 }
 
 function calculateIfOrderIsFilled(order) {
@@ -314,18 +311,25 @@ async function WaitForOrderCompleted(userId, accountNumber, orderId) {
     let timerHandle = null;
     let counter = 0;
     timerHandle = Meteor.setInterval(async () => {
-      const order = await GetOrders(userId, accountNumber, orderId);
-      const isOrderFilled = calculateIfOrderIsFilled(order);
-      counter++;
-      if (isOrderFilled || counter === 20) {
-        Meteor.clearInterval(timerHandle);
-        const calculatedFillPrice = CalculateFilledOrderPrice(order);
-        TradeOrders.insert({_id: orderId, calculatedFillPrice, order});
-        if (counter === 20) {
-          const msg = `Order ${orderId} has failed to fill within the desired time. Using what completed.`;
-          LogData(null, msg, null);
+      try {
+        const order = await GetOrders(userId, accountNumber, orderId);
+        const isOrderFilled = calculateIfOrderIsFilled(order);
+        counter++;
+        if (isOrderFilled || counter === 20) {
+          Meteor.clearInterval(timerHandle);
+          const calculatedFillPrice = CalculateFilledOrderPrice(order);
+          TradeOrders.insert({_id: orderId, calculatedFillPrice, order});
+          if (counter === 20) {
+            const msg = `Order ${orderId} has failed to fill within the desired time. Using what completed.`;
+            LogData(null, msg, null);
+          }
+          resolve(calculatedFillPrice);
         }
-        resolve(calculatedFillPrice);
+      } catch (ex) {
+        Meteor.clearInterval(timerHandle);
+        const msg = `Failed while WaitingForOrderCompleted.`;
+        LogData(null, msg, ex);
+        reject(`${msg} ${ex}`);
       }
     }, 6000);
   });
@@ -351,7 +355,7 @@ async function PlaceOpeningOrderAndMonitorToClose(tradeSettings: ITradeSettings)
   } else {
     tradeSettings.openingOrderId = await PlaceOrder(tradeSettings.userId, tradeSettings.accountNumber, tradeSettings.openingOrder);
     tradeSettings.openingPrice = await WaitForOrderCompleted(tradeSettings.userId, tradeSettings.accountNumber, tradeSettings.openingOrderId)
-      .catch(() => null);
+      .catch(() => 0);
   }
   tradeSettings._id = _id; // Switch _id for storing into Trades collection.
   tradeSettings.whenOpened = GetNewYorkTimeNowAsText();
@@ -427,7 +431,10 @@ async function PerformTradeForAllUsers() {
         tradeSettings.userName = user.username;
         countOfUsersTradesStarted++;
         LogData(tradeSettings, `Scheduling opening trade for ${user.username} at ${desiredTradeTime.format('hh:mm a')}.`);
-        Meteor.setTimeout(() => ExecuteTrade(tradeSettings), delayInMilliseconds);
+        const timeoutHandle = Meteor.setTimeout(() => {
+          Meteor.clearTimeout(timeoutHandle);
+          ExecuteTrade(tradeSettings);
+        }, delayInMilliseconds);
       } catch (ex) {
         LogData(tradeSettings, `Failed to schedule opening trade ${user.username}.`);
       }

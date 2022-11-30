@@ -1,5 +1,3 @@
-import later from 'later';
-import {SyncedCron} from 'meteor/littledata:synced-cron';
 import {Meteor} from 'meteor/meteor';
 import './collections/stockData';
 import './collections/straddleData';
@@ -22,17 +20,13 @@ import {
   SellStraddle,
   SetUserAccessInfo
 } from './TDAApi/TDAApi';
-import {
-  EmergencyCloseAllTrades,
-  ExecuteTrade,
-  GetNewYorkTimeAt,
-  MonitorTradeToCloseItOut,
-  PerformTradeForAllUsers
-} from './Trader';
+import {EmergencyCloseAllTrades, ExecuteTrade, MonitorTradeToCloseItOut, PerformTradeForAllUsers} from './Trader';
 import {WebApp} from 'meteor/webapp';
 import {Trades} from './collections/Trades';
 import {LogData} from './collections/Logs';
 import SendOutInfo from './SendOutInfo';
+import SchedulePerformTrades from './SchedulePerformTrades';
+import {AppSettings} from './collections/AppSettings';
 
 // Listen to incoming HTTP requests (can only be used on the server).
 WebApp.connectHandlers.use('/traderOAuthCallback', (req, res) => {
@@ -79,25 +73,19 @@ Meteor.methods({
   EmergencyCloseAllTrades,
 });
 
-function schedule() {
-  const localTime = GetNewYorkTimeAt(9, 26);
-  const timeText = localTime.format('hh:mma');
-  const scheduleText = `at ${timeText} every weekday`;
-  console.log(`Scheduling time text: ${scheduleText} (local time).`);
-  return later.parse.text(scheduleText);
+console.log(`Current local time is ${new Date()}.`);
+
+// Define the AppSettings record if not there already.
+const settings = AppSettings.findOne({_id: 'AppSettings'});
+if (!settings) {
+  AppSettings.insert({
+    _id: 'AppSettings',
+    startHourNY: 9,
+    startMinuteNY: 20,
+  });
 }
 
-SyncedCron.add({
-  name: 'Every weekday, run trader for everyone.',
-  schedule,
-  job: () => {
-    PerformTradeForAllUsers().then();
-  },
-});
-
-SyncedCron.start();
-
-console.log(`Current local time is ${new Date()}.`);
+SchedulePerformTrades();
 
 CheckForAnyExistingTradesAndMonitorThem();
 
