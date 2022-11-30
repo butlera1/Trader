@@ -3,6 +3,7 @@ import React, {useState} from 'react';
 import {Meteor} from 'meteor/meteor';
 import {Alert, Button, Col, Input, Popconfirm, Row, Space, Spin} from 'antd';
 import {QuestionCircleOutlined, UserOutlined} from '@ant-design/icons';
+import Constants from '../Constants.ts';
 
 let timeoutHandle = null;
 
@@ -65,7 +66,10 @@ function UserSettings({userSettings}) {
   return (
     <>
       <Space>
-        <span style={{fontSize: '32px', color: 'blue'}}><UserOutlined/> {Meteor.user().username}</span>
+        <span style={{fontSize: '32px', color: 'blue'}}>
+          <UserOutlined/> {Meteor.user().username}
+          <span style={{fontSize: '12px', color: 'grey'}}>  (Vr. {Constants.version})</span>
+        </span>
         {errorText
           ?
           <Alert

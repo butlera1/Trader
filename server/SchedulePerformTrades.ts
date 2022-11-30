@@ -4,10 +4,11 @@ import {LogData} from './collections/Logs';
 import {Meteor} from 'meteor/meteor';
 import {GetNewYorkTimeAt, PerformTradeForAllUsers} from './Trader';
 import {AppSettings} from './collections/AppSettings';
+import Constants from '../imports/Constants';
 
 function SchedulePerformTrades() {
   try {
-    const settings = AppSettings.findOne({_id: 'AppSettings'});
+    const settings = AppSettings.findOne(Constants.appSettingsId);
     let desiredTradeTime = GetNewYorkTimeAt(settings.startHourNY, settings.startMinuteNY);
     const now = dayjs();
     if (desiredTradeTime.isBefore(now)) {

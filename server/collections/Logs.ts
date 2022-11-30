@@ -3,6 +3,7 @@ import {Mongo} from 'meteor/mongo';
 import ITradeSettings from "../../imports/Interfaces/ITradeSettings";
 import SendOutInfo from "../SendOutInfo";
 import {atob} from 'buffer';
+import Constants from '../../imports/Constants';
 
 export const Logs = new Mongo.Collection('logs');
 
@@ -23,7 +24,7 @@ function LogData(tradeSettings: ITradeSettings | null, message: string, error: E
   };
   const NYTimeText = currentLocalTime.toLocaleString('en-US', {timeZone: 'America/New_York'});
   const when_NY = new Date(NYTimeText);
-  let finalMessage = `"${message}", When NY: ${NYTimeText}`;
+  let finalMessage = `"${message}", When NY: ${NYTimeText} (Vr. ${Constants.version})`;
   let logType = LogType.Info;
   if (error) {
     finalMessage = `${finalMessage}\n${error.toString()}\nStack:\n${error.stack}`;

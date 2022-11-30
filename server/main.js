@@ -27,6 +27,7 @@ import {LogData} from './collections/Logs';
 import SendOutInfo from './SendOutInfo';
 import SchedulePerformTrades from './SchedulePerformTrades';
 import {AppSettings} from './collections/AppSettings';
+import Constants from '../imports/Constants';
 
 // Listen to incoming HTTP requests (can only be used on the server).
 WebApp.connectHandlers.use('/traderOAuthCallback', (req, res) => {
@@ -76,7 +77,7 @@ Meteor.methods({
 console.log(`Current local time is ${new Date()}.`);
 
 // Define the AppSettings record if not there already.
-const settings = AppSettings.findOne({_id: 'AppSettings'});
+const settings = AppSettings.findOne(Constants.appSettingsId);
 if (!settings) {
   AppSettings.insert({
     _id: 'AppSettings',
