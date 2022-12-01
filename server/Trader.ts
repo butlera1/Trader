@@ -253,7 +253,7 @@ function MonitorTradeToCloseItOut(tradeSettings: ITradeSettings) {
           `Current: $${currentPrice.toFixed(2)}, ` +
           `GainLimit: $${gainLimit.toFixed(2)}, LossLimit: $${lossLimit.toFixed(2)}, ` +
           `G/L $${possibleGain.toFixed(2)}, ID: ${tradeSettings._id}`;
-        LogData(tradeSettings, message);
+        console.log(message);
       }
     } catch (ex) {
       timerHandle = clearInterval(timerHandle);
