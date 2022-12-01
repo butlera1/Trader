@@ -373,7 +373,7 @@ async function PlaceOpeningOrderAndMonitorToClose(tradeSettings: ITradeSettings)
 
 async function ExecuteTrade(tradeSettings: ITradeSettings, forceTheTrade = false) {
   const now = dayjs();
-  const nowText = dayjs().format('hh:mma MMM DD, YYYY');
+  const nowNYText = now.toDate().toLocaleString('en-US', {timeZone: 'America/New_York'});
   const currentDayOfTheWeek = isoWeekdayNames[now.isoWeekday()];
   const justBeforeClose = GetNewYorkTimeAt(15, 55);
   const notTooLateToTrade = now.isBefore(justBeforeClose);
@@ -387,7 +387,7 @@ async function ExecuteTrade(tradeSettings: ITradeSettings, forceTheTrade = false
       tradeSettings.accountNumber = userSettings.accountNumber;
       tradeSettings.phone = userSettings.phone;
       tradeSettings.emailAddress = userSettings.email;
-      LogData(tradeSettings, `Trading for ${tradeSettings.userName} @ ${nowText} with ${JSON.stringify(tradeSettings)}`);
+      LogData(tradeSettings, `Trading for ${tradeSettings.userName} @ ${nowNYText} (NY) with ${JSON.stringify(tradeSettings)}`);
       // Place the opening trade and monitor it to later close it out.
       const chains = await GetATMOptionChains(tradeSettings.symbol, tradeSettings.userId, tradeSettings.dte);
       // The trade orders are assigned to the tradeSettings object.
@@ -401,7 +401,11 @@ async function ExecuteTrade(tradeSettings: ITradeSettings, forceTheTrade = false
       LogData(tradeSettings, msg, ex);
     }
   } else {
-    LogData(tradeSettings, `Trading is off for ${tradeSettings.userId} or too late in the day @ ${nowText} with ${JSON.stringify(tradeSettings)}`);
+    const msg = `Skipping a trade setting for ${tradeSettings.userName} @ ${nowNYText} (NY). \
+Is Not Active: ${!tradeSettings.isActive}, Too Close To Closing Time: ${!notTooLateToTrade}, \
+Not This Day Of The Week: ${!tradePatternIncludesThisDayOfTheWeek}, \
+No Legs: ${!hasLegsInTrade} with ${JSON.stringify(tradeSettings)}`;
+    LogData(tradeSettings, msg);
   }
 }
 
@@ -415,9 +419,12 @@ async function PerformTradeForAllUsers() {
   }
   const users = Users.find().fetch();
   users.forEach((async (user) => {
-    const accountNumber = UserSettings.findOne({userId: user._id})?.accountNumber;
+    const accountNumber = UserSettings.findOne(user._id)?.accountNumber;
     LogData(null, `Checking user ${user.username} for active trade settings ...`, null);
-    if (!accountNumber) return;
+    if (!accountNumber || accountNumber === 'None') {
+      LogData(null, `User ${user.username} has no account number so skipping this user.`, null);
+      return;
+    }
     let countOfUsersTradesStarted = 0;
     const tradeSettingsSet = TradeSettings.find({userId: user._id}).fetch();
     tradeSettingsSet.forEach((tradeSettings: ITradeSettings) => {
