@@ -19,9 +19,12 @@ function SchedulePerformTrades() {
     const localTimeCheck = desiredTradeTime.format('MMM DD YYYY hh:mm a');
     const NYTimeCheck = desiredTradeTime.toDate().toLocaleString('en-US', {timeZone: 'America/New_York'});
     LogData(null, `Scheduling 'Perform Trades For All Users' for ${localTimeCheck} local time or ${NYTimeCheck} NY time.`);
-    const timerHandle = Meteor.setTimeout(() => {
+    let timerHandle = Meteor.setTimeout(() => {
       try {
-        Meteor.clearTimeout(timerHandle);
+        if (timerHandle) {
+          Meteor.clearTimeout(timerHandle);
+          timerHandle = null;
+        }
         PerformTradeForAllUsers().then();
         SchedulePerformTrades();
       } catch (ex) {

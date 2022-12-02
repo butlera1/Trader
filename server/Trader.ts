@@ -206,9 +206,7 @@ function MonitorTradeToCloseItOut(tradeSettings: ITradeSettings) {
       if (activeTrade?.whyClosed) {
         // trade has been completed already (probably emergency exit) so stop the interval timer and exit.
         LogData(tradeSettings, `MonitorTradeToCloseItOut: Trade ${tradeSettings._id} closed async, so stopping monitoring.`);
-        if (timerHandle) {
-          Meteor.clearInterval(timerHandle);
-        }
+        timerHandle = clearInterval(timerHandle);
         return;
       }
       // Get the current price for the trade.
@@ -216,7 +214,7 @@ function MonitorTradeToCloseItOut(tradeSettings: ITradeSettings) {
       if (currentPrice === Number.NaN) {
         return; // Try again on next interval timeout.
       }
-      let possibleGain = (currentPrice + openingPrice);
+      let possibleGain = (currentPrice + openingPrice) * 100.0 * tradeSettings.quantity;
       if (openingPrice < 0) possibleGain = -possibleGain;
       // Record price value for historical reference and charting.
       const whenNY = GetNewYorkTimeNowAsText();
@@ -316,7 +314,7 @@ async function WaitForOrderCompleted(userId, accountNumber, orderId) {
         const isOrderFilled = calculateIfOrderIsFilled(order);
         counter++;
         if (isOrderFilled || counter === 20) {
-          Meteor.clearInterval(timerHandle);
+          timerHandle = clearInterval(timerHandle);
           const calculatedFillPrice = CalculateFilledOrderPrice(order);
           TradeOrders.insert({_id: orderId, calculatedFillPrice, order});
           if (counter === 20) {
@@ -326,7 +324,7 @@ async function WaitForOrderCompleted(userId, accountNumber, orderId) {
           resolve(calculatedFillPrice);
         }
       } catch (ex) {
-        Meteor.clearInterval(timerHandle);
+        timerHandle = clearInterval(timerHandle);
         const msg = `Failed while WaitingForOrderCompleted.`;
         LogData(null, msg, ex);
         reject(`${msg} ${ex}`);
@@ -438,8 +436,11 @@ async function PerformTradeForAllUsers() {
         tradeSettings.userName = user.username;
         countOfUsersTradesStarted++;
         LogData(tradeSettings, `Scheduling opening trade for ${user.username} at ${desiredTradeTime.format('hh:mm a')}.`);
-        const timeoutHandle = Meteor.setTimeout(() => {
-          Meteor.clearTimeout(timeoutHandle);
+        let timeoutHandle = Meteor.setTimeout(() => {
+          if (timeoutHandle) {
+            Meteor.clearTimeout(timeoutHandle);
+            timeoutHandle = null;
+          }
           ExecuteTrade(tradeSettings);
         }, delayInMilliseconds);
       } catch (ex) {
