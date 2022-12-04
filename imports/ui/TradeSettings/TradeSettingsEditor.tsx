@@ -9,15 +9,7 @@ import {LegsEditor} from './LegsEditor';
 import {QuestionCircleOutlined} from '@ant-design/icons';
 
 const CheckboxGroup = Checkbox.Group;
-const generalMargins = 40;
-
-const disabledTimeAm = () => {
-  return {
-    disabledHours: () => [0, 1, 2, 3, 4, 5, 6, 7, 8],
-    disabledMinutes: () => [],
-    disabledSeconds: () => [],
-  };
-};
+const generalMargins = 30;
 
 let timeoutHandle = null;
 
@@ -30,7 +22,7 @@ export const TradeSettingsEditor = ({tradeSettings}: Props) => {
   const [isMocked, setIsMocked] = React.useState(tradeSettings.isMocked);
   const [symbol, setSymbol] = React.useState(tradeSettings.symbol);
   const [days, setDays] = React.useState(tradeSettings.days);
-  const [entryHour, setEntryHour] = React.useState(tradeSettings.entryHour );
+  const [entryHour, setEntryHour] = React.useState(tradeSettings.entryHour);
   const [entryMinute, setEntryMinute] = React.useState(tradeSettings.entryMinute);
   const [entryAmPm, setEntryAmPm] = React.useState(tradeSettings.entryHour > 11 ? 'pm' : 'am');
   const [exitHour, setExitHour] = React.useState(tradeSettings.exitHour);
@@ -96,7 +88,7 @@ export const TradeSettingsEditor = ({tradeSettings}: Props) => {
 
   const RunNow = () => {
     return (
-      <Space>
+      <Space style={{margin: 0}}>
         <Popconfirm
           title="Are you sure: Run this trade now?"
           icon={<QuestionCircleOutlined style={{color: 'red'}}/>}
@@ -105,7 +97,7 @@ export const TradeSettingsEditor = ({tradeSettings}: Props) => {
           cancelText="No"
         >
           <Button
-            style={{margin: 2, marginLeft: 550}}
+            style={{marginTop: 5, marginLeft: 530, marginBottom: -20, backgroundColor:'lightgreen', color:'black'}}
             type="primary"
             shape="round"
           >
@@ -130,7 +122,7 @@ export const TradeSettingsEditor = ({tradeSettings}: Props) => {
 
   return (
     <>
-      <Row>
+      <Row style={{margin: 0}}>
         {errorText ?
           <Alert
             message={errorText}
@@ -148,7 +140,7 @@ export const TradeSettingsEditor = ({tradeSettings}: Props) => {
         }
         <RunNow/>
       </Row>
-      <Row style={{margin: generalMargins}}>
+      <Row style={{margin: generalMargins, marginTop: -10}}>
         <Col span={6}>
           <Space>
             <span>Is Active:</span>

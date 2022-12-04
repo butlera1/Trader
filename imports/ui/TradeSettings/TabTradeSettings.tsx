@@ -5,9 +5,22 @@ import {Alert, Button, Space, Tabs} from "antd";
 import {TradeSettingsEditor} from "./TradeSettingsEditor";
 import ITradeSettings from "../../Interfaces/ITradeSettings";
 
+function getDescription(tradeSettings: ITradeSettings) {
+  const part1 = `${tradeSettings.symbol}(${tradeSettings.quantity})`;
+  const part2 = `${tradeSettings.entryHour}:${tradeSettings.entryMinute}-${tradeSettings.exitHour}:${tradeSettings.exitMinute}`;
+  const part3 = `${tradeSettings.percentGain*100}/${tradeSettings.percentLoss*100} % D:${tradeSettings.dte}`;
+  return (
+    <>
+      <div>{part1}</div>
+      <div>{part2}</div>
+      <div>{part3}</div>
+    </>
+  );
+}
+
 function createTabItem(tradeSettings: ITradeSettings, index: number) {
   return {
-    label: `Strategy ${index}`,
+    label: getDescription(tradeSettings),
     children: <TradeSettingsEditor tradeSettings={tradeSettings}/>,
     key: tradeSettings._id,
   };
