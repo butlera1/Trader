@@ -3,10 +3,9 @@ import React, {useState} from 'react';
 import {Meteor} from 'meteor/meteor';
 import {Alert, Button, Col, Input, Popconfirm, Row, Space, Spin} from 'antd';
 import {QuestionCircleOutlined, UserOutlined} from '@ant-design/icons';
-import Constants from '../Constants.ts';
+import Constants from '../Constants';
 
 let timeoutHandle = null;
-
 
 function UserSettings({userSettings}) {
   const [errorText, setErrorText] = useState(null);

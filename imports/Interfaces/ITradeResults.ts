@@ -3,6 +3,7 @@ interface ITradeResults {
   userId: string,
   symbol: string,
   quantity: number,
+  description?: string,
   whenOpened?: string,
   whenClosed?: string,
   whyClosed?: string,

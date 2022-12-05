@@ -9,12 +9,18 @@ import dayjs from 'dayjs';
 const columns: ColumnsType<ITradeResults> = [
   {
     title: 'Symbol',
+    ellipsis: true,
+    width: 80,
     dataIndex: 'symbol',
     key: 'symbol',
-    render: text => <a>{text}</a>,
+    render: (_, record) => {
+      const text = record.description || record.symbol;
+      return (<a title={text}>{text}</a>);
+    },
   },
   {
     title: 'Mocked',
+    width: 80,
     dataIndex: 'isMocked',
     key: 'isMocked',
     render: isMocked => isMocked ? 'True' : 'False',
@@ -22,6 +28,7 @@ const columns: ColumnsType<ITradeResults> = [
   },
   {
     title: 'Qty',
+    width: 50,
     dataIndex: 'quantity',
     key: 'quantity',
   },

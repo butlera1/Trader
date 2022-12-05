@@ -35,6 +35,13 @@ export const TradeSettingsEditor = ({tradeSettings}: Props) => {
   const [legs, setLegs] = React.useState(tradeSettings.legs);
   const [errorText, setErrorText] = React.useState(null);
 
+  function getDescription(tradeSettings: ITradeSettings) {
+    const part1 = `${tradeSettings.symbol}(${tradeSettings.quantity})`;
+    const part2 = `${tradeSettings.entryHour}:${tradeSettings.entryMinute}-${tradeSettings.exitHour}:${tradeSettings.exitMinute}`;
+    const part3 = `${tradeSettings.percentGain * 100}/${tradeSettings.percentLoss * 100} % D:${tradeSettings.dte}`;
+    return `${part1}\n${part2}\n${part3}`;
+  }
+
   const setMap = {
     isActive: setIsActive,
     isMocked: setIsMocked,
@@ -77,6 +84,7 @@ export const TradeSettingsEditor = ({tradeSettings}: Props) => {
         quantity,
         legs,
       };
+      strategy.description = getDescription(strategy);
       console.log(`Saving: `, strategy);
       Meteor.call('SetUserTradeSettings', strategy, (error, result) => {
         if (error) {
@@ -97,7 +105,7 @@ export const TradeSettingsEditor = ({tradeSettings}: Props) => {
           cancelText="No"
         >
           <Button
-            style={{marginTop: 5, marginLeft: 530, marginBottom: -20, backgroundColor:'lightgreen', color:'black'}}
+            style={{marginTop: 5, marginLeft: 530, marginBottom: -20, backgroundColor: 'lightgreen', color: 'black'}}
             type="primary"
             shape="round"
           >

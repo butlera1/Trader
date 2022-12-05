@@ -12,12 +12,18 @@ const columns: ColumnsType<ITradeSettings> = [
   {
     title: 'Symbol',
     dataIndex: 'symbol',
-    key: 'symbol',
-    render: text => <a>{text}</a>,
+    ellipsis: true,
+    width: 80,
+    key: 'description',
+    render: (_, record) => {
+      const text = record.description || record.symbol;
+      return (<a title={text}>{text}</a>);
+    },
   },
   {
     title: 'Mocked',
     dataIndex: 'isMocked',
+    width: 80,
     key: 'isMocked',
     align: 'center',
     render: isMocked => isMocked ? 'True' : 'False',
@@ -25,6 +31,7 @@ const columns: ColumnsType<ITradeSettings> = [
   {
     title: 'Qty',
     dataIndex: 'quantity',
+    width: 50,
     align: 'center',
     key: 'quantity',
   },
@@ -91,4 +98,4 @@ function ActiveTradesTable() {
                  columns={columns} dataSource={liveTrades}></Table>);
 }
 
-export default ActiveTradesTable;
+export {ActiveTradesTable as default};

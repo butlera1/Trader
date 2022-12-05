@@ -4,7 +4,6 @@ import {Meteor} from 'meteor/meteor';
 import {Button} from 'antd';
 
 function Tools(){
-
   const getOrders = () => {
     Meteor.call('GetOrders', null, '755541528', (error, result) => {
       if (error){
@@ -14,7 +13,6 @@ function Tools(){
       }
     });
   };
-
   return <Button onClick={getOrders}>Orders</Button>;
 }
 

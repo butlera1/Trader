@@ -149,6 +149,7 @@ async function CloseTrade(tradeSettings: ITradeSettings, whyClosed: string, curr
     tradeId: tradeSettings._id,
     userId: tradeSettings.userId,
     symbol: tradeSettings.symbol,
+    description: tradeSettings.description,
     quantity: tradeSettings.quantity,
     openingPrice: tradeSettings.openingPrice,
     closingPrice: tradeSettings.closingPrice,

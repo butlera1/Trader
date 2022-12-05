@@ -11,6 +11,7 @@ interface ITradeSettings {
   userId?: string;
   accountNumber?: string;
   userName?: string;
+  description?: string;
   isActive: boolean,
   isMocked: boolean,
   dte: number,
