@@ -58,7 +58,10 @@ function GetNewYorkTimeAt(hour: number, minute: number) {
   const currentNYTime = new Date(currentLocalTime.toLocaleString('en-US', {timeZone: 'America/New_York'}));
   let timeZoneDifference = currentNYTime.getHours() - currentLocalTime.getHours();
   const currentTimeZoneOffset = currentLocalTime.getTimezoneOffset() / 60;
-  const nyTimeZoneOffsetFromCurrentTimeZone = Math.abs(currentTimeZoneOffset - timeZoneDifference);
+  let nyTimeZoneOffsetFromCurrentTimeZone = Math.abs(currentTimeZoneOffset - timeZoneDifference);
+  if (nyTimeZoneOffsetFromCurrentTimeZone > 24){
+    nyTimeZoneOffsetFromCurrentTimeZone -= 24;
+  }
   let amPm = 'AM';
   if (hour > 11) {
     amPm = 'PM';

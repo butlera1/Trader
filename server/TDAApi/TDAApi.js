@@ -290,8 +290,8 @@ export async function IsOptionMarketOpenToday(userId) {
   const response = await fetch(`https://api.tdameritrade.com/v1/marketdata/OPTION/hours?date=${dateText}`, options);
   if (!response.ok) {
     const msg = `Error: IsOptionMarketOpen method status is: ${response.status}`;
-    console.error(msg);
-    throw new Meteor.Error(msg);
+    LogData(null, msg, new Error(msg));
+    return false;
   }
   const results = await response.json();
   return results?.option?.EQO?.isOpen || false;
