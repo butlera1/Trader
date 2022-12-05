@@ -41,8 +41,6 @@ function GetOptionOrder(legs: ILegSettings[], quantity, isToClose) {
   });
   const firstTriggersSecondOrder = WrapFirstTriggersSecond(buyForm, sellForm);
   return firstTriggersSecondOrder;
-  // const ordersArray = [buyForm, sellForm];
-  // return ordersArray;
 }
 
 export default GetOptionOrder;

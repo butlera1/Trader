@@ -17,7 +17,7 @@ import isoWeek from 'dayjs/plugin/isoWeek';
 import {Trades} from './collections/Trades';
 import {TradeOrders} from './collections/TradeOrders';
 import {TradeResults} from './collections/TradeResults';
-import ITradeSettings from '../imports/Interfaces/ITradeSettings';
+import ITradeSettings, {GetDescription} from '../imports/Interfaces/ITradeSettings';
 import {TradeSettings} from './collections/TradeSettings';
 import {UserSettings} from './collections/UserSettings';
 // @ts-ignore
@@ -152,7 +152,7 @@ async function CloseTrade(tradeSettings: ITradeSettings, whyClosed: string, curr
     tradeId: tradeSettings._id,
     userId: tradeSettings.userId,
     symbol: tradeSettings.symbol,
-    description: tradeSettings.description,
+    description: GetDescription(tradeSettings),
     quantity: tradeSettings.quantity,
     openingPrice: tradeSettings.openingPrice,
     closingPrice: tradeSettings.closingPrice,
