@@ -18,7 +18,7 @@ function SchedulePerformTrades() {
     let delayInMilliseconds = dayjs.duration(desiredTradeTime.diff(now)).asMilliseconds();
     const localTimeCheck = desiredTradeTime.format('MMM DD YYYY hh:mm a');
     const NYTimeCheck = desiredTradeTime.toDate().toLocaleString('en-US', {timeZone: 'America/New_York'});
-    LogData(null, `Scheduling 'Perform Trades For All Users' for ${localTimeCheck} local time or ${NYTimeCheck} NY time.`);
+    LogData(null, `Scheduling: 'Perform Trades For All Users' for ${localTimeCheck} local time or ${NYTimeCheck} NY time.`);
     let timerHandle = Meteor.setTimeout(() => {
       try {
         if (timerHandle) {
