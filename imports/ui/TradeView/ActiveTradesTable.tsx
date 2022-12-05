@@ -4,7 +4,7 @@ import {Meteor} from 'meteor/meteor';
 // @ts-ignore
 import {useTracker} from 'meteor/react-meteor-data';
 import LiveTrades from '../../Collections/LiveTrades';
-import ITradeSettings from '../../Interfaces/ITradeSettings';
+import ITradeSettings, {GetDescription} from '../../Interfaces/ITradeSettings';
 import {ColumnsType} from 'antd/lib/table';
 import {Table} from 'antd';
 
@@ -14,9 +14,9 @@ const columns: ColumnsType<ITradeSettings> = [
     dataIndex: 'symbol',
     ellipsis: true,
     width: 80,
-    key: 'description',
+    key: 'symbol',
     render: (_, record) => {
-      const text = record.description || record.symbol;
+      const text = GetDescription(record);
       return (<a title={text}>{text}</a>);
     },
   },
