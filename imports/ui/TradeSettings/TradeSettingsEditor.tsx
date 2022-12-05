@@ -3,7 +3,7 @@ import {Meteor} from 'meteor/meteor';
 import React, {useEffect} from 'react';
 import {Alert, Button, Checkbox, Col, InputNumber, Popconfirm, Row, Select, Space, Switch, TimePicker} from 'antd';
 import moment from 'moment';
-import ITradeSettings from '../../Interfaces/ITradeSettings';
+import ITradeSettings, {GetDescription} from '../../Interfaces/ITradeSettings';
 import './TradeSettings.css';
 import {LegsEditor} from './LegsEditor';
 import {QuestionCircleOutlined} from '@ant-design/icons';
@@ -34,13 +34,6 @@ export const TradeSettingsEditor = ({tradeSettings}: Props) => {
   const [quantity, setQuantity] = React.useState(tradeSettings.quantity);
   const [legs, setLegs] = React.useState(tradeSettings.legs);
   const [errorText, setErrorText] = React.useState(null);
-
-  function getDescription(tradeSettings: ITradeSettings) {
-    const part1 = `${tradeSettings.symbol}(${tradeSettings.quantity})`;
-    const part2 = `${tradeSettings.entryHour}:${tradeSettings.entryMinute}-${tradeSettings.exitHour}:${tradeSettings.exitMinute}`;
-    const part3 = `${tradeSettings.percentGain * 100}/${tradeSettings.percentLoss * 100} % D:${tradeSettings.dte}`;
-    return `${part1}\n${part2}\n${part3}`;
-  }
 
   const setMap = {
     isActive: setIsActive,
@@ -84,7 +77,7 @@ export const TradeSettingsEditor = ({tradeSettings}: Props) => {
         quantity,
         legs,
       };
-      strategy.description = getDescription(strategy);
+      strategy.description = GetDescription(strategy);
       console.log(`Saving: `, strategy);
       Meteor.call('SetUserTradeSettings', strategy, (error, result) => {
         if (error) {

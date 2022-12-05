@@ -1,4 +1,4 @@
-import ILegSettings from './ILegSettings';
+import ILegSettings, {BuySell, OptionType} from './ILegSettings';
 
 interface IPrice {
   price: number,
@@ -38,27 +38,56 @@ interface ITradeSettings {
   openingPrice?: number,
   closingPrice?: number,
   csvSymbols?: string,
-  monitoredPrices?:IPrice[],
+  monitoredPrices?: IPrice[],
   gainLimit?: number,
   lossLimit?: number,
 }
 
-export const DefaultTradeSettings: ITradeSettings = {
+const DefaultTradeSettings: ITradeSettings = {
   isActive: false,
   isMocked: false,
-  days: [],
-  dte: 1,
-  percentGain: 0.26,
+  days: ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday'],
+  dte: 0,
+  percentGain: 0.10,
   percentLoss: 1.00,
   entryHour: 9,
-  entryMinute: 45,
+  entryMinute: 50,
   exitHour: 11,
-  exitMinute: 45,
+  exitMinute: 30,
   quantity: 1,
-  symbol: 'SPY',
-  legs: [],
+  symbol: 'QQQ',
+  legs: [
+    {
+      buySell: BuySell.SELL,
+      callPut: OptionType.CALL,
+      delta: 0.5,
+    },
+    {
+      buySell: BuySell.SELL,
+      callPut: OptionType.PUT,
+      delta: 0.5,
+    },
+    {
+      buySell: BuySell.BUY,
+      callPut: OptionType.CALL,
+      delta: 0.01,
+    },
+    {
+      buySell: BuySell.BUY,
+      callPut: OptionType.PUT,
+      delta: 0.01,
+    },
+  ],
   emailAddress: 'none',
   phone: 'none'
 };
 
-export {ITradeSettings as default, IPrice};
+function GetDescription(tradeSettings: ITradeSettings) {
+  const part1 = `${tradeSettings.symbol}(${tradeSettings.quantity})`;
+  const part2 = `${tradeSettings.entryHour}:${tradeSettings.entryMinute}-${tradeSettings.exitHour}:${tradeSettings.exitMinute}`;
+  const part3 = `${tradeSettings.percentGain * 100}/${tradeSettings.percentLoss * 100} % D:${tradeSettings.dte}`;
+  return `${part1}\n${part2}\n${part3}`;
+}
+
+
+export {ITradeSettings as default, IPrice, GetDescription, DefaultTradeSettings};

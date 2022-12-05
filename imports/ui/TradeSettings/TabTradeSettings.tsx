@@ -3,7 +3,7 @@ import {Meteor} from 'meteor/meteor';
 import React, {useEffect, useState} from 'react';
 import {Alert, Button, Space, Tabs} from "antd";
 import {TradeSettingsEditor} from "./TradeSettingsEditor";
-import ITradeSettings from "../../Interfaces/ITradeSettings";
+import ITradeSettings, {GetDescription} from "../../Interfaces/ITradeSettings";
 
 function formatDescription(description) {
   const parts = description.split('\n');
@@ -11,9 +11,10 @@ function formatDescription(description) {
     {parts.map((part) => <div>{part}</div>)}
   </>);
 }
-function createTabItem(tradeSettings: ITradeSettings, index: number) {
+
+function createTabItem(tradeSettings: ITradeSettings) {
   return {
-    label: formatDescription(tradeSettings.description),
+    label: formatDescription(GetDescription(tradeSettings)),
     children: <TradeSettingsEditor tradeSettings={tradeSettings}/>,
     key: tradeSettings._id,
   };
@@ -50,7 +51,7 @@ function TabTradeSettings() {
         setErrorText(`Failed to get new trading strategies. Error: ${error}`);
         return;
       }
-      setItems([...items, createTabItem(settings, items.length)]);
+      setItems([...items, createTabItem(settings)]);
       setActiveKey(settings._id);
     });
   };
