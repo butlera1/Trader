@@ -7,7 +7,7 @@ import {Users} from '../collections/users';
 import GetOptionOrder from './Templates/GetOptionOrder';
 import {DefaultTradeSettings} from '../../imports/Interfaces/ITradeSettings';
 import {BuySell, OptionType} from '../../imports/Interfaces/ILegSettings';
-import {LogData, LogType} from "../collections/Logs";
+import {LogData} from "../collections/Logs";
 
 const clientId = 'PFVYW5LYNPRZH6Y1ZCY5OTBGINDLZDW8@AMER.OAUTHAP';
 const redirectUrl = 'https://localhost/traderOAuthCallback';
@@ -228,7 +228,7 @@ export async function GetATMOptionChains(symbol, userId, dte) {
   const token = await GetAccessToken(userId);
   if (!token) return null;
   const fromDate = dayjs().subtract(1, 'day');
-  const toDate = dayjs().add(dte+1, 'day');
+  const toDate = dayjs().add(dte + 1, 'day');
   const queryParams = new URLSearchParams({
     symbol,
     range: 'ALL',
@@ -255,26 +255,26 @@ export async function GetATMOptionChains(symbol, userId, dte) {
 }
 
 export async function PlaceOrder(userId, accountNumber, order) {
-    const token = await GetAccessToken(userId);
-    const options = {
-      method: 'POST',
-      headers: {
-        Authorization: `Bearer ${token}`,
-        'Content-Type': 'application/json'
-      },
-      body: JSON.stringify(order),
-    };
-    const response = await fetch(`https://api.tdameritrade.com/v1/accounts/${accountNumber}/orders`, options);
-    if (!response.ok) {
-      const msg = `Error: PlaceOrder method status is: ${response.status}`;
-      console.error(msg);
-      throw new Meteor.Error(msg);
-    }
-    // Get the returned order ID from the 'location' URI provided in the header.
-    const location = response.headers.get('location');
-    const index = location?.lastIndexOf('/');
-    const orderId = location?.substring(index + 1);
-    return orderId;
+  const token = await GetAccessToken(userId);
+  const options = {
+    method: 'POST',
+    headers: {
+      Authorization: `Bearer ${token}`,
+      'Content-Type': 'application/json'
+    },
+    body: JSON.stringify(order),
+  };
+  const response = await fetch(`https://api.tdameritrade.com/v1/accounts/${accountNumber}/orders`, options);
+  if (!response.ok) {
+    const msg = `Error: PlaceOrder method status is: ${response.status}`;
+    console.error(msg);
+    throw new Meteor.Error(msg);
+  }
+  // Get the returned order ID from the 'location' URI provided in the header.
+  const location = response.headers.get('location');
+  const index = location?.lastIndexOf('/');
+  const orderId = location?.substring(index + 1);
+  return orderId;
 }
 
 export async function IsOptionMarketOpenToday(userId) {
@@ -341,13 +341,12 @@ function getOptionAtDelta(options, desiredDelta) {
 }
 
 export function CreateMarketOrdersToOpenAndToClose(chains, tradeSettings) {
-  const {quantity, percentGain, percentLoss} = tradeSettings;
   // Get the DTE-specific option set.
   const putNames = Object.getOwnPropertyNames(chains.putExpDateMap);
   const chainName = putNames.find((name) => name.includes(`:${tradeSettings.dte}`));
   if (!chainName) {
     // No matching chain found so return false.
-    LogData(tradeSettings, 'No DTE-specific option chains found in CreateMarketOrdersToOpenAndToClose.', LogType.Info);
+    LogData(tradeSettings, `No DTE-specific option chains found in CreateMarketOrdersToOpenAndToClose. ${tradeSettings.description}`);
     return false;
   }
   const putsChain = chains.putExpDateMap[chainName];
