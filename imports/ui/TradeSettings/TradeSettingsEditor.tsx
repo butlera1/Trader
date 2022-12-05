@@ -168,7 +168,8 @@ export const TradeSettingsEditor = ({tradeSettings}: Props) => {
             <Select defaultValue={symbol} style={{width: 120}} onChange={(value) => onChange('symbol', value)}>
               <Select.Option value="QQQ">QQQ</Select.Option>
               <Select.Option value="SPY">SPY</Select.Option>
-              <Select.Option value="SPX">SPX</Select.Option>
+              <Select.Option value="$SPX.X">SPX</Select.Option>
+              <Select.Option value="$VIX.X">VIX</Select.Option>
             </Select>
           </Space>
         </Col>

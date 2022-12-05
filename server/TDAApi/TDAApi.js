@@ -266,7 +266,7 @@ export async function PlaceOrder(userId, accountNumber, order) {
   };
   const response = await fetch(`https://api.tdameritrade.com/v1/accounts/${accountNumber}/orders`, options);
   if (!response.ok) {
-    const msg = `Error: PlaceOrder method status is: ${response.status}`;
+    const msg = `Error: PlaceOrder method status is: ${response.status}\n${JSON.stringify(order)}`;
     console.error(msg);
     throw new Meteor.Error(msg);
   }
