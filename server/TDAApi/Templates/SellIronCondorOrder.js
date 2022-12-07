@@ -1,5 +1,6 @@
 import _ from 'lodash';
 import StuffLegParams from './StuffLegParams';
+import {BuySell, OptionType} from '../../../imports/Interfaces/ILegSettings';
 
 const SellIronCondorOrderForm = {
   'session': 'NORMAL',
@@ -44,25 +45,53 @@ const SellIronCondorOrderForm = {
   ],
 };
 
-function IronCondorMarketOrder(buyCall, sellCall, buyPut, sellPut, quantity, isToOpen) {
+function IronCondorMarketOrder(tradeSettings, isToOpen) {
+  const {quantity, legs} = tradeSettings;
   const form = _.cloneDeep(SellIronCondorOrderForm);
   const text = isToOpen ? '_TO_OPEN' : '_TO_CLOSE';
-  StuffLegParams(form.orderLegCollection[0], buyCall.symbol, quantity, `BUY${text}`);
-  StuffLegParams(form.orderLegCollection[1], sellCall.symbol, quantity, `SELL${text}`);
-  StuffLegParams(form.orderLegCollection[2], buyPut.symbol, quantity, `BUY${text}`);
-  StuffLegParams(form.orderLegCollection[3], sellPut.symbol, quantity, `SELL${text}`);
+  let buyCallSymbol = '';
+  let sellCallSymbol = '';
+  let buyPutSymbol = '';
+  let sellPutSymbol = '';
+  legs.forEach((leg) => {
+    const symbol = leg.option.symbol;
+    if (leg.buySell === BuySell.SELL) {
+      if (leg.callPut === OptionType.CALL) {
+        sellCallSymbol = symbol;
+      } else {
+        sellPutSymbol = symbol;
+      }
+    } else {
+      if (leg.callPut === OptionType.CALL) {
+        buyCallSymbol = symbol;
+      } else {
+        buyPutSymbol = symbol;
+      }
+    }
+  });
+  if (isToOpen) {
+    StuffLegParams(form.orderLegCollection[0], buyCallSymbol, quantity, `BUY${text}`);
+    StuffLegParams(form.orderLegCollection[1], sellCallSymbol, quantity, `SELL${text}`);
+    StuffLegParams(form.orderLegCollection[2], buyPutSymbol, quantity, `BUY${text}`);
+    StuffLegParams(form.orderLegCollection[3], sellPutSymbol, quantity, `SELL${text}`);
+  } else {
+    StuffLegParams(form.orderLegCollection[0], buyCallSymbol, quantity, `SELL${text}`);
+    StuffLegParams(form.orderLegCollection[1], sellCallSymbol, quantity, `BUY${text}`);
+    StuffLegParams(form.orderLegCollection[2], buyPutSymbol, quantity, `SELL${text}`);
+    StuffLegParams(form.orderLegCollection[3], sellPutSymbol, quantity, `BUY${text}`);
+  }
   return form;
 }
 
-function IronCondorLimitOrder(buyCall, sellCall, buyPut, sellPut, quantity, price) {
-  const form = IronCondorMarketOrder(buyCall, sellCall, buyPut, sellPut, quantity, false);
+function IronCondorLimitOrder(tradeSettings, price, isToOpen) {
+  const form = IronCondorMarketOrder(tradeSettings, isToOpen);
   form.orderType = 'NET_DEBIT';
   form.price = price.toString();
   return form;
 }
 
-function IronCondorStopOrder(buyCall, sellCall, buyPut, sellPut, quantity, price) {
-  const form = IronCondorMarketOrder(buyCall, sellCall, buyPut, sellPut, quantity, false);
+function IronCondorStopOrder(tradeSettings, price, isToOpen) {
+  const form = IronCondorMarketOrder(tradeSettings, isToOpen);
   form.orderType = 'STOP';
   form.stopType = 'MARK';
   form.stopPrice = price.toString();

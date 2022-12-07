@@ -26,6 +26,7 @@ interface ITradeSettings {
   days: string[],
   emailAddress?: string,
   phone?: string,
+  isIC?: boolean;
   legs: ILegSettings[],
   openingOrder?: any,
   closingOrder?: any,
@@ -43,6 +44,29 @@ interface ITradeSettings {
   lossLimit?: number,
 }
 
+const DefaultIronCondorLegsSettings = [
+  {
+    buySell: BuySell.SELL,
+    callPut: OptionType.CALL,
+    delta: 0.5,
+  },
+  {
+    buySell: BuySell.SELL,
+    callPut: OptionType.PUT,
+    delta: 0.5,
+  },
+  {
+    buySell: BuySell.BUY,
+    callPut: OptionType.CALL,
+    delta: 0.01,
+  },
+  {
+    buySell: BuySell.BUY,
+    callPut: OptionType.PUT,
+    delta: 0.01,
+  },
+];
+
 const DefaultTradeSettings: ITradeSettings = {
   isActive: false,
   isMocked: false,
@@ -56,28 +80,8 @@ const DefaultTradeSettings: ITradeSettings = {
   exitMinute: 30,
   quantity: 1,
   symbol: 'QQQ',
-  legs: [
-    {
-      buySell: BuySell.SELL,
-      callPut: OptionType.CALL,
-      delta: 0.5,
-    },
-    {
-      buySell: BuySell.SELL,
-      callPut: OptionType.PUT,
-      delta: 0.5,
-    },
-    {
-      buySell: BuySell.BUY,
-      callPut: OptionType.CALL,
-      delta: 0.01,
-    },
-    {
-      buySell: BuySell.BUY,
-      callPut: OptionType.PUT,
-      delta: 0.01,
-    },
-  ],
+  isIC: true,
+  legs: [...DefaultIronCondorLegsSettings],
   emailAddress: 'none',
   phone: 'none'
 };
@@ -90,4 +94,4 @@ function GetDescription(tradeSettings: ITradeSettings) {
 }
 
 
-export {ITradeSettings as default, IPrice, GetDescription, DefaultTradeSettings};
+export {ITradeSettings as default, IPrice, GetDescription, DefaultTradeSettings, DefaultIronCondorLegsSettings};

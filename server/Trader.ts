@@ -303,8 +303,8 @@ function CalculateFilledOrderPrice(order) {
 }
 
 function calculateIfOrderIsFilled(order) {
-  let isFilled = (order.status === 'FILLED');
-  order.childOrderStrategies?.forEach((childOrder) => isFilled = isFilled && calculateIfOrderIsFilled(childOrder));
+  let isFilled = (order?.status === 'FILLED');
+  order?.childOrderStrategies?.forEach((childOrder) => isFilled = isFilled && calculateIfOrderIsFilled(childOrder));
   return isFilled;
 }
 

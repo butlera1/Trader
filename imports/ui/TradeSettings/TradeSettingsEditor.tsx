@@ -3,7 +3,7 @@ import {Meteor} from 'meteor/meteor';
 import React, {useEffect} from 'react';
 import {Alert, Button, Checkbox, Col, InputNumber, Popconfirm, Row, Select, Space, Switch, TimePicker} from 'antd';
 import moment from 'moment';
-import ITradeSettings, {GetDescription} from '../../Interfaces/ITradeSettings';
+import ITradeSettings, {DefaultIronCondorLegsSettings, GetDescription} from '../../Interfaces/ITradeSettings';
 import './TradeSettings.css';
 import {LegsEditor} from './LegsEditor';
 import {QuestionCircleOutlined} from '@ant-design/icons';
@@ -34,6 +34,7 @@ export const TradeSettingsEditor = ({tradeSettings}: Props) => {
   const [quantity, setQuantity] = React.useState(tradeSettings.quantity);
   const [legs, setLegs] = React.useState(tradeSettings.legs);
   const [errorText, setErrorText] = React.useState(null);
+  const [isIC, setIsIC] = React.useState(tradeSettings.isIC || false);
 
   const setMap = {
     isActive: setIsActive,
@@ -51,6 +52,7 @@ export const TradeSettingsEditor = ({tradeSettings}: Props) => {
     dte: setDTE,
     quantity: setQuantity,
     legs: setLegs,
+    isIC: setIsIC,
   };
 
   useEffect(() => {
@@ -76,6 +78,7 @@ export const TradeSettingsEditor = ({tradeSettings}: Props) => {
         dte,
         quantity,
         legs,
+        isIC,
       };
       strategy.description = GetDescription(strategy);
       console.log(`Saving: `, strategy);
@@ -85,7 +88,7 @@ export const TradeSettingsEditor = ({tradeSettings}: Props) => {
         }
       });
     }, 1000);
-  }, [isActive, isMocked, symbol, days, entryHour, entryMinute, exitHour, exitMinute, percentGain, percentLoss, dte, quantity, legs]);
+  }, [isActive, isMocked, symbol, days, entryHour, entryMinute, exitHour, exitMinute, percentGain, percentLoss, dte, quantity, legs, isIC]);
 
   const RunNow = () => {
     return (
@@ -111,6 +114,10 @@ export const TradeSettingsEditor = ({tradeSettings}: Props) => {
 
   const onChange = (name, value) => {
     setMap[name](value);
+    if (name === 'isIC' && value === true) {
+      // Special case for isIC
+      setLegs([...DefaultIronCondorLegsSettings]);
+    }
   };
 
   const testRun = () => {
@@ -265,11 +272,17 @@ export const TradeSettingsEditor = ({tradeSettings}: Props) => {
               max={200}
               style={{width: '100px'}}
               onChange={(value) => onChange('quantity', value)}/>
+              <Checkbox
+                style={{marginLeft: 50}}
+                onChange={(e) => onChange('isIC', e.target.checked)}
+                defaultChecked={isIC}
+              />
+            <span>Is IC:</span>
           </Space>
         </Col>
       </Row>
       <div style={{margin: generalMargins}}>
-        <LegsEditor legs={legs} legsChangedCallback={setLegs}/>
+        <LegsEditor legs={legs} legsChangedCallback={setLegs} isIronCondor={isIC}/>
       </div>
     </>
   );

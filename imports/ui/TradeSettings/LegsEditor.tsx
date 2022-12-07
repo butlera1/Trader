@@ -6,19 +6,19 @@ import ILegSettings, {BuySell, DefaultLegSettings, OptionType} from '../../Inter
 import {DeleteOutlined} from '@ant-design/icons';
 
 
-export const LegsEditor = ({legs, legsChangedCallback}: { legs: ILegSettings[], legsChangedCallback: any }) => {
+export const LegsEditor = ({legs, legsChangedCallback, isIronCondor}: { legs: ILegSettings[], legsChangedCallback: any, isIronCondor: boolean }) => {
   const [errorText, setErrorText] = useState(null);
   
   let timerHandle = null;
-  
+
   const saveSettings = () => {
     if (timerHandle){
       Meteor.clearTimeout(timerHandle);
       timerHandle = null;
     }
-    timerHandle = Meteor.setTimeout(()=>legsChangedCallback([...legs]), 3000);
+    timerHandle = Meteor.setTimeout(()=>legsChangedCallback([...legs]), 2000);
   };
-  
+
   const GetUILegs = ({type}: { type: string }) => {
     const onDeleteLeg = (index) => {
       legs.splice(index, 1); // Remove one element
@@ -58,6 +58,7 @@ export const LegsEditor = ({legs, legsChangedCallback}: { legs: ILegSettings[], 
             </Col>
             <Col span={1} offset={5}>
               <Button
+                disabled={isIronCondor}
                 type={'text'}
                 size={'small'}
                 onClick={() => onDeleteLeg(index)}
@@ -105,8 +106,11 @@ export const LegsEditor = ({legs, legsChangedCallback}: { legs: ILegSettings[], 
         <Col span={12}>
           <div style={{background: 'green', color: 'white', marginRight: 10}}>
             <center>
-              <Button size={'small'} style={{background: 'green', color: 'white', marginRight: 10}}
-                      onClick={onClickCallsAdd}> +</Button>
+              <Button
+                disabled={isIronCondor}
+                size={'small'}
+                style={{background: isIronCondor ? 'gray' : 'green', color: 'white', marginRight: 10}}
+                onClick={onClickCallsAdd}> +</Button>
               CALLS
             </center>
           </div>
@@ -116,7 +120,7 @@ export const LegsEditor = ({legs, legsChangedCallback}: { legs: ILegSettings[], 
           <div style={{background: 'red', color: 'white', marginLeft: 10}}>
             <center>
               PUTS
-              <Button size="small" style={{background: 'red', color: 'white', marginLeft: 10}}
+              <Button disabled={isIronCondor} size="small" style={{background: isIronCondor ? 'gray' : 'red', color: 'white', marginLeft: 10}}
                       onClick={onClickPutsAdd}> +</Button></center>
           </div>
           <GetUILegs type={OptionType.PUT}/>

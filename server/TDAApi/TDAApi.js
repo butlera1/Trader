@@ -4,10 +4,11 @@ import dayjs from 'dayjs';
 import BuyStockOrderForm from './Templates/BuyStockOrderForm';
 import SellStraddleOrderForm from './Templates/SellStraddleOrderForm';
 import {Users} from '../collections/users';
-import GetOptionOrder from './Templates/GetOptionOrder';
+import GetOptionOrderBuysTriggeringSells from './Templates/GetOptionOrderBuysTriggeringSells';
 import {DefaultTradeSettings} from '../../imports/Interfaces/ITradeSettings';
 import {BuySell, OptionType} from '../../imports/Interfaces/ILegSettings';
 import {LogData} from "../collections/Logs";
+import {IronCondorMarketOrder} from './Templates/SellIronCondorOrder';
 
 const clientId = 'PFVYW5LYNPRZH6Y1ZCY5OTBGINDLZDW8@AMER.OAUTHAP';
 const redirectUrl = 'https://localhost/traderOAuthCallback';
@@ -176,11 +177,9 @@ export async function GetOrders(userId, accountNumber = '755541528', orderId) {
     };
     const response = await fetch(url, options);
     const orders = await response.json();
-    console.log(`ORDERS:\n ${JSON.stringify(orders)}`);
     return orders;
   } catch (error) {
-    console.error(error);
-    console.error(`TDAApi.GetOrders: tokenId:${tokenId}, accountNumber: ${accountNumber}`);
+    LogData(null,`TDAApi.GetOrders: tokenId:${tokenId}, accountNumber: ${accountNumber}`, error);
   }
 }
 
@@ -371,7 +370,14 @@ export function CreateMarketOrdersToOpenAndToClose(chains, tradeSettings) {
   });
   tradeSettings.csvSymbols = csvSymbols.slice(1); // Remove leading comma and save for later.
   tradeSettings.openingPrice = openingPrice; // Expected openingPrice. Will be used if isMocked. Order filled replaces.
-  tradeSettings.openingOrder = GetOptionOrder(tradeSettings.legs, tradeSettings.quantity, false);
-  tradeSettings.closingOrder = GetOptionOrder(tradeSettings.legs, tradeSettings.quantity, true);
+  if (tradeSettings.isIC) {
+    // Create Iron Condor orders to open and to close.
+    tradeSettings.openingOrder = IronCondorMarketOrder(tradeSettings, true);
+    tradeSettings.closingOrder = IronCondorMarketOrder(tradeSettings, false);
+  } else {
+    // Create market orders for open and close by having buys triggering the sell items.
+    tradeSettings.openingOrder = GetOptionOrderBuysTriggeringSells(tradeSettings.legs, tradeSettings.quantity, false);
+    tradeSettings.closingOrder = GetOptionOrderBuysTriggeringSells(tradeSettings.legs, tradeSettings.quantity, true);
+  }
   return true;
 }
