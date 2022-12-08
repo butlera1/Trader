@@ -12,18 +12,15 @@ const columns: ColumnsType<ITradeSettings> = [
   {
     title: 'Symbol',
     dataIndex: 'symbol',
-    ellipsis: true,
-    width: 80,
     key: 'symbol',
     render: (_, record) => {
       const text = GetDescription(record);
-      return (<a title={text}>{text}</a>);
+      return (<a title={text}>{record.symbol}</a>);
     },
   },
   {
     title: 'Mocked',
     dataIndex: 'isMocked',
-    width: 80,
     key: 'isMocked',
     align: 'center',
     render: isMocked => isMocked ? 'True' : 'False',
@@ -31,7 +28,6 @@ const columns: ColumnsType<ITradeSettings> = [
   {
     title: 'Qty',
     dataIndex: 'quantity',
-    width: 50,
     align: 'center',
     key: 'quantity',
   },
