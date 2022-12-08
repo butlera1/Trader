@@ -3,7 +3,7 @@ import {Meteor} from 'meteor/meteor';
 // @ts-ignore
 import {Email} from 'meteor/email';
 import {
-  CreateMarketOrdersToOpenAndToClose,
+  CreateOpenAndCloseOrders,
   GetATMOptionChains,
   GetOrders,
   GetPriceForOptions,
@@ -247,15 +247,9 @@ function MonitorTradeToCloseItOut(tradeSettings: ITradeSettings) {
           whyClosed = 'lossLimit';
         }
         if (isEndOfDay) {
-          whyClosed = 'earlyExit';
+          whyClosed = 'timedExit';
         }
         await CloseTrade(tradeSettings, whyClosed, currentPrice);
-      } else {
-        const message = `MonitorTradeToCloseItOut: Entry: $${openingPrice.toFixed(2)}, ` +
-          `Current: $${currentPrice.toFixed(2)}, ` +
-          `GainLimit: $${gainLimit.toFixed(2)}, LossLimit: $${lossLimit.toFixed(2)}, ` +
-          `G/L $${possibleGain.toFixed(2)}, ID: ${tradeSettings._id}`;
-        console.log(message);
       }
     } catch (ex) {
       timerHandle = clearInterval(timerHandle);
@@ -393,7 +387,7 @@ async function ExecuteTrade(tradeSettings: ITradeSettings, forceTheTrade = false
       // Place the opening trade and monitor it to later close it out.
       const chains = await GetATMOptionChains(tradeSettings.symbol, tradeSettings.userId, tradeSettings.dte);
       // The trade orders are assigned to the tradeSettings object.
-      const ordersReady = CreateMarketOrdersToOpenAndToClose(chains, tradeSettings);
+      const ordersReady = CreateOpenAndCloseOrders(chains, tradeSettings);
       if (ordersReady) {
         await PlaceOpeningOrderAndMonitorToClose(tradeSettings);
       }

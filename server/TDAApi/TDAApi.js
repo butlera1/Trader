@@ -179,7 +179,7 @@ export async function GetOrders(userId, accountNumber = '755541528', orderId) {
     const orders = await response.json();
     return orders;
   } catch (error) {
-    LogData(null,`TDAApi.GetOrders: tokenId:${tokenId}, accountNumber: ${accountNumber}`, error);
+    LogData(null, `TDAApi.GetOrders: tokenId:${tokenId}, accountNumber: ${accountNumber}`, error);
   }
 }
 
@@ -339,7 +339,7 @@ function getOptionAtDelta(options, desiredDelta) {
   return null;
 }
 
-export function CreateMarketOrdersToOpenAndToClose(chains, tradeSettings) {
+export function CreateOpenAndCloseOrders(chains, tradeSettings) {
   // Get the DTE-specific option set.
   const putNames = Object.getOwnPropertyNames(chains.putExpDateMap);
   const chainName = putNames.find((name) => name.includes(`:${tradeSettings.dte}`));
