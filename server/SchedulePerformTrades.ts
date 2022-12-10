@@ -25,7 +25,10 @@ function SchedulePerformTrades() {
           Meteor.clearTimeout(timerHandle);
           timerHandle = null;
         }
-        PerformTradeForAllUsers().then();
+        PerformTradeForAllUsers()
+          .catch((reason) => {
+            LogData(null, `Failed calling PerformTradeForAllUsers. Reason: ${reason}`, reason);
+          });
         SchedulePerformTrades();
       } catch (ex) {
         LogData(null, `Failed inside timeOut loop for 'Perform Trades For All Users' and 'SchedulePerformTrades'.`, ex);

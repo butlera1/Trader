@@ -439,7 +439,10 @@ async function PerformTradeForAllUsers() {
             Meteor.clearTimeout(timeoutHandle);
             timeoutHandle = null;
           }
-          ExecuteTrade(tradeSettings);
+          ExecuteTrade(tradeSettings)
+            .catch((reason) => {
+            LogData(tradeSettings, `Failed to ExecuteTrade ${user.username}. Reason: ${reason}`);
+          });
         }, delayInMilliseconds);
       } catch (ex) {
         LogData(tradeSettings, `Failed to schedule opening trade ${user.username}.`);
