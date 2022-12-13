@@ -12,4 +12,5 @@ interface ITradeResults {
   closingPrice?: number,
   tradeId: string,
   isMocked: boolean,
+  sum?: number,
 }

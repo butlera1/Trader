@@ -6,7 +6,8 @@ import {useTracker} from 'meteor/react-meteor-data';
 import LiveTrades from '../../Collections/LiveTrades';
 import ITradeSettings, {GetDescription} from '../../Interfaces/ITradeSettings';
 import {ColumnsType} from 'antd/lib/table';
-import {Table} from 'antd';
+import {Space, Table} from 'antd';
+import EmergencyCloseActiveTrades from '../EmergencyCloseActiveTrades';
 
 const columns: ColumnsType<ITradeSettings> = [
   {
@@ -88,10 +89,27 @@ const columns: ColumnsType<ITradeSettings> = [
   },
 ];
 
+function title() {
+  return (
+    <Space>
+      <h1>Active Trades</h1>
+      <EmergencyCloseActiveTrades/>
+    </Space>
+  );
+}
+
 function ActiveTradesTable() {
   const liveTrades: ITradeSettings[] = useTracker(() => LiveTrades.find({}).fetch());
-  return (<Table pagination={{pageSize: 5}} title={() => <h1>Active Trades</h1>} size="small"
-                 columns={columns} dataSource={liveTrades}></Table>);
+  return (
+    <Table
+      style={{border: 'solid 1px red'}}
+      pagination={{pageSize: 5}}
+      title={title}
+      size="small"
+      columns={columns}
+      dataSource={liveTrades}>
+    </Table>
+  );
 }
 
 export {ActiveTradesTable as default};

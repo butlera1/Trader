@@ -1,46 +1,14 @@
 import React, {useState} from 'react';
 // @ts-ignore
 import {Meteor} from 'meteor/meteor';
-import {Alert, Button, Col, Input, Popconfirm, Row, Space, Spin} from 'antd';
-import {QuestionCircleOutlined, UserOutlined} from '@ant-design/icons';
+import {Alert, Button, Col, Input, Row, Space, Spin} from 'antd';
+import {UserOutlined} from '@ant-design/icons';
 import Constants from '../Constants';
 
 let timeoutHandle = null;
 
 function UserSettings({userSettings}) {
   const [errorText, setErrorText] = useState(null);
-
-  const Emergency = () => {
-    return (
-      <Space>
-        <Popconfirm
-          title="Are you sure: CLOSE ALL TRADES?"
-          icon={<QuestionCircleOutlined style={{color: 'red'}}/>}
-          onConfirm={onEmergencyClick}
-          okText="Yes"
-          cancelText="No"
-        >
-          <Button
-            style={{marginLeft: 50, float: 'right'}}
-            type="primary"
-            shape="round"
-            size={'large'}
-            danger
-          >
-            Emergency: Close All Trades
-          </Button>
-        </Popconfirm>
-      </Space>
-    );
-  };
-
-  const onEmergencyClick = () => {
-    Meteor.call('EmergencyCloseAllTrades', (error, result) => {
-      if (error) {
-        setErrorText(`Failed calling EmergencyCloseAllTrades: ${error.toString()}`);
-      }
-    });
-  };
 
   const onChange = (propertyName, value) => {
     // setMap[propertyName](value);
@@ -97,7 +65,6 @@ function UserSettings({userSettings}) {
                         onChange={(e) => onChange('email', e.target.value)}/></Col>
             <Col><Input defaultValue={userSettings.phone} addonBefore={'Phone #'}
                         onChange={(e) => onChange('phone', e.target.value)}/></Col>
-            <Col><Emergency/></Col>
           </Space>
         </Row>
         :

@@ -78,7 +78,7 @@ function TabTradeSettings() {
   return (
     <div>
       <div style={{marginBottom: 16}}>
-        <Button type="primary" shape="round" onClick={add}>Add new strategy</Button>
+        <Button type="primary" shape="round" onClick={add} style={{marginTop: 5}}>Add new strategy</Button>
       </div>
       <Tabs
         hideAdd

@@ -101,7 +101,7 @@ export const TradeSettingsEditor = ({tradeSettings}: Props) => {
           cancelText="No"
         >
           <Button
-            style={{marginTop: 5, marginLeft: 530, marginBottom: -20, backgroundColor: 'lightgreen', color: 'black'}}
+            style={{marginTop: 5, marginLeft: 525, marginBottom: -20, backgroundColor: 'lightgreen', color: 'black'}}
             type="primary"
             shape="round"
           >
@@ -272,11 +272,11 @@ export const TradeSettingsEditor = ({tradeSettings}: Props) => {
               max={200}
               style={{width: '100px'}}
               onChange={(value) => onChange('quantity', value)}/>
-              <Checkbox
-                style={{marginLeft: 50}}
-                onChange={(e) => onChange('isIC', e.target.checked)}
-                defaultChecked={isIC}
-              />
+            <Checkbox
+              style={{marginLeft: 50}}
+              onChange={(e) => onChange('isIC', e.target.checked)}
+              defaultChecked={isIC}
+            />
             <span>Is IC:</span>
           </Space>
         </Col>

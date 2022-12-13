@@ -3,17 +3,17 @@ import React from 'react';
 import {Meteor} from 'meteor/meteor';
 import {Button} from 'antd';
 
-function Tools(){
+function Tools() {
   const getOrders = () => {
     Meteor.call('GetOrders', null, '755541528', (error, result) => {
-      if (error){
+      if (error) {
         console.error(error);
-      }else {
+      } else {
         console.log('Orders: ', result);
       }
     });
   };
-  return <Button onClick={getOrders}>Orders</Button>;
+  return <Button onClick={getOrders} style={{marginBottom: 2}}>Orders</Button>;
 }
 
 export default Tools;
