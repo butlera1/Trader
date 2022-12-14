@@ -18,7 +18,7 @@ const columns: ColumnsType<ITradeResults> = [
     title: 'Description',
     dataIndex: 'description',
     key: 'description',
-    render: description => description ?? 'None'
+    render: (description, record) => description ?? `${record.symbol}(${record.quantity})`
   },
   {
     title: 'Closed (NY)',
