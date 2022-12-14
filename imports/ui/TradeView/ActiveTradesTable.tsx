@@ -11,15 +11,6 @@ import EmergencyCloseActiveTrades from '../EmergencyCloseActiveTrades';
 
 const columns: ColumnsType<ITradeSettings> = [
   {
-    title: 'Symbol',
-    dataIndex: 'symbol',
-    key: 'symbol',
-    render: (_, record) => {
-      const text = GetDescription(record);
-      return (<a title={text}>{record.symbol}</a>);
-    },
-  },
-  {
     title: 'Mocked',
     dataIndex: 'isMocked',
     key: 'isMocked',
@@ -27,15 +18,10 @@ const columns: ColumnsType<ITradeSettings> = [
     render: isMocked => isMocked ? 'True' : 'False',
   },
   {
-    title: 'Qty',
-    dataIndex: 'quantity',
-    align: 'center',
-    key: 'quantity',
-  },
-  {
-    title: 'Opened At (NY)',
-    dataIndex: 'whenOpened',
-    key: 'whenOpened',
+    title: 'Description',
+    dataIndex: 'description',
+    key: 'description',
+    render: (description, record) => description ?? GetDescription(record)
   },
   {
     title: 'Opening Price',

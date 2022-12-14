@@ -225,7 +225,9 @@ export async function GetPriceForOptions(tradeSettings) {
 
 export async function GetATMOptionChains(symbol, userId, dte) {
   const token = await GetAccessToken(userId);
-  if (!token) return null;
+  if (!token) {
+    throw new Meteor.Error('GetATMOptionChains: No access token available.');
+  }
   const fromDate = dayjs().subtract(1, 'day');
   const toDate = dayjs().add(dte + 1, 'day');
   const queryParams = new URLSearchParams({

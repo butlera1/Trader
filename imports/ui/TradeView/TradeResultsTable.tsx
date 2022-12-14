@@ -8,15 +8,6 @@ import dayjs from 'dayjs';
 
 const columns: ColumnsType<ITradeResults> = [
   {
-    title: 'Symbol',
-    dataIndex: 'symbol',
-    key: 'symbol',
-    render: (_, record) => {
-      const text = record.description || record.symbol;
-      return (<a title={text}>{record.symbol}</a>);
-    },
-  },
-  {
     title: 'Mocked',
     dataIndex: 'isMocked',
     key: 'isMocked',
@@ -24,14 +15,10 @@ const columns: ColumnsType<ITradeResults> = [
     sorter: (a, b) => a.isMocked ? 1 : 0,
   },
   {
-    title: 'Qty',
-    dataIndex: 'quantity',
-    key: 'quantity',
-  },
-  {
-    title: 'Opened (NY)',
-    dataIndex: 'whenOpened',
-    key: 'whenOpened',
+    title: 'Description',
+    dataIndex: 'description',
+    key: 'description',
+    render: description => description ?? 'None'
   },
   {
     title: 'Closed (NY)',
@@ -43,12 +30,6 @@ const columns: ColumnsType<ITradeResults> = [
       const bDj = dayjs(b.whenClosed);
       return aDj.valueOf() - bDj.valueOf();
     },
-  },
-  {
-    title: 'Opening Price',
-    dataIndex: 'openingPrice',
-    key: 'openingPrice',
-    render: openingPrice => openingPrice.toFixed(2)
   },
   {
     title: 'Closing Price',
@@ -77,7 +58,7 @@ const columns: ColumnsType<ITradeResults> = [
 
 function TradeResultsTable() {
   const tradeResults: ITradeResults[] = useTracker(() => TradeResults.find({}, {sort: {whenClosed: -1}}).fetch());
-  return (<Table pagination={{pageSize: 5}} title={() => <h1>Trade Results</h1>} size="small" columns={columns}
+  return (<Table pagination={{pageSize: 10}} title={() => <h1>Trade Results</h1>} size="small" columns={columns}
                  dataSource={tradeResults}></Table>);
 }
 

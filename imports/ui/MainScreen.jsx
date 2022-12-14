@@ -3,7 +3,7 @@ import TabTradeSettings from './TradeSettings/TabTradeSettings';
 import UserSettings from './UserSettings';
 import {Meteor} from 'meteor/meteor';
 import {Space} from 'antd';
-import MonitorLiveTrades from './TradeView/MonitorLiveTrades';
+import TradeResultsView from './TradeView/TradeResultsView';
 import Tools from './Tools';
 import ActiveTradesTable from './TradeView/ActiveTradesTable';
 
@@ -28,7 +28,7 @@ export const MainScreen = () => {
         <ActiveTradesTable/>
         <TabTradeSettings/>
       </div>
-      <MonitorLiveTrades/>
+      <TradeResultsView/>
     </Space>
   </>);
 };

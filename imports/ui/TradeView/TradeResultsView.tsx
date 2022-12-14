@@ -4,7 +4,7 @@ import {useTracker} from 'meteor/react-meteor-data';
 import TradeResultsTable from './TradeResultsTable';
 import ChartResults from './ChartResults';
 
-function MonitorLiveTrades() {
+function TradeResultsView() {
   return (
     <>
       <ChartResults/>
@@ -13,4 +13,4 @@ function MonitorLiveTrades() {
   );
 }
 
-export default MonitorLiveTrades;
+export default TradeResultsView;
