@@ -6,6 +6,10 @@ import {ColumnsType} from 'antd/lib/table';
 import {Table} from 'antd';
 import dayjs from 'dayjs';
 
+function getDescription(record){
+  return record.description ?? `${record.symbol}(${record.quantity})`;
+}
+
 const columns: ColumnsType<ITradeResults> = [
   {
     title: 'Mocked',
@@ -18,7 +22,8 @@ const columns: ColumnsType<ITradeResults> = [
     title: 'Description',
     dataIndex: 'description',
     key: 'description',
-    render: (description, record) => description ?? `${record.symbol}(${record.quantity})`
+    render: (description, record) => getDescription(record),
+    sorter: (a, b) => getDescription(a).localeCompare(getDescription(b)),
   },
   {
     title: 'Closed (NY)',
