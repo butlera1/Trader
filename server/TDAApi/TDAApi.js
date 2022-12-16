@@ -246,9 +246,8 @@ export async function GetATMOptionChains(symbol, userId, dte) {
     },
   };
   const response = await fetch(url, options);
-  if (!response.ok) {
-    const msg = `Error: GetATMOptionChains method status is: ${response.status}`;
-    console.error(msg);
+  if (!response.ok || response.status !== 200) {
+    const msg = `Error: GetATMOptionChains method status: ${response.status}, ok: ${response.ok}, response: ${response}`;
     throw new Meteor.Error(msg);
   }
   const chains = await response.json();
@@ -338,7 +337,8 @@ function getOptionAtDelta(options, desiredDelta) {
     }
     lastOption = option;
   }
-  return null;
+  const msg = `NoOption: getOptionAtDelta delta: ${desiredDelta}. Options: ${JSON.stringify(options)}`;
+  throw new Meteor.Error(msg);
 }
 
 export function CreateOpenAndCloseOrders(chains, tradeSettings) {
