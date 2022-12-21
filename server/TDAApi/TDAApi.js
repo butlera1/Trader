@@ -9,6 +9,7 @@ import {DefaultTradeSettings} from '../../imports/Interfaces/ITradeSettings';
 import {BuySell, OptionType} from '../../imports/Interfaces/ILegSettings';
 import {LogData} from "../collections/Logs";
 import {IronCondorMarketOrder} from './Templates/SellIronCondorOrder';
+import {SendTextToAdmin} from '../SendOutInfo';
 
 const clientId = 'PFVYW5LYNPRZH6Y1ZCY5OTBGINDLZDW8@AMER.OAUTHAP';
 const redirectUrl = 'https://localhost/traderOAuthCallback';
@@ -183,6 +184,8 @@ export async function GetOrders(userId, accountNumber = '755541528', orderId) {
   }
 }
 
+let problemCounter = -1;
+
 export async function GetPriceForOptions(tradeSettings) {
   try {
     const token = await GetAccessToken(tradeSettings.userId);
@@ -205,6 +208,14 @@ export async function GetPriceForOptions(tradeSettings) {
     const quotes = Object.values(quotesData);
     quotes.forEach((quote) => {
       const leg = tradeSettings.legs.find((leg) => leg.option.symbol === quote.symbol);
+      if (!leg) {
+        problemCounter = (problemCounter + 1) % 100; // only send every 100 times.
+        if (problemCounter === 0) {
+          const msg = `Problem: GetPriceForOptions missing leg: quote.symbol: ${quote?.symbol}, legs: ${JSON.stringify(tradeSettings.legs)}`;
+          SendTextToAdmin(msg, 'Problem in GetPriceForOptions.');
+        }
+        return;
+      }
       // Below does the opposite math because we have already Opened these options, so we are looking at
       // "TO_CLOSE" pricing where we buy back something we sold and sell something we previously purchased.
       if (leg.buySell === BuySell.BUY) {

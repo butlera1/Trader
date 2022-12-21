@@ -90,7 +90,12 @@ function GetDescription(tradeSettings: ITradeSettings) {
   const part1 = `${tradeSettings.symbol}(${tradeSettings.quantity})`;
   const part2 = `${tradeSettings.entryHour}:${tradeSettings.entryMinute}-${tradeSettings.exitHour}:${tradeSettings.exitMinute}`;
   const part3 = `${tradeSettings.percentGain * 100}/${tradeSettings.percentLoss * 100} % D:${tradeSettings.dte}`;
-  return `${part1}\n${part2}\n${part3}`;
+  let part4 = '';
+  if (tradeSettings.csvSymbols) {
+    const regex = new RegExp(`${tradeSettings.symbol}_......`, 'g');
+    part4 = `\n${tradeSettings.csvSymbols.replace(regex, '')}`;
+  }
+  return `${part1}\n${part2}\n${part3}${part4}`;
 }
 
 

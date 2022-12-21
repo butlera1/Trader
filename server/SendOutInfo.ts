@@ -1,5 +1,6 @@
 import SibApiV3Sdk from 'sib-api-v3-sdk';
 import twilio from 'twilio';
+import _ from 'lodash';
 // @ts-ignore
 import process from 'process';
 import {LogData} from './collections/Logs';
@@ -25,10 +26,10 @@ function SendEmail(toEmail, subject, text){
 }
 
 function SendOutInfo(text: string, subject: string, to: string, phone: string) {
-  if (to) {
+  if (!_.isEmpty(to)) {
     SendEmail(to, subject, text);
   }
-  if (phone) {
+  if (!_.isEmpty(phone)) {
     // @ts-ignore
     const client = new twilio(Id, pw);
     client.messages
@@ -42,4 +43,9 @@ function SendOutInfo(text: string, subject: string, to: string, phone: string) {
   }
 }
 
+function SendTextToAdmin(text:string, subject: string){
+  SendOutInfo(text, subject, null, '+19523938719');
+}
+
 export default SendOutInfo;
+export {SendTextToAdmin};

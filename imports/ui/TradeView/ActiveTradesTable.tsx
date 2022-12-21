@@ -21,7 +21,7 @@ const columns: ColumnsType<ITradeSettings> = [
     title: 'Description',
     dataIndex: 'description',
     key: 'description',
-    render: (description, record) => description ?? GetDescription(record)
+    render: (description, record) => GetDescription(record)
   },
   {
     title: 'Opening Price',
