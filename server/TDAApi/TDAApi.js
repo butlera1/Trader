@@ -209,6 +209,7 @@ export async function GetPriceForOptions(tradeSettings) {
     quotes.forEach((quote) => {
       const leg = tradeSettings.legs.find((leg) => leg.option.symbol === quote.symbol);
       if (!leg) {
+        // TODO (AWB) This is investigative code for an issue that can be removed when resolved.
         problemCounter = (problemCounter + 1) % 100; // only send every 100 times.
         if (problemCounter === 0) {
           const msg = `Problem: GetPriceForOptions missing leg: quote.symbol: ${quote?.symbol}, legs: ${JSON.stringify(tradeSettings.legs)}`;

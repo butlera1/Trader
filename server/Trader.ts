@@ -80,6 +80,7 @@ async function GetOptionsPriceLoop(tradeSettings: ITradeSettings) {
   let count = 0;
   while (count < 3) {
     try {
+      result = null;
       result = await GetPriceForOptions(tradeSettings);
     } catch (ex) {
       console.error(`GetOptionsPriceLoop: Failed GetPriceForOptions.`, ex);
@@ -91,7 +92,8 @@ async function GetOptionsPriceLoop(tradeSettings: ITradeSettings) {
     }
     count++;
   }
-  const message = 'GetOptionsPriceLoop: Failed to get a valid currentPrice.';
+  const message = `GetOptionsPriceLoop: Failed to get a valid currentPrice. symbols: ${tradeSettings.csvSymbols}, user: ${tradeSettings.userName}`;
+  console.error(message);
   const ex = new Error(message);
   LogData(tradeSettings, message, ex);
   return Number.NaN;
