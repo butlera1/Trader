@@ -45,10 +45,7 @@ const SellIronCondorOrderForm = {
   ],
 };
 
-function IronCondorMarketOrder(tradeSettings, isToOpen) {
-  const {quantity, legs} = tradeSettings;
-  const form = _.cloneDeep(SellIronCondorOrderForm);
-  const text = isToOpen ? '_TO_OPEN' : '_TO_CLOSE';
+function Get4BuySellPutCallSymbols(legs) {
   let buyCallSymbol = '';
   let sellCallSymbol = '';
   let buyPutSymbol = '';
@@ -69,6 +66,14 @@ function IronCondorMarketOrder(tradeSettings, isToOpen) {
       }
     }
   });
+  return {buyCallSymbol, sellCallSymbol, buyPutSymbol, sellPutSymbol};
+}
+
+function IronCondorMarketOrder(tradeSettings, isToOpen) {
+  const {quantity, legs} = tradeSettings;
+  const form = _.cloneDeep(SellIronCondorOrderForm);
+  const text = isToOpen ? '_TO_OPEN' : '_TO_CLOSE';
+  const {buyCallSymbol, sellCallSymbol, buyPutSymbol, sellPutSymbol} = Get4BuySellPutCallSymbols(legs);
   if (isToOpen) {
     StuffLegParams(form.orderLegCollection[0], buyCallSymbol, quantity, `BUY${text}`);
     StuffLegParams(form.orderLegCollection[1], sellCallSymbol, quantity, `SELL${text}`);
@@ -105,4 +110,10 @@ function IronCondorSellMarketAtNoonOrder(buyCall, sellCall, buyPut, sellPut, qua
   return form;
 }
 
-export {IronCondorMarketOrder, IronCondorLimitOrder, IronCondorStopOrder, IronCondorSellMarketAtNoonOrder};
+export {
+  IronCondorMarketOrder,
+  IronCondorLimitOrder,
+  IronCondorStopOrder,
+  IronCondorSellMarketAtNoonOrder,
+  Get4BuySellPutCallSymbols
+};

@@ -6,17 +6,21 @@ import ILegSettings, {BuySell, DefaultLegSettings, OptionType} from '../../Inter
 import {DeleteOutlined} from '@ant-design/icons';
 
 
-export const LegsEditor = ({legs, legsChangedCallback, isIronCondor}: { legs: ILegSettings[], legsChangedCallback: any, isIronCondor: boolean }) => {
+export const LegsEditor = ({
+                             legs,
+                             legsChangedCallback,
+                             disableDelete
+                           }: { legs: ILegSettings[], legsChangedCallback: any, disableDelete: boolean }) => {
   const [errorText, setErrorText] = useState(null);
-  
+
   let timerHandle = null;
 
   const saveSettings = () => {
-    if (timerHandle){
+    if (timerHandle) {
       Meteor.clearTimeout(timerHandle);
       timerHandle = null;
     }
-    timerHandle = Meteor.setTimeout(()=>legsChangedCallback([...legs]), 2000);
+    timerHandle = Meteor.setTimeout(() => legsChangedCallback([...legs]), 2000);
   };
 
   const GetUILegs = ({type}: { type: string }) => {
@@ -24,66 +28,70 @@ export const LegsEditor = ({legs, legsChangedCallback, isIronCondor}: { legs: IL
       legs.splice(index, 1); // Remove one element
       legsChangedCallback([...legs]);
     };
-    
+
     const onChange = (name, index, value) => {
       legs[index][name] = value;
       saveSettings();
     };
-    
+
     const results = legs.map((leg, index) => {
       if (leg.callPut !== type) {
         return null;
       }
-      const marginLeft = (type === OptionType.PUT) ? 25 : 15;
+      const marginLeft = (type === OptionType.PUT) ? 15 : 0;
       return (
-          <Row key={`leg${index}`} style={{marginTop:5, marginLeft}}>
-            <Col span={4}>
-              <Select
-                defaultValue={leg.buySell}
-                style={{width: 70}}
-                onChange={(value) => onChange('buySell', index, value)}>
-                <Select.Option value={BuySell.BUY}>Buy</Select.Option>
-                <Select.Option value={BuySell.SELL}>Sell</Select.Option>
-              </Select>
-            </Col>
-            <Col span={4} offset={4}>
-              <InputNumber
-                min={0}
-                max={100}
-                addonAfter={'\u0394'}
-                style={{width:90}}
-                defaultValue={Math.trunc(leg.delta * 100)}
-                onChange={(value) => onChange('delta', index, value/100)}
-              />
-            </Col>
-            <Col span={1} offset={5}>
-              <Button
-                disabled={isIronCondor}
-                type={'text'}
-                size={'small'}
-                onClick={() => onDeleteLeg(index)}
-                style={{marginTop:4}}
-                danger
-              >
-                <DeleteOutlined/>
-              </Button>
-            </Col>
-          </Row>
+        <Row key={`leg${index}`} style={{marginTop: 5, marginLeft}}>
+          <Space>
+            <Select
+              defaultValue={leg.buySell}
+              style={{width: 50}}
+              onChange={(value) => onChange('buySell', index, value)}>
+              <Select.Option value={BuySell.BUY}>Buy</Select.Option>
+              <Select.Option value={BuySell.SELL}>Sell</Select.Option>
+            </Select>
+            <InputNumber
+              min={0}
+              max={100}
+              addonAfter={'\u0394'}
+              style={{width: 85}}
+              defaultValue={Math.trunc(leg.delta * 100)}
+              onChange={(value) => onChange('delta', index, value / 100)}
+            />
+            <InputNumber
+              min={0}
+              max={100}
+              defaultValue={leg.dte ?? 0}
+              addonAfter={'DTE'}
+              style={{width: 100}}
+              onChange={(value) => onChange('dte', index, value)}
+            />
+            <Button
+              disabled={disableDelete}
+              type={'text'}
+              size={'small'}
+              onClick={() => onDeleteLeg(index)}
+              style={{marginTop: 4, marginLeft: -15}}
+              danger
+            >
+              <DeleteOutlined/>
+            </Button>
+          </Space>
+        </Row>
       );
     });
     return results;
   };
-  
+
   const onClickCallsAdd = () => {
     legs.push({...DefaultLegSettings, callPut: OptionType.CALL});
     legsChangedCallback([...legs]);
   };
-  
+
   const onClickPutsAdd = () => {
     legs.push({...DefaultLegSettings, callPut: OptionType.PUT});
     legsChangedCallback([...legs]);
   };
-  
+
   return (
     <div>
       {errorText
@@ -107,9 +115,9 @@ export const LegsEditor = ({legs, legsChangedCallback, isIronCondor}: { legs: IL
           <div style={{background: 'green', color: 'white', marginRight: 10}}>
             <center>
               <Button
-                disabled={isIronCondor}
+                disabled={disableDelete}
                 size={'small'}
-                style={{background: isIronCondor ? 'gray' : 'green', color: 'white', marginRight: 10}}
+                style={{background: disableDelete ? 'gray' : 'green', color: 'white', marginRight: 10}}
                 onClick={onClickCallsAdd}> +</Button>
               CALLS
             </center>
@@ -120,7 +128,8 @@ export const LegsEditor = ({legs, legsChangedCallback, isIronCondor}: { legs: IL
           <div style={{background: 'red', color: 'white', marginLeft: 10}}>
             <center>
               PUTS
-              <Button disabled={isIronCondor} size="small" style={{background: isIronCondor ? 'gray' : 'red', color: 'white', marginLeft: 10}}
+              <Button disabled={disableDelete} size="small"
+                      style={{background: disableDelete ? 'gray' : 'red', color: 'white', marginLeft: 10}}
                       onClick={onClickPutsAdd}> +</Button></center>
           </div>
           <GetUILegs type={OptionType.PUT}/>

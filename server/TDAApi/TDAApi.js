@@ -1,4 +1,5 @@
 import {Meteor} from 'meteor/meteor';
+import _ from 'lodash';
 import {fetch} from 'meteor/fetch';
 import dayjs from 'dayjs';
 import BuyStockOrderForm from './Templates/BuyStockOrderForm';
@@ -9,7 +10,6 @@ import {DefaultTradeSettings} from '../../imports/Interfaces/ITradeSettings';
 import {BuySell, OptionType} from '../../imports/Interfaces/ILegSettings';
 import {LogData} from "../collections/Logs";
 import {IronCondorMarketOrder} from './Templates/SellIronCondorOrder';
-import {SendTextToAdmin} from '../SendOutInfo';
 
 const clientId = 'PFVYW5LYNPRZH6Y1ZCY5OTBGINDLZDW8@AMER.OAUTHAP';
 const redirectUrl = 'https://localhost/traderOAuthCallback';
@@ -184,8 +184,6 @@ export async function GetOrders(userId, accountNumber = '755541528', orderId) {
   }
 }
 
-let problemCounter = -1;
-
 export async function GetPriceForOptions(tradeSettings) {
   try {
     const token = await GetAccessToken(tradeSettings.userId);
@@ -206,17 +204,12 @@ export async function GetPriceForOptions(tradeSettings) {
     // Now scan the quotes and add/subtract up the price.
     let currentPrice = 0;
     const quotes = Object.values(quotesData);
+    if (quotes?.length === 1 && _.isString(quotes[0]) && quotes[0].includes('transactions per second restriction')) {
+      console.error(`GetPriceForOptions: Transactions for price check are too fast per second...`);
+      return {currentPrice: 0, quoteTime: dayjs()};
+    }
     quotes.forEach((quote) => {
       const leg = tradeSettings.legs.find((leg) => leg.option.symbol === quote.symbol);
-      if (!leg) {
-        // TODO (AWB) This is investigative code for an issue that can be removed when resolved.
-        problemCounter = (problemCounter + 1) % 100; // only send every 100 times.
-        if (problemCounter === 0) {
-          const msg = `Problem: GetPriceForOptions missing leg: quote.symbol: ${quote?.symbol}, legs: ${JSON.stringify(tradeSettings.legs)}`;
-          SendTextToAdmin(msg, 'Problem in GetPriceForOptions.');
-        }
-        return;
-      }
       // Below does the opposite math because we have already Opened these options, so we are looking at
       // "TO_CLOSE" pricing where we buy back something we sold and sell something we previously purchased.
       if (leg.buySell === BuySell.BUY) {
@@ -235,13 +228,17 @@ export async function GetPriceForOptions(tradeSettings) {
   }
 }
 
-export async function GetATMOptionChains(symbol, userId, dte) {
+export async function GetATMOptionChains(tradeSettings) {
+  const {symbol, userId} = tradeSettings;
   const token = await GetAccessToken(userId);
   if (!token) {
     throw new Meteor.Error('GetATMOptionChains: No access token available.');
   }
+  let maxDte = 0;
+  tradeSettings.legs.forEach((leg) => maxDte = Math.max(maxDte, leg.dte));
+  const weekendDays = (Math.round(maxDte / 7) * 2) + 2;
   const fromDate = dayjs().subtract(1, 'day');
-  const toDate = dayjs().add(dte + 1, 'day');
+  const toDate = dayjs().add(maxDte + weekendDays, 'day');
   const queryParams = new URLSearchParams({
     symbol,
     range: 'ALL',
@@ -353,21 +350,30 @@ function getOptionAtDelta(options, desiredDelta) {
   throw new Meteor.Error(msg);
 }
 
-export function CreateOpenAndCloseOrders(chains, tradeSettings) {
+function getOptionChainsAtOrNearDelta(chains, dte) {
   // Get the DTE-specific option set.
   const putNames = Object.getOwnPropertyNames(chains.putExpDateMap);
-  const chainName = putNames.find((name) => name.includes(`:${tradeSettings.dte}`));
+  let chainName = null;
+  let count = 0;
+  while (!chainName && count < 5) {
+    chainName = putNames.find((name) => name.endsWith(`:${dte + count}`));
+    count++;
+  }
   if (!chainName) {
-    // No matching chain found so return false.
-    LogData(tradeSettings, `No DTE-specific option chains found in CreateMarketOrdersToOpenAndToClose. ${tradeSettings.description}`);
-    return false;
+    // No matching chain found so return empty chains.
+    return {putsChain: {}, callsChain: {}};
   }
   const putsChain = chains.putExpDateMap[chainName];
   const callsChain = chains.callExpDateMap[chainName]; // Same name for both is correct.
+  return {putsChain, callsChain};
+}
+
+export function CreateOpenAndCloseOrders(chains, tradeSettings) {
   // For each leg, find the closest option based on Delta
   let csvSymbols = '';
   let openingPrice = 0.0;
   tradeSettings.legs.forEach((leg) => {
+    const {putsChain, callsChain} = getOptionChainsAtOrNearDelta(chains, leg.dte);
     if (leg.callPut === OptionType.CALL) {
       leg.option = getOptionAtDelta(callsChain, leg.delta);
     } else {
@@ -384,10 +390,17 @@ export function CreateOpenAndCloseOrders(chains, tradeSettings) {
   });
   tradeSettings.csvSymbols = csvSymbols.slice(1); // Remove leading comma and save for later.
   tradeSettings.openingPrice = openingPrice; // Expected openingPrice. Will be used if isMocked. Order filled replaces.
-  if (tradeSettings.isIC) {
-    // Create Iron Condor orders to open and to close.
-    tradeSettings.openingOrder = IronCondorMarketOrder(tradeSettings, true);
-    tradeSettings.closingOrder = IronCondorMarketOrder(tradeSettings, false);
+  if (tradeSettings.tradeType?.length > 0) {
+    if (tradeSettings.tradeType[0] === 'IC') {
+      // Create Iron Condor orders to open and to close.
+      tradeSettings.openingOrder = IronCondorMarketOrder(tradeSettings, true);
+      tradeSettings.closingOrder = IronCondorMarketOrder(tradeSettings, false);
+    }
+    if (tradeSettings.tradeType[0] === 'CS') {
+      // Create Calendar Spread orders to open and to close.
+      tradeSettings.openingOrder = CalendarSpreadMarketOrder(tradeSettings, true);
+      tradeSettings.closingOrder = CalendarSpreadMarketOrder(tradeSettings, false);
+    }
   } else {
     // Create market orders for open and close by having buys triggering the sell items.
     tradeSettings.openingOrder = GetOptionOrderBuysTriggeringSells(tradeSettings.legs, tradeSettings.quantity, false);

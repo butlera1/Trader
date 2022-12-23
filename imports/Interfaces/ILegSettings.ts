@@ -66,12 +66,14 @@ interface ILegSettings {
   callPut: OptionType,
   delta: number,
   option?: IOption,
+  dte: number,
 }
 
 const DefaultLegSettings = {
   buySell: BuySell.BUY,
   callPut: OptionType.CALL,
   delta: 0.50,
+  dte: 0,
 };
 
 export {ILegSettings as default, DefaultLegSettings, BuySell, OptionType};

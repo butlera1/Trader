@@ -72,6 +72,8 @@ function GetNewYorkTimeAt(hour: number, minute: number) {
   const newYorkTimeAtGivenHourAndMinuteText = `${dayjs().format('YYYY-MM-DD')}, ${hour}:${minute}:00 ${amPm} GMT-0${nyTimeZoneOffsetFromCurrentTimeZone}00`;
   return dayjs(newYorkTimeAtGivenHourAndMinuteText);
 }
+// Returns a Promise that resolves after "ms" Milliseconds
+const timer = ms => new Promise(res => setTimeout(res, ms));
 
 async function GetOptionsPriceLoop(tradeSettings: ITradeSettings) {
   let result = null;
@@ -91,6 +93,8 @@ async function GetOptionsPriceLoop(tradeSettings: ITradeSettings) {
       return currentPrice;
     }
     count++;
+    // Delay a second...
+    await timer(500);
   }
   const message = `GetOptionsPriceLoop: Failed to get a valid currentPrice. symbols: ${tradeSettings.csvSymbols}, user: ${tradeSettings.userName}`;
   console.error(message);
@@ -387,7 +391,7 @@ async function ExecuteTrade(tradeSettings: ITradeSettings, forceTheTrade = false
       tradeSettings.emailAddress = userSettings.email;
       LogData(tradeSettings, `Trading for ${tradeSettings.userName} @ ${nowNYText} (NY) with ${JSON.stringify(tradeSettings)}`);
       // Place the opening trade and monitor it to later close it out.
-      const chains = await GetATMOptionChains(tradeSettings.symbol, tradeSettings.userId, tradeSettings.dte);
+      const chains = await GetATMOptionChains(tradeSettings);
       // The trade orders are assigned to the tradeSettings object.
       const ordersReady = CreateOpenAndCloseOrders(chains, tradeSettings);
       if (ordersReady) {

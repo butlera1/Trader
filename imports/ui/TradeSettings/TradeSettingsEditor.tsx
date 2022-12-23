@@ -3,7 +3,11 @@ import {Meteor} from 'meteor/meteor';
 import React, {useEffect} from 'react';
 import {Alert, Button, Checkbox, Col, InputNumber, Popconfirm, Row, Select, Space, Switch, TimePicker} from 'antd';
 import moment from 'moment';
-import ITradeSettings, {DefaultIronCondorLegsSettings, GetDescription} from '../../Interfaces/ITradeSettings';
+import ITradeSettings, {
+  DefaultCalendarSpreadLegsSettings,
+  DefaultIronCondorLegsSettings,
+  GetDescription
+} from '../../Interfaces/ITradeSettings';
 import './TradeSettings.css';
 import {LegsEditor} from './LegsEditor';
 import {QuestionCircleOutlined} from '@ant-design/icons';
@@ -30,11 +34,10 @@ export const TradeSettingsEditor = ({tradeSettings}: Props) => {
   const [exitAmPm, setExitAmPm] = React.useState(tradeSettings.exitHour > 11 ? 'pm' : 'am');
   const [percentGain, setPercentGain] = React.useState(tradeSettings.percentGain);
   const [percentLoss, setPercentLoss] = React.useState(tradeSettings.percentLoss);
-  const [dte, setDTE] = React.useState(tradeSettings.dte);
   const [quantity, setQuantity] = React.useState(tradeSettings.quantity);
   const [legs, setLegs] = React.useState(tradeSettings.legs);
   const [errorText, setErrorText] = React.useState(null);
-  const [isIC, setIsIC] = React.useState(tradeSettings.isIC || false);
+  const [tradeType, setTradeType] = React.useState(tradeSettings.tradeType || false);
 
   const setMap = {
     isActive: setIsActive,
@@ -49,10 +52,9 @@ export const TradeSettingsEditor = ({tradeSettings}: Props) => {
     exitAmPm: setExitAmPm,
     percentGain: setPercentGain,
     percentLoss: setPercentLoss,
-    dte: setDTE,
     quantity: setQuantity,
     legs: setLegs,
-    isIC: setIsIC,
+    tradeType: setTradeType,
   };
 
   useEffect(() => {
@@ -75,10 +77,9 @@ export const TradeSettingsEditor = ({tradeSettings}: Props) => {
         exitMinute,
         percentGain,
         percentLoss,
-        dte,
         quantity,
         legs,
-        isIC,
+        tradeType,
       };
       strategy.description = GetDescription(strategy);
       console.log(`Saving: `, strategy);
@@ -88,7 +89,7 @@ export const TradeSettingsEditor = ({tradeSettings}: Props) => {
         }
       });
     }, 1000);
-  }, [isActive, isMocked, symbol, days, entryHour, entryMinute, exitHour, exitMinute, percentGain, percentLoss, dte, quantity, legs, isIC]);
+  }, [isActive, isMocked, symbol, days, entryHour, entryMinute, exitHour, exitMinute, percentGain, percentLoss, quantity, legs, tradeType]);
 
   const RunNow = () => {
     return (
@@ -112,12 +113,23 @@ export const TradeSettingsEditor = ({tradeSettings}: Props) => {
     );
   };
 
+  const onChangeTradeType = (value) => {
+    if (value.length > 1) {
+      value.splice(value.indexOf(tradeType[0]), 1);
+      if (value[0] === 'IC') {
+        // Special case for Iron Condor
+        setLegs([...DefaultIronCondorLegsSettings]);
+      }
+      if (value[0] === 'CS') {
+        // Special case for Calendar Spread
+        setLegs([...DefaultCalendarSpreadLegsSettings]);
+      }
+    }
+    setTradeType(value);
+  };
+
   const onChange = (name, value) => {
     setMap[name](value);
-    if (name === 'isIC' && value === true) {
-      // Special case for isIC
-      setLegs([...DefaultIronCondorLegsSettings]);
-    }
   };
 
   const testRun = () => {
@@ -254,35 +266,25 @@ export const TradeSettingsEditor = ({tradeSettings}: Props) => {
       </Row>
 
       <Row style={{margin: generalMargins}}>
-        <Col>
-          <Space>
-            <span>Days to Expire:</span>
-            <InputNumber
-              min={0}
-              max={100}
-              defaultValue={dte}
-              addonAfter={'days'}
-              style={{width: '100px'}}
-              onChange={(value) => onChange('dte', value)}
-            />
-            <span style={{marginLeft: 50}}>Quantity:</span>
+        <Col span={6}>
+            <span>Quantity:</span>
             <InputNumber
               defaultValue={quantity}
               min={1}
               max={200}
-              style={{width: '100px'}}
+              style={{width: '50px'}}
               onChange={(value) => onChange('quantity', value)}/>
-            <Checkbox
-              style={{marginLeft: 50}}
-              onChange={(e) => onChange('isIC', e.target.checked)}
-              defaultChecked={isIC}
-            />
-            <span>Is IC:</span>
-          </Space>
+        </Col>
+        <Col span={6}>
+        <CheckboxGroup
+                options={['IC', 'CS']}
+                onChange={onChangeTradeType}
+                value={tradeType}
+              />
         </Col>
       </Row>
       <div style={{margin: generalMargins}}>
-        <LegsEditor legs={legs} legsChangedCallback={setLegs} isIronCondor={isIC}/>
+        <LegsEditor legs={legs} legsChangedCallback={setLegs} disableDelete={tradeType.length > 0}/>
       </div>
     </>
   );

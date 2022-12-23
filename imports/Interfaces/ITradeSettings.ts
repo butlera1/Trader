@@ -14,7 +14,6 @@ interface ITradeSettings {
   description?: string;
   isActive: boolean,
   isMocked: boolean,
-  dte: number,
   percentGain: number,
   percentLoss: number,
   entryHour: number,
@@ -26,7 +25,7 @@ interface ITradeSettings {
   days: string[],
   emailAddress?: string,
   phone?: string,
-  isIC?: boolean;
+  tradeType?: string[];
   legs: ILegSettings[],
   openingOrder?: any,
   closingOrder?: any,
@@ -49,21 +48,52 @@ const DefaultIronCondorLegsSettings = [
     buySell: BuySell.SELL,
     callPut: OptionType.CALL,
     delta: 0.5,
+    dte: 0,
   },
   {
     buySell: BuySell.SELL,
     callPut: OptionType.PUT,
     delta: 0.5,
+    dte: 0,
   },
   {
     buySell: BuySell.BUY,
     callPut: OptionType.CALL,
     delta: 0.01,
+    dte: 0,
   },
   {
     buySell: BuySell.BUY,
     callPut: OptionType.PUT,
     delta: 0.01,
+    dte: 0,
+  },
+];
+
+const DefaultCalendarSpreadLegsSettings = [
+  {
+    buySell: BuySell.SELL,
+    callPut: OptionType.CALL,
+    delta: 0.5,
+    dte: 0,
+  },
+  {
+    buySell: BuySell.SELL,
+    callPut: OptionType.PUT,
+    delta: 0.5,
+    dte: 0,
+  },
+  {
+    buySell: BuySell.BUY,
+    callPut: OptionType.CALL,
+    delta: 0.5,
+    dte: 4,
+  },
+  {
+    buySell: BuySell.BUY,
+    callPut: OptionType.PUT,
+    delta: 0.5,
+    dte: 4,
   },
 ];
 
@@ -71,7 +101,6 @@ const DefaultTradeSettings: ITradeSettings = {
   isActive: false,
   isMocked: false,
   days: ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday'],
-  dte: 0,
   percentGain: 0.10,
   percentLoss: 1.00,
   entryHour: 9,
@@ -80,16 +109,17 @@ const DefaultTradeSettings: ITradeSettings = {
   exitMinute: 30,
   quantity: 1,
   symbol: 'QQQ',
-  isIC: true,
+  tradeType: ['IC'],
   legs: [...DefaultIronCondorLegsSettings],
   emailAddress: 'none',
   phone: 'none'
 };
 
 function GetDescription(tradeSettings: ITradeSettings) {
+  const type = tradeSettings.tradeType.length>0 ? tradeSettings.tradeType[0] : 'Cust';
   const part1 = `${tradeSettings.symbol}(${tradeSettings.quantity})`;
   const part2 = `${tradeSettings.entryHour}:${tradeSettings.entryMinute}-${tradeSettings.exitHour}:${tradeSettings.exitMinute}`;
-  const part3 = `${tradeSettings.percentGain * 100}/${tradeSettings.percentLoss * 100} % D:${tradeSettings.dte}`;
+  const part3 = `${tradeSettings.percentGain * 100}/${tradeSettings.percentLoss * 100} % ${type}`;
   let part4 = '';
   if (tradeSettings.csvSymbols) {
     const regex = new RegExp(`${tradeSettings.symbol}_......`, 'g');
@@ -99,4 +129,11 @@ function GetDescription(tradeSettings: ITradeSettings) {
 }
 
 
-export {ITradeSettings as default, IPrice, GetDescription, DefaultTradeSettings, DefaultIronCondorLegsSettings};
+export {
+  ITradeSettings as default,
+  IPrice,
+  GetDescription,
+  DefaultTradeSettings,
+  DefaultIronCondorLegsSettings,
+  DefaultCalendarSpreadLegsSettings
+};
