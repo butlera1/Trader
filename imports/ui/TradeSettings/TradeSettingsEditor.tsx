@@ -11,6 +11,7 @@ import ITradeSettings, {
 import './TradeSettings.css';
 import {LegsEditor} from './LegsEditor';
 import {QuestionCircleOutlined} from '@ant-design/icons';
+import _ from 'lodash';
 
 const CheckboxGroup = Checkbox.Group;
 const generalMargins = 30;
@@ -19,9 +20,10 @@ let timeoutHandle = null;
 
 type Props = {
   tradeSettings: ITradeSettings,
+  changeCallback: any,
 }
 
-export const TradeSettingsEditor = ({tradeSettings}: Props) => {
+export const TradeSettingsEditor = ({tradeSettings, changeCallback}: Props) => {
   const [isActive, setIsActive] = React.useState(tradeSettings.isActive);
   const [isMocked, setIsMocked] = React.useState(tradeSettings.isMocked);
   const [symbol, setSymbol] = React.useState(tradeSettings.symbol);
@@ -86,6 +88,10 @@ export const TradeSettingsEditor = ({tradeSettings}: Props) => {
       Meteor.call('SetUserTradeSettings', strategy, (error, result) => {
         if (error) {
           setErrorText(error.toString());
+        } else {
+          if (_.isFunction(changeCallback)) {
+            changeCallback();
+          }
         }
       });
     }, 1000);
@@ -93,7 +99,7 @@ export const TradeSettingsEditor = ({tradeSettings}: Props) => {
 
   const RunNow = () => {
     return (
-      <Space style={{margin: 0}}>
+      <Space style={{marginLeft: 10}}>
         <Popconfirm
           title="Are you sure: Run this trade now?"
           icon={<QuestionCircleOutlined style={{color: 'red'}}/>}
@@ -102,7 +108,7 @@ export const TradeSettingsEditor = ({tradeSettings}: Props) => {
           cancelText="No"
         >
           <Button
-            style={{marginTop: 5, marginLeft: 520, marginBottom: -20, backgroundColor: 'lightgreen', color: 'black'}}
+            style={{marginTop: 5, marginRight: -20, marginBottom: -20, backgroundColor: 'lightgreen', color: 'black'}}
             type="primary"
             shape="round"
           >
@@ -158,9 +164,8 @@ export const TradeSettingsEditor = ({tradeSettings}: Props) => {
           />
           : null
         }
-        <RunNow/>
       </Row>
-      <Row style={{margin: generalMargins, marginTop: -10}}>
+      <Row style={{margin: generalMargins, marginTop: 20}}>
         <Col span={6}>
           <Space>
             <span>Is Active:</span>
@@ -190,6 +195,7 @@ export const TradeSettingsEditor = ({tradeSettings}: Props) => {
               <Select.Option value="$SPX.X">SPX</Select.Option>
               <Select.Option value="$VIX.X">VIX</Select.Option>
             </Select>
+            <RunNow/>
           </Space>
         </Col>
       </Row>
@@ -267,20 +273,20 @@ export const TradeSettingsEditor = ({tradeSettings}: Props) => {
 
       <Row style={{margin: generalMargins}}>
         <Col span={6}>
-            <span>Quantity:</span>
-            <InputNumber
-              defaultValue={quantity}
-              min={1}
-              max={200}
-              style={{width: '50px'}}
-              onChange={(value) => onChange('quantity', value)}/>
+          <span>Quantity:</span>
+          <InputNumber
+            defaultValue={quantity}
+            min={1}
+            max={200}
+            style={{width: '50px'}}
+            onChange={(value) => onChange('quantity', value)}/>
         </Col>
         <Col span={6}>
-        <CheckboxGroup
-                options={['IC', 'CS']}
-                onChange={onChangeTradeType}
-                value={tradeType}
-              />
+          <CheckboxGroup
+            options={['IC', 'CS']}
+            onChange={onChangeTradeType}
+            value={tradeType}
+          />
         </Col>
       </Row>
       <div style={{margin: generalMargins}}>

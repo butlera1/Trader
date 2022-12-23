@@ -12,20 +12,21 @@ function formatDescription(description) {
   </>);
 }
 
-function createTabItem(tradeSettings: ITradeSettings) {
-  return {
-    label: formatDescription(GetDescription(tradeSettings)),
-    children: <TradeSettingsEditor tradeSettings={tradeSettings}/>,
-    key: tradeSettings._id,
-  };
-}
 
 function TabTradeSettings() {
   const [activeKey, setActiveKey] = useState(null);
   const [items, setItems] = useState([]);
   const [errorText, setErrorText] = useState(null);
 
-  useEffect(() => {
+  const createTabItem = (tradeSettings: ITradeSettings) => {
+    return {
+      label: formatDescription(GetDescription(tradeSettings)),
+      children: <TradeSettingsEditor tradeSettings={tradeSettings} changeCallback={updateItems}/>,
+      key: tradeSettings._id,
+    };
+  };
+
+  const updateItems = () => {
     Meteor.call('GetAllUserTradeSettings', (error, tradeSettingsArray) => {
       if (error) {
         setErrorText(`Failed to get trading strategies. Error: ${error}`);
@@ -39,7 +40,9 @@ function TabTradeSettings() {
         setActiveKey(null);
       }
     });
-  }, []);
+  };
+
+  useEffect(updateItems, []);
 
   const onChange = (key: string) => {
     setActiveKey(key);

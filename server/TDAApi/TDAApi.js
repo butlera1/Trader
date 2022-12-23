@@ -10,7 +10,6 @@ import {DefaultTradeSettings} from '../../imports/Interfaces/ITradeSettings';
 import {BuySell, OptionType} from '../../imports/Interfaces/ILegSettings';
 import {LogData} from "../collections/Logs";
 import {IronCondorMarketOrder} from './Templates/SellIronCondorOrder';
-import {CalendarSpreadMarketOrder} from './Templates/CalendarSpreadOrder';
 
 const clientId = 'PFVYW5LYNPRZH6Y1ZCY5OTBGINDLZDW8@AMER.OAUTHAP';
 const redirectUrl = 'https://localhost/traderOAuthCallback';
@@ -398,7 +397,7 @@ export function CreateOpenAndCloseOrders(chains, tradeSettings) {
       tradeSettings.closingOrder = IronCondorMarketOrder(tradeSettings, false);
     }
     if (tradeSettings.tradeType[0] === 'CS') {
-      // Create Iron Condor orders to open and to close (DBL DIAG).
+      // Create Double Diagonal orders to open and to close.
       tradeSettings.openingOrder = IronCondorMarketOrder(tradeSettings, true);
       tradeSettings.openingOrder.complexOrderStrategyType = 'DOUBLE_DIAGONAL';
       tradeSettings.closingOrder = IronCondorMarketOrder(tradeSettings, false);

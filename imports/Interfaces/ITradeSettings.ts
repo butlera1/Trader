@@ -125,9 +125,9 @@ function GetDescription(tradeSettings: ITradeSettings) {
   if (type === 'CS') {
     type = `${type}(${getTwoDTEValues(tradeSettings.legs)})`;
   }
-  const part1 = `${tradeSettings.symbol}(${tradeSettings.quantity})`;
+  const part1 = `${tradeSettings.symbol}(${tradeSettings.quantity}) ${type}`;
   const part2 = `${tradeSettings.entryHour}:${tradeSettings.entryMinute}-${tradeSettings.exitHour}:${tradeSettings.exitMinute}`;
-  const part3 = `${tradeSettings.percentGain * 100}/${tradeSettings.percentLoss * 100} % ${type}`;
+  const part3 = `${tradeSettings.percentGain * 100}/${tradeSettings.percentLoss * 100} %`;
   let part4 = '';
   if (tradeSettings.csvSymbols) {
     const regex = new RegExp(`${tradeSettings.symbol}_......`, 'g');
