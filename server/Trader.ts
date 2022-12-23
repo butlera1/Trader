@@ -73,7 +73,7 @@ function GetNewYorkTimeAt(hour: number, minute: number) {
   return dayjs(newYorkTimeAtGivenHourAndMinuteText);
 }
 // Returns a Promise that resolves after "ms" Milliseconds
-const timer = ms => new Promise(res => setTimeout(res, ms));
+const waitMs = ms => new Promise(res => setTimeout(res, ms));
 
 async function GetOptionsPriceLoop(tradeSettings: ITradeSettings) {
   let result = null;
@@ -84,22 +84,21 @@ async function GetOptionsPriceLoop(tradeSettings: ITradeSettings) {
     try {
       result = null;
       result = await GetPriceForOptions(tradeSettings);
+      if (_.isFinite(result?.currentPrice)) {
+        currentPrice = result?.currentPrice;
+        quoteTime = result?.quoteTime;
+        return currentPrice;
+      }
+      count++;
+      // Delay a little...
+      const randomMs = Math.trunc(Random.fraction()*1000) + 1000;
+      await waitMs(randomMs);
     } catch (ex) {
       console.error(`GetOptionsPriceLoop: Failed GetPriceForOptions.`, ex);
     }
-    if (result?.currentPrice) {
-      currentPrice = result?.currentPrice || Number.NaN;
-      quoteTime = result?.quoteTime;
-      return currentPrice;
-    }
-    count++;
-    // Delay a second...
-    await timer(500);
   }
-  const message = `GetOptionsPriceLoop: Failed to get a valid currentPrice. symbols: ${tradeSettings.csvSymbols}, user: ${tradeSettings.userName}`;
+  const message = `GetOptionsPriceLoop: Failed to get currentPrice (probably too fast). User: ${tradeSettings.userName}`;
   console.error(message);
-  const ex = new Error(message);
-  LogData(tradeSettings, message, ex);
   return Number.NaN;
 }
 
@@ -107,14 +106,20 @@ async function GetSmartOptionsPrice(tradeSettings: ITradeSettings) {
   const sampleSize = 4;
   let prices = [];
   for (let i = 0; i < sampleSize; i++) {
-    prices.push(await GetOptionsPriceLoop(tradeSettings));
+    const price = await GetOptionsPriceLoop(tradeSettings);
+    if (_.isFinite(price)) {
+      prices.push(price);
+    }
   }
-  // Remove the smallest number
-  prices = prices.sort().filter((_, i) => i);
-  // Remove the largest number
-  prices = prices.slice(0, prices.length - 1);
-  const average = (array) => array.reduce((a, b) => a + b) / array.length;
-  return average(prices);
+  if (prices.length > 0) {
+    // Remove the smallest number
+    prices = prices.sort().filter((_, i) => i);
+    // Remove the largest number
+    prices = prices.slice(0, prices.length - 1);
+    const average = (array) => array.reduce((a, b) => a + b) / array.length;
+    return Math.abs(average(prices));
+  }
+  return Number.NaN;
 }
 
 async function CloseTrade(tradeSettings: ITradeSettings, whyClosed: string, currentPrice: number) {
@@ -137,10 +142,7 @@ async function CloseTrade(tradeSettings: ITradeSettings, whyClosed: string, curr
   }
   tradeSettings.whenClosed = GetNewYorkTimeNowAsText();
   // Adding: one credit/sold, other debit/bought.
-  tradeSettings.gainLoss = (openingPrice + tradeSettings.closingPrice) * tradeSettings.quantity * 100.0;
-  if (openingPrice < 0) {
-    tradeSettings.gainLoss = -tradeSettings.gainLoss;
-  }
+  tradeSettings.gainLoss = calculateGain(tradeSettings, tradeSettings.closingPrice);
   const message = `Trade closed (${whyClosed}): Entry: $${openingPrice.toFixed(2)}, ` +
     `Exit: $${tradeSettings.closingPrice?.toFixed(2)}, ` +
     `G/L $${tradeSettings.gainLoss?.toFixed(2)} ID: ${tradeSettings._id}`;
@@ -199,6 +201,16 @@ function EmergencyCloseAllTrades() {
   }
 }
 
+function calculateGain(tradeSettings, currentPrice){
+  const {openingPrice, quantity} = tradeSettings;
+  let possibleGain = (Math.abs(openingPrice) - currentPrice) * 100.0 * quantity;
+  if (openingPrice > 0) {
+    // We are in a long position.
+    possibleGain = (Math.abs(currentPrice) - openingPrice) * 100.0 * quantity;
+  }
+  return possibleGain;
+}
+
 function MonitorTradeToCloseItOut(tradeSettings: ITradeSettings) {
   let timerHandle = null;
   const {
@@ -224,8 +236,7 @@ function MonitorTradeToCloseItOut(tradeSettings: ITradeSettings) {
       if (currentPrice === Number.NaN) {
         return; // Try again on next interval timeout.
       }
-      let possibleGain = (currentPrice + openingPrice) * 100.0 * tradeSettings.quantity;
-      if (openingPrice < 0) possibleGain = -possibleGain;
+      const possibleGain = calculateGain(tradeSettings, currentPrice);
       // Record price value for historical reference and charting.
       const whenNY = GetNewYorkTimeNowAsText();
       Trades.update(tradeSettings._id, {
@@ -343,9 +354,14 @@ function calculateLimits(tradeSettings) {
     percentLoss,
     openingPrice,
   } = tradeSettings;
-  // If long entry, the openingPrice is negative (debit) and positive if short (credit).
-  tradeSettings.gainLimit = Math.abs(openingPrice - openingPrice * percentGain);
-  tradeSettings.lossLimit = Math.abs(openingPrice + openingPrice * percentLoss);
+  // If long entry, the openingPrice is positive (debit) and negative if short (credit).
+  if (openingPrice > 0){
+    tradeSettings.gainLimit = Math.abs(openingPrice + openingPrice * percentGain);
+    tradeSettings.lossLimit = Math.abs(openingPrice - openingPrice * percentLoss);
+  } else {
+    tradeSettings.gainLimit = Math.abs(openingPrice - openingPrice * percentGain);
+    tradeSettings.lossLimit = Math.abs(openingPrice + openingPrice * percentLoss);
+  }
 }
 
 async function PlaceOpeningOrderAndMonitorToClose(tradeSettings: ITradeSettings) {
@@ -365,9 +381,7 @@ async function PlaceOpeningOrderAndMonitorToClose(tradeSettings: ITradeSettings)
   calculateLimits(tradeSettings);
   // Record this opening order data.
   Trades.insert({...tradeSettings});
-  const subject = `Opened trade ${tradeSettings.symbol}: ${tradeSettings.openingPrice}) at ${tradeSettings.whenOpened} NY`;
-  SendOutInfo(subject, subject, tradeSettings.emailAddress, tradeSettings.phone);
-  if (_.isNumber(tradeSettings.openingPrice)) {
+  if (_.isFinite(tradeSettings.openingPrice)) {
     MonitorTradeToCloseItOut(tradeSettings);
   }
   return;
@@ -422,7 +436,6 @@ async function PerformTradeForAllUsers() {
   const users = Users.find().fetch();
   users.forEach((async (user) => {
     const accountNumber = UserSettings.findOne(user._id)?.accountNumber;
-    LogData(null, `Checking user ${user.username} for active trade settings ...`, null);
     if (!accountNumber || accountNumber === 'None') {
       LogData(null, `User ${user.username} has no account number so skipping this user.`, null);
       return;
@@ -456,7 +469,6 @@ async function PerformTradeForAllUsers() {
     });
     LogData(null, `Scheduled ${countOfUsersTradesStarted} trades for user ${user.username} today.`);
   }));
-  LogData(null, `Completed "Perform Trade For All Users"...`, null);
 }
 
 export {

@@ -34,7 +34,7 @@ function LogData(tradeSettings: ITradeSettings | null, message: string, error: E
   Logs.insert({logType, tradeId: _id || 'System', message, when: when_NY});
   if (LogType.Error === logType) {
     const subject = `TRADER Failed to get current price.`;
-    const text = `${finalMessage}\n\n--Trader System`;
+    const text = `${finalMessage.substring(0, 1500)}\n\n--Trader System`;
     SendOutInfo(text, subject, emailAddress, phone);
     if (emailAddress !== adminEmail) {
       SendOutInfo(text, subject, adminEmail, adminPhone);

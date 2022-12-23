@@ -102,7 +102,7 @@ export const TradeSettingsEditor = ({tradeSettings}: Props) => {
           cancelText="No"
         >
           <Button
-            style={{marginTop: 5, marginLeft: 525, marginBottom: -20, backgroundColor: 'lightgreen', color: 'black'}}
+            style={{marginTop: 5, marginLeft: 520, marginBottom: -20, backgroundColor: 'lightgreen', color: 'black'}}
             type="primary"
             shape="round"
           >

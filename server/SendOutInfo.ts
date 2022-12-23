@@ -31,15 +31,15 @@ function SendOutInfo(text: string, subject: string, to: string, phone: string) {
   }
   if (!_.isEmpty(phone)) {
     // @ts-ignore
-    const client = new twilio(Id, pw);
-    client.messages
-      .create({
-        body: text,
-        to: phone,
-        from: '+14793703254', // Twilio validated phone number
-      })
-      .then()
-      .catch(reason => LogData(null, `Failed Twilio message: ${reason}`));
+    // const client = new twilio(Id, pw);
+    // client.messages
+    //   .create({
+    //     body: text,
+    //     to: phone,
+    //     from: '+14793703254', // Twilio validated phone number
+    //   })
+    //   .then()
+    //   .catch(reason => LogData(null, `Failed Twilio message: ${reason}`));
   }
 }
 

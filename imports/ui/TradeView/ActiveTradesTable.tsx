@@ -44,7 +44,7 @@ const columns: ColumnsType<ITradeSettings> = [
     }
   },
   {
-    title: 'Gain',
+    title: '$ Gain',
     key: 'gainLoss',
     dataIndex: 'gainLoss',
     align: 'right',

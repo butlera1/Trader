@@ -10,6 +10,7 @@ import {DefaultTradeSettings} from '../../imports/Interfaces/ITradeSettings';
 import {BuySell, OptionType} from '../../imports/Interfaces/ILegSettings';
 import {LogData} from "../collections/Logs";
 import {IronCondorMarketOrder} from './Templates/SellIronCondorOrder';
+import {CalendarSpreadMarketOrder} from './Templates/CalendarSpreadOrder';
 
 const clientId = 'PFVYW5LYNPRZH6Y1ZCY5OTBGINDLZDW8@AMER.OAUTHAP';
 const redirectUrl = 'https://localhost/traderOAuthCallback';
@@ -204,9 +205,9 @@ export async function GetPriceForOptions(tradeSettings) {
     // Now scan the quotes and add/subtract up the price.
     let currentPrice = 0;
     const quotes = Object.values(quotesData);
-    if (quotes?.length === 1 && _.isString(quotes[0]) && quotes[0].includes('transactions per second restriction')) {
+    if (quotes?.length === 1 && _.isString(quotes[0]) && quotes[0].includes('transactions per seconds restriction')) {
       console.error(`GetPriceForOptions: Transactions for price check are too fast per second...`);
-      return {currentPrice: 0, quoteTime: dayjs()};
+      return {currentPrice: Number.NaN, quoteTime: dayjs()};
     }
     quotes.forEach((quote) => {
       const leg = tradeSettings.legs.find((leg) => leg.option.symbol === quote.symbol);
@@ -397,9 +398,11 @@ export function CreateOpenAndCloseOrders(chains, tradeSettings) {
       tradeSettings.closingOrder = IronCondorMarketOrder(tradeSettings, false);
     }
     if (tradeSettings.tradeType[0] === 'CS') {
-      // Create Calendar Spread orders to open and to close.
-      tradeSettings.openingOrder = CalendarSpreadMarketOrder(tradeSettings, true);
-      tradeSettings.closingOrder = CalendarSpreadMarketOrder(tradeSettings, false);
+      // Create Iron Condor orders to open and to close (DBL DIAG).
+      tradeSettings.openingOrder = IronCondorMarketOrder(tradeSettings, true);
+      tradeSettings.openingOrder.complexOrderStrategyType = 'DOUBLE_DIAGONAL';
+      tradeSettings.closingOrder = IronCondorMarketOrder(tradeSettings, false);
+      tradeSettings.closingOrder.complexOrderStrategyType = 'DOUBLE_DIAGONAL';
     }
   } else {
     // Create market orders for open and close by having buys triggering the sell items.

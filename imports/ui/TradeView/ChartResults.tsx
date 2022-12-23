@@ -90,7 +90,7 @@ function ChartResults() {
 
   return (
     <Space>
-      <LineChart width={600} height={300} data={tradeResults ?? []} margin={{top: 5, right: 20, bottom: 5, left: 0}}>
+      <LineChart width={400} height={200} data={tradeResults ?? []} margin={{top: 5, right: 20, bottom: 5, left: 0}}>
         <Line type="monotone" dataKey="sum" stroke="blue"/>
         <Line type="monotone" dataKey="gainLoss" stroke="pink"/>
         <CartesianGrid stroke="#ccc" strokeDasharray="5 5"/>

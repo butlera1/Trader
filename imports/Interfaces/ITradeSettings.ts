@@ -114,9 +114,17 @@ const DefaultTradeSettings: ITradeSettings = {
   emailAddress: 'none',
   phone: 'none'
 };
-
+function getTwoDTEValues(legs){
+  if (legs.length != 4) {
+    return '???';
+  }
+  return `${legs[0].dte},${legs[2].dte}`
+}
 function GetDescription(tradeSettings: ITradeSettings) {
-  const type = tradeSettings.tradeType.length>0 ? tradeSettings.tradeType[0] : 'Cust';
+  let type = tradeSettings.tradeType.length>0 ? tradeSettings.tradeType[0] : 'Cust';
+  if (type === 'CS') {
+    type = `${type}(${getTwoDTEValues(tradeSettings.legs)})`;
+  }
   const part1 = `${tradeSettings.symbol}(${tradeSettings.quantity})`;
   const part2 = `${tradeSettings.entryHour}:${tradeSettings.entryMinute}-${tradeSettings.exitHour}:${tradeSettings.exitMinute}`;
   const part3 = `${tradeSettings.percentGain * 100}/${tradeSettings.percentLoss * 100} % ${type}`;

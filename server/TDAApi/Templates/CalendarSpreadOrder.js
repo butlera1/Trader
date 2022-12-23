@@ -3,7 +3,7 @@ import SellVerticalOrderForm from './SellVerticalOrderForm';
 import WrapFirstTriggersSecond from './WrapFirstTriggersSecond';
 
 function CalendarSpreadMarketOrder(tradeSettings, isToOpen) {
-  const {buyCallSymbol, sellCallSymbol, buyPutSymbol, sellPutSymbol} = Get4BuySellPutCallSymbols(legs);
+  const {buyCallSymbol, sellCallSymbol, buyPutSymbol, sellPutSymbol} = Get4BuySellPutCallSymbols(tradeSettings.legs);
   const callForm = SellVerticalOrderForm(buyCallSymbol, sellCallSymbol, tradeSettings.quantity, isToOpen);
   const putForm = SellVerticalOrderForm(buyPutSymbol, sellPutSymbol, tradeSettings.quantity, isToOpen);
   callForm.complexOrderStrategyType = 'CALENDAR';

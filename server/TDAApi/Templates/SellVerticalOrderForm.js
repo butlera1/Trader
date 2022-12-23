@@ -1,4 +1,5 @@
 import _ from 'lodash';
+import StuffLegParams from './StuffLegParams';
 
 const VerticalOrderTemplate = {
   'orderStrategyType': 'SINGLE',
@@ -26,11 +27,11 @@ const VerticalOrderTemplate = {
   ],
 };
 
-function VerticalOrderForm({buyOption, sellOption, quantity, isToOpen}) {
+function VerticalOrderForm(buyOptionSymbol, sellOptionSymbol, quantity, isToOpen) {
   const form = _.cloneDeep(VerticalOrderTemplate);
   const text = isToOpen ? '_TO_OPEN' : '_TO_CLOSE';
-  StuffLegParams(form.orderLegCollection[0], buyOption.symbol, quantity, `BUY${text}`);
-  StuffLegParams(form.orderLegCollection[1], sellOption.symbol, quantity, `SELL${text}`);
+  // StuffLegParams(form.orderLegCollection[0], buyOptionSymbol, quantity, `BUY${text}`);
+  // StuffLegParams(form.orderLegCollection[1], sellOptionSymbol, quantity, `SELL${text}`);
 
   return form;
 }

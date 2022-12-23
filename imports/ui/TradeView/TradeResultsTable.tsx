@@ -22,7 +22,7 @@ const columns: ColumnsType<ITradeResults> = [
     title: 'Description',
     dataIndex: 'description',
     key: 'description',
-    render: (description, record) => getDescription(record),
+    render: (description, record) => <span title={'test me out'} style={{color: 'blue'}}>{getDescription(record)}</span>,
     sorter: (a, b) => getDescription(a).localeCompare(getDescription(b)),
   },
   {
@@ -35,12 +35,6 @@ const columns: ColumnsType<ITradeResults> = [
       const bDj = dayjs(b.whenClosed);
       return aDj.valueOf() - bDj.valueOf();
     },
-  },
-  {
-    title: 'Closing Price',
-    dataIndex: 'closingPrice',
-    key: 'closingPrice',
-    render: closingPrice => closingPrice.toFixed(2)
   },
   {
     title: 'Gain',
