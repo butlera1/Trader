@@ -1,6 +1,10 @@
 import {Meteor} from 'meteor/meteor';
 import {Accounts} from 'meteor/accounts-base';
 import {UserSettings} from './collections/UserSettings';
+import {atob} from 'buffer';
+
+const pwArch = atob('TG92ZTJhbGwh');
+const pwJames = atob('VG9hZDI1MA==');
 
 function prepareAccounts(name, other) {
   let userRecord = Accounts.findUserByUsername(name);
@@ -24,6 +28,6 @@ function prepareAccounts(name, other) {
 }
 
 Meteor.startup(() => {
-  prepareAccounts('Arch', 'Love2all!');
-  prepareAccounts('James', 'Toad250');
+  prepareAccounts('Arch', pwArch);
+  prepareAccounts('James', pwJames);
 });

@@ -4,9 +4,10 @@ import {useTracker} from 'meteor/react-meteor-data';
 import {MainScreen} from './MainScreen';
 import 'antd/dist/antd.css';
 import {UserCodeScreen} from './UserCodeScreen';
+import {Spin} from 'antd';
 
 export const CodeOrMain = () => {
-  const [validatedUser, setValidatedUser] = React.useState(false);
+  const [validatedUser, setValidatedUser] = React.useState(null);
   const [error, setError] = React.useState(null);
 
   Meteor.call('GetAccessToken', (error, result) => {
@@ -16,10 +17,19 @@ export const CodeOrMain = () => {
     }
     setValidatedUser(result);
   });
+  const GetView = () => {
+    if (validatedUser === null) {
+      return (<Spin/>);
+    }
+      if (validatedUser) {
+        return (<MainScreen/>);
+    }
+      return (<UserCodeScreen/>);
+  };
 
   return (
     <div className="main">
-      {validatedUser ? <MainScreen/> : <UserCodeScreen/>}
+      <GetView/>
       {error ? <Alert
           message={error.toString()}
           type="error"
