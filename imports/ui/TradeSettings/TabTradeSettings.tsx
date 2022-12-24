@@ -21,12 +21,12 @@ function TabTradeSettings() {
   const createTabItem = (tradeSettings: ITradeSettings) => {
     return {
       label: formatDescription(GetDescription(tradeSettings)),
-      children: <TradeSettingsEditor tradeSettings={tradeSettings} changeCallback={updateItems}/>,
+      children: <TradeSettingsEditor tradeSettings={tradeSettings} changeCallback={() => updateItems(tradeSettings._id)}/>,
       key: tradeSettings._id,
     };
   };
 
-  const updateItems = () => {
+  const updateItems = (keyToActivate) => {
     Meteor.call('GetAllUserTradeSettings', (error, tradeSettingsArray) => {
       if (error) {
         setErrorText(`Failed to get trading strategies. Error: ${error}`);
@@ -35,7 +35,7 @@ function TabTradeSettings() {
       const items = tradeSettingsArray.map(createTabItem);
       setItems(items);
       if (items.length > 0) {
-        setActiveKey(items[0].key);
+          setActiveKey(keyToActivate ?? items[0].key);
       } else {
         setActiveKey(null);
       }
