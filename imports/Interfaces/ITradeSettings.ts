@@ -121,7 +121,7 @@ function getTwoDTEValues(legs){
   return `${legs[0].dte},${legs[2].dte}`
 }
 function GetDescription(tradeSettings: ITradeSettings) {
-  let type = tradeSettings.tradeType.length>0 ? tradeSettings.tradeType[0] : 'Cust';
+  let type = tradeSettings.tradeType?.length>0 ? tradeSettings.tradeType[0] : 'Cust';
   if (type === 'CS') {
     type = `${type}(${getTwoDTEValues(tradeSettings.legs)})`;
   }
