@@ -91,8 +91,8 @@ function ChartResults() {
   return (
     <Space>
       <LineChart width={400} height={200} data={tradeResults ?? []} margin={{top: 5, right: 20, bottom: 5, left: 0}}>
-        <Line type="monotone" dataKey="sum" stroke="blue"/>
-        <Line type="monotone" dataKey="gainLoss" stroke="pink"/>
+        <Line type="monotone" dataKey="sum" stroke="blue" dot={false}/>
+        <Line type="monotone" dataKey="gainLoss" stroke="pink" dot={false}/>
         <CartesianGrid stroke="#ccc" strokeDasharray="5 5"/>
         <XAxis dataKey="description"/>
         <YAxis/>

@@ -8,7 +8,7 @@ import ITradeSettings, {GetDescription} from "../../Interfaces/ITradeSettings";
 function formatDescription(description) {
   const parts = description.split('\n');
   return (<>
-    {parts.map((part) => <div>{part}</div>)}
+    {parts.map((part, index) => <div key={index}>{part}</div>)}
   </>);
 }
 

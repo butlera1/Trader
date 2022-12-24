@@ -84,7 +84,6 @@ export const TradeSettingsEditor = ({tradeSettings, changeCallback}: Props) => {
         tradeType,
       };
       strategy.description = GetDescription(strategy);
-      console.log(`Saving: `, strategy);
       Meteor.call('SetUserTradeSettings', strategy, (error, result) => {
         if (error) {
           setErrorText(error.toString());

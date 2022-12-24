@@ -114,14 +114,16 @@ const DefaultTradeSettings: ITradeSettings = {
   emailAddress: 'none',
   phone: 'none'
 };
-function getTwoDTEValues(legs){
+
+function getTwoDTEValues(legs) {
   if (legs.length != 4) {
     return '???';
   }
-  return `${legs[0].dte},${legs[2].dte}`
+  return `${legs[0].dte},${legs[2].dte}`;
 }
+
 function GetDescription(tradeSettings: ITradeSettings) {
-  let type = tradeSettings.tradeType?.length>0 ? tradeSettings.tradeType[0] : 'Cust';
+  let type = tradeSettings.tradeType?.length > 0 ? tradeSettings.tradeType[0] : 'Cust';
   if (type === 'CS') {
     type = `${type}(${getTwoDTEValues(tradeSettings.legs)})`;
   }

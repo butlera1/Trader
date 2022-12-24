@@ -6,7 +6,7 @@ import {ColumnsType} from 'antd/lib/table';
 import {Table} from 'antd';
 import dayjs from 'dayjs';
 
-function getDescription(record){
+function getDescription(record) {
   return record.description ?? `${record.symbol}(${record.quantity})`;
 }
 
@@ -22,7 +22,8 @@ const columns: ColumnsType<ITradeResults> = [
     title: 'Description',
     dataIndex: 'description',
     key: 'description',
-    render: (description, record) => <span title={'test me out'} style={{color: 'blue'}}>{getDescription(record)}</span>,
+    render: (description, record) => <span title={'test me out'}
+                                           style={{color: 'blue'}}>{getDescription(record)}</span>,
     sorter: (a, b) => getDescription(a).localeCompare(getDescription(b)),
   },
   {
@@ -57,8 +58,14 @@ const columns: ColumnsType<ITradeResults> = [
 
 function TradeResultsTable() {
   const tradeResults: ITradeResults[] = useTracker(() => TradeResults.find({}, {sort: {whenClosed: -1}}).fetch());
-  return (<Table pagination={{pageSize: 10}} title={() => <h1>Trade Results</h1>} size="small" columns={columns}
-                 dataSource={tradeResults}></Table>);
+  return (<Table
+      pagination={{pageSize: 10}}
+      title={() => <h1>Trade Results</h1>}
+      size="small" columns={columns}
+      dataSource={tradeResults}
+      rowKey="_id"
+    />
+  );
 }
 
 export default TradeResultsTable;
