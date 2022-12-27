@@ -112,11 +112,13 @@ async function GetSmartOptionsPrice(tradeSettings: ITradeSettings) {
     }
   }
   if (prices.length > 0) {
-    // Remove the smallest number
-    prices = prices.sort().filter((_, i) => i);
-    // Remove the largest number
-    prices = prices.slice(0, prices.length - 1);
-    const average = (array) => array.reduce((a, b) => a + b) / array.length;
+    if (prices.length > 3) {
+      // Remove the smallest number (index zero is filtered out since it's truthy is false).
+      prices = prices.sort().filter((_, i) => i);
+      // Remove the largest number
+      prices = prices.slice(0, prices.length - 1);
+    }
+    const average = (array) => array.reduce((a, b) => a + b, 0) / array.length;
     return Math.abs(average(prices));
   }
   return Number.NaN;
