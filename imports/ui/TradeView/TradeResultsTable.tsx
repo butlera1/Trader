@@ -5,12 +5,22 @@ import TradeResults from '../../Collections/TradeResults';
 import {ColumnsType} from 'antd/lib/table';
 import {Table} from 'antd';
 import dayjs from 'dayjs';
+import {DeleteOutlined} from '@ant-design/icons';
 
 function getDescription(record) {
   return record.description ?? `${record.symbol}(${record.quantity})`;
 }
 
+function deleteTradeResults(record:ITradeResults){
+  TradeResults.remove(record._id);
+}
+
 const columns: ColumnsType<ITradeResults> = [
+  {
+    title: <DeleteOutlined/>,
+    key: 'action',
+    render: (_:any, record: ITradeResults) => <a onClick={() => deleteTradeResults(record)}><DeleteOutlined/></a>,
+  },
   {
     title: 'Mocked',
     dataIndex: 'isMocked',

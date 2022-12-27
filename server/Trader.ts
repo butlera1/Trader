@@ -145,7 +145,7 @@ async function CloseTrade(tradeSettings: ITradeSettings, whyClosed: string, curr
   tradeSettings.whenClosed = GetNewYorkTimeNowAsText();
   // Adding: one credit/sold, other debit/bought.
   tradeSettings.gainLoss = calculateGain(tradeSettings, tradeSettings.closingPrice);
-  const message = `Trade closed (${whyClosed}): Entry: $${openingPrice.toFixed(2)}, ` +
+  const message = `${tradeSettings.userName}: Trade closed (${whyClosed}): Entry: $${openingPrice.toFixed(2)}, ` +
     `Exit: $${tradeSettings.closingPrice?.toFixed(2)}, ` +
     `G/L $${tradeSettings.gainLoss?.toFixed(2)} ID: ${tradeSettings._id}`;
   LogData(tradeSettings, message);
