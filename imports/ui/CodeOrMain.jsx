@@ -1,10 +1,9 @@
 import {Meteor} from 'meteor/meteor';
 import React from 'react';
-import {useTracker} from 'meteor/react-meteor-data';
 import {MainScreen} from './MainScreen';
 import 'antd/dist/antd.css';
 import {UserCodeScreen} from './UserCodeScreen';
-import {Spin} from 'antd';
+import {Alert, Button, Space, Spin} from 'antd';
 
 export const CodeOrMain = () => {
   const [validatedUser, setValidatedUser] = React.useState(null);
@@ -15,16 +14,20 @@ export const CodeOrMain = () => {
       setError(error);
       return;
     }
-    setValidatedUser(result);
+    if (result === null) {
+      setValidatedUser(false);
+    }else {
+      setValidatedUser(result);
+    }
   });
   const GetView = () => {
     if (validatedUser === null) {
       return (<Spin/>);
     }
-      if (validatedUser) {
-        return (<MainScreen/>);
+    if (validatedUser) {
+      return (<MainScreen/>);
     }
-      return (<UserCodeScreen/>);
+    return (<UserCodeScreen/>);
   };
 
   return (

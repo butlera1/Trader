@@ -25,7 +25,11 @@ export const UserCodeScreen = () => {
       if (error) {
         console.error(error);
       } else {
-        setAccessToken(result);
+        if (result === null) {
+          setAccessToken('Possible account issue (PW changed?).');
+        } else {
+          setAccessToken(result);
+        }
       }
     });
   };

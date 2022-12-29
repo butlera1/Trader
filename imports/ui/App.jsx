@@ -8,7 +8,7 @@ import {Spin} from 'antd';
 
 export const App = () => {
 
-  const user = useTracker(() => Meteor.user());
+  const user = useTracker(() => Meteor.user(), [Meteor.users]);
 
   const GetView = () => {
     if (user === undefined) return (<Spin/>);

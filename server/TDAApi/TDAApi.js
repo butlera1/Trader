@@ -74,6 +74,10 @@ async function GetNewAccessToken(userId, refreshToken) {
     throw new Meteor.Error(`Failed: GetNewAccessToken with ${ex}`);
   }
   if (response.status !== 200) {
+    if (response.status === 400){
+      console.log(`Possible security issue with account (PW changed?) for userId: ${userId}.`);
+      return null;
+    }
     const msg = `Error: GetNewAccessToken method status is: ${response.status}`;
     console.error(msg);
     throw new Meteor.Error(msg);
@@ -108,6 +112,10 @@ async function GetNewAccessAndRefreshToken(userId, currentRefreshToken) {
     throw new Meteor.Error(`Failed: GetNewAccessToken with ${ex}`);
   }
   if (response.status !== 200) {
+    if (response.status === 400){
+      console.log(`Possible security issue with account (PW changed?) for userId: ${userId}.`);
+      return null;
+    }
     const msg = `Error: GetNewAccessAndRefreshToken method status is: ${response.status}`;
     console.error(msg);
     throw new Meteor.Error(msg);
