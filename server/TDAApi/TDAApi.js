@@ -236,7 +236,7 @@ export async function GetATMOptionChains(tradeSettings) {
   }
   let maxDte = 0;
   tradeSettings.legs.forEach((leg) => maxDte = Math.max(maxDte, leg.dte));
-  const weekendDays = (Math.round(maxDte / 7) * 2) + 2;
+  const weekendDays = (Math.round(maxDte / 7) * 2) + 5;
   const fromDate = dayjs().subtract(1, 'day');
   const toDate = dayjs().add(maxDte + weekendDays, 'day');
   const queryParams = new URLSearchParams({
@@ -360,8 +360,8 @@ function getOptionChainsAtOrNearDelta(chains, dte) {
     count++;
   }
   if (!chainName) {
-    // No matching chain found so return empty chains.
-    return {putsChain: {}, callsChain: {}};
+    const msg = `Failed in 'getOptionChainAtOrNearDelta': putNames: ${putNames}, dte: ${dte}.`;
+    throw new Meteor.Error(msg);
   }
   const putsChain = chains.putExpDateMap[chainName];
   const callsChain = chains.callExpDateMap[chainName]; // Same name for both is correct.

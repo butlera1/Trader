@@ -93,7 +93,9 @@ function ActiveTradesTable() {
       title={title}
       size="small"
       columns={columns}
-      dataSource={liveTrades}>
+      rowKey="_id"
+      dataSource={liveTrades}
+    >
     </Table>
   );
 }
