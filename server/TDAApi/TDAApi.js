@@ -74,7 +74,7 @@ async function GetNewAccessToken(userId, refreshToken) {
     throw new Meteor.Error(`Failed: GetNewAccessToken with ${ex}`);
   }
   if (response.status !== 200) {
-    if (response.status === 400){
+    if (response.status === 400) {
       console.log(`Possible security issue with account (PW changed?) for userId: ${userId}.`);
       return null;
     }
@@ -112,7 +112,7 @@ async function GetNewAccessAndRefreshToken(userId, currentRefreshToken) {
     throw new Meteor.Error(`Failed: GetNewAccessToken with ${ex}`);
   }
   if (response.status !== 200) {
-    if (response.status === 400){
+    if (response.status === 400) {
       console.log(`Possible security issue with account (PW changed?) for userId: ${userId}.`);
       return null;
     }
@@ -191,6 +191,9 @@ export async function GetOrders(userId, accountNumber = '755541528', orderId) {
     LogData(null, `TDAApi.GetOrders: tokenId:${tokenId}, accountNumber: ${accountNumber}`, error);
   }
 }
+
+// Returns a Promise that resolves after "ms" Milliseconds
+export const WaitMs = ms => new Promise(res => setTimeout(res, ms));
 
 export async function GetPriceForOptions(tradeSettings) {
   try {

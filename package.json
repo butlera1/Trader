@@ -21,6 +21,7 @@
     "lodash": "^4.17.21",
     "meteor-node-stubs": "^1.2.1",
     "moment": "^2.29.4",
+    "mutexify": "^1.4.0",
     "react": "^17.0.2",
     "react-dom": "^17.0.2",
     "recharts": "^2.1.16",

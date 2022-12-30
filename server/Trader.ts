@@ -25,6 +25,9 @@ import {Random} from 'meteor/random';
 import _ from 'lodash';
 import {LogData} from "./collections/Logs";
 import SendOutInfo from './SendOutInfo';
+import mutexify from 'mutexify/promise';
+
+const lock = mutexify();
 
 dayjs.extend(duration);
 dayjs.extend(isoWeek);
@@ -59,7 +62,7 @@ function GetNewYorkTimeAt(hour: number, minute: number) {
   let timeZoneDifference = currentNYTime.getHours() - currentLocalTime.getHours();
   const currentTimeZoneOffset = currentLocalTime.getTimezoneOffset() / 60;
   let nyTimeZoneOffsetFromCurrentTimeZone = Math.abs(currentTimeZoneOffset - timeZoneDifference);
-  if (nyTimeZoneOffsetFromCurrentTimeZone > 12){
+  if (nyTimeZoneOffsetFromCurrentTimeZone > 12) {
     nyTimeZoneOffsetFromCurrentTimeZone = 24 - nyTimeZoneOffsetFromCurrentTimeZone;
   }
   let amPm = 'AM';
@@ -72,8 +75,6 @@ function GetNewYorkTimeAt(hour: number, minute: number) {
   const newYorkTimeAtGivenHourAndMinuteText = `${dayjs().format('YYYY-MM-DD')}, ${hour}:${minute}:00 ${amPm} GMT-0${nyTimeZoneOffsetFromCurrentTimeZone}00`;
   return dayjs(newYorkTimeAtGivenHourAndMinuteText);
 }
-// Returns a Promise that resolves after "ms" Milliseconds
-const waitMs = ms => new Promise(res => setTimeout(res, ms));
 
 async function GetOptionsPriceLoop(tradeSettings: ITradeSettings) {
   let result = null;
@@ -83,16 +84,15 @@ async function GetOptionsPriceLoop(tradeSettings: ITradeSettings) {
   while (count < 3) {
     try {
       result = null;
+      const release = await lock();
       result = await GetPriceForOptions(tradeSettings);
+      setTimeout(release, 1000);
       if (_.isFinite(result?.currentPrice)) {
         currentPrice = result?.currentPrice;
         quoteTime = result?.quoteTime;
         return currentPrice;
       }
       count++;
-      // Delay a little...
-      const randomMs = Math.trunc(Random.fraction()*1000) + 1000;
-      await waitMs(randomMs);
     } catch (ex) {
       console.error(`GetOptionsPriceLoop: Failed GetPriceForOptions.`, ex);
     }
@@ -103,7 +103,7 @@ async function GetOptionsPriceLoop(tradeSettings: ITradeSettings) {
 }
 
 async function GetSmartOptionsPrice(tradeSettings: ITradeSettings) {
-  const sampleSize = 4;
+  const sampleSize = 2;
   let prices = [];
   for (let i = 0; i < sampleSize; i++) {
     const price = await GetOptionsPriceLoop(tradeSettings);
@@ -203,7 +203,7 @@ function EmergencyCloseAllTrades() {
   }
 }
 
-function calculateGain(tradeSettings, currentPrice){
+function calculateGain(tradeSettings, currentPrice) {
   const {openingPrice, quantity} = tradeSettings;
   let possibleGain = (Math.abs(openingPrice) - currentPrice) * 100.0 * quantity;
   if (openingPrice > 0) {
@@ -357,7 +357,7 @@ function calculateLimits(tradeSettings) {
     openingPrice,
   } = tradeSettings;
   // If long entry, the openingPrice is positive (debit) and negative if short (credit).
-  if (openingPrice > 0){
+  if (openingPrice > 0) {
     tradeSettings.gainLimit = Math.abs(openingPrice + openingPrice * percentGain);
     tradeSettings.lossLimit = Math.abs(openingPrice - openingPrice * percentLoss);
   } else {
@@ -462,8 +462,8 @@ async function PerformTradeForAllUsers() {
           }
           ExecuteTrade(tradeSettings)
             .catch((reason) => {
-            LogData(tradeSettings, `Failed to ExecuteTrade ${user.username}. Reason: ${reason}`);
-          });
+              LogData(tradeSettings, `Failed to ExecuteTrade ${user.username}. Reason: ${reason}`);
+            });
         }, delayInMilliseconds);
       } catch (ex) {
         LogData(tradeSettings, `Failed to schedule opening trade ${user.username}.`);
