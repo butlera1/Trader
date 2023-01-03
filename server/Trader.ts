@@ -24,7 +24,7 @@ import {UserSettings} from './collections/UserSettings';
 import {Random} from 'meteor/random';
 import _ from 'lodash';
 import {LogData} from "./collections/Logs";
-import SendOutInfo from './SendOutInfo';
+import SendOutInfo, {SendTextToAdmin} from './SendOutInfo';
 import mutexify from 'mutexify/promise';
 
 const lock = mutexify();
@@ -132,7 +132,9 @@ async function CloseTrade(tradeSettings: ITradeSettings, whyClosed: string, curr
     tradeSettings.closingPrice = currentPrice;
   } else {
     tradeSettings.closingOrderId = await PlaceOrder(userId, accountNumber, closingOrder).catch(error => {
-      LogData(tradeSettings, error.toString(), error);
+      const msg = `CloseTrade ERROR. FAILED to close a trade!!! ${error.toString()}`;
+      LogData(tradeSettings, msg, error);
+      SendTextToAdmin(msg, msg);
       return null;
     });
     if (tradeSettings.closingOrderId) {
@@ -145,10 +147,6 @@ async function CloseTrade(tradeSettings: ITradeSettings, whyClosed: string, curr
   tradeSettings.whenClosed = GetNewYorkTimeNowAsText();
   // Adding: one credit/sold, other debit/bought.
   tradeSettings.gainLoss = calculateGain(tradeSettings, tradeSettings.closingPrice);
-  const message = `${tradeSettings.userName}: Trade closed (${whyClosed}): Entry: $${openingPrice.toFixed(2)}, ` +
-    `Exit: $${tradeSettings.closingPrice?.toFixed(2)}, ` +
-    `G/L $${tradeSettings.gainLoss?.toFixed(2)} ID: ${tradeSettings._id}`;
-  LogData(tradeSettings, message);
   Trades.update(tradeSettings._id, {
     $set: {
       closingOrderId: tradeSettings.closingOrderId,
@@ -173,6 +171,10 @@ async function CloseTrade(tradeSettings: ITradeSettings, whyClosed: string, curr
     whyClosed: tradeSettings.whyClosed,
   };
   TradeResults.insert(result);
+  const message = `${tradeSettings.userName}: Trade closed (${whyClosed}): Entry: $${openingPrice.toFixed(2)}, ` +
+    `Exit: $${tradeSettings.closingPrice?.toFixed(2)}, ` +
+    `G/L $${tradeSettings.gainLoss?.toFixed(2)} ID: ${tradeSettings._id}`;
+  LogData(tradeSettings, message);
   const subject = `Closed trade (${tradeSettings.whyClosed}) gain: $${tradeSettings.gainLoss.toFixed(2)} at ${tradeSettings.whenClosed} NY`;
   SendOutInfo(subject, subject, tradeSettings.emailAddress, tradeSettings.phone);
 }

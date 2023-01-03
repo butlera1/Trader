@@ -50,7 +50,7 @@ function CheckForAnyExistingTradesAndMonitorThem() {
   const text = `Trader rebooting: Found ${liveTrades.length} existing trades to start monitoring.`;
   SendOutInfo(text, text); // Send to admin
   liveTrades.forEach(async (tradeSettings) => {
-    LogData(tradeSettings, `BootTime: Start monitoring existing trade ${tradeSettings._id}.`);
+    LogData(tradeSettings, `BootTime: Start monitoring existing trade ${tradeSettings._id} for ${tradeSettings.userName}.`);
     MonitorTradeToCloseItOut(tradeSettings);
   });
 }

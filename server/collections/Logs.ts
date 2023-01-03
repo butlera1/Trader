@@ -1,7 +1,7 @@
 // @ts-ignore
 import {Mongo} from 'meteor/mongo';
 import ITradeSettings from "../../imports/Interfaces/ITradeSettings";
-import SendOutInfo from "../SendOutInfo";
+import SendOutInfo, {SendTextToAdmin} from "../SendOutInfo";
 import {atob} from 'buffer';
 import Constants from '../../imports/Constants';
 
@@ -30,15 +30,14 @@ function LogData(tradeSettings: ITradeSettings | null, message: string, error: E
     finalMessage = `${finalMessage}\n${error.toString()}\nStack:\n${error.stack}`;
     logType = LogType.Error;
   }
-  console.log(`LogData: ${finalMessage}`);
   Logs.insert({logType, tradeId: _id || 'System', message, when: when_NY});
   if (LogType.Error === logType) {
-    const subject = `TRADER Failed to get current price.`;
+    console.error(`LogData: ${finalMessage}`);
+    const subject = `TRADER EXCEPTION.`;
     const text = `${finalMessage.substring(0, 1500)}\n\n--Trader System`;
-    SendOutInfo(text, subject, emailAddress, phone);
-    if (emailAddress !== adminEmail) {
-      SendOutInfo(text, subject, adminEmail, adminPhone);
-    }
+    SendTextToAdmin(text, subject);
+  } else {
+    console.info(`LogData: ${finalMessage}`);
   }
 }
 

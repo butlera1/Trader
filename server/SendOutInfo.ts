@@ -13,21 +13,26 @@ const key = atob('eGtleXNpYi1mOTRjMzQxMDg4OWQzODQxMDllZTAwZjAyMTM4MTAyNDJmYzFiZW
 SibApiV3Sdk.ApiClient.instance.authentications['api-key'].apiKey = key;
 
 function SendEmail(toEmail, subject, text){
-  const sendSmtpEmail = new SibApiV3Sdk.SendSmtpEmail();
-  sendSmtpEmail.subject = subject;
-  sendSmtpEmail.textContent = text;
-  sendSmtpEmail.sender = {"name":"Arch","email":"archb@comcast.net"};
-  sendSmtpEmail.to = [{"email":toEmail,"name":toEmail}];
+  try {
+    const sendSmtpEmail = new SibApiV3Sdk.SendSmtpEmail();
+    sendSmtpEmail.subject = subject;
+    sendSmtpEmail.textContent = text;
+    sendSmtpEmail.sender = {"name": "Arch", "email": "archb@comcast.net"};
+    sendSmtpEmail.to = [{"email": toEmail, "name": toEmail}];
 
-  const apiInstance = new SibApiV3Sdk.TransactionalEmailsApi();
-  apiInstance.sendTransacEmail(sendSmtpEmail).then(function() { }, function(error) {
-    LogData(null, `Failed SendInBlue email message: ${error}`);
-  });
+    const apiInstance = new SibApiV3Sdk.TransactionalEmailsApi();
+    apiInstance.sendTransacEmail(sendSmtpEmail).then(function () {
+    }, function (error) {
+      LogData(null, `Failed SendInBlue email message: ${error}`);
+    });
+  } catch (e){
+    LogData(null, `Failed attempting SendInBlue email message: ${e}`);
+  }
 }
 
 function SendOutInfo(text: string, subject: string, to: string, phone: string) {
   if (!_.isEmpty(to)) {
-    SendEmail(to, subject, text);
+    // SendEmail(to, subject, text);
   }
   if (!_.isEmpty(phone)) {
     // @ts-ignore
@@ -44,7 +49,7 @@ function SendOutInfo(text: string, subject: string, to: string, phone: string) {
 }
 
 function SendTextToAdmin(text:string, subject: string){
-  SendOutInfo(text, subject, null, '+19523938719');
+  SendEmail(text, subject, subject,);
 }
 
 export default SendOutInfo;
