@@ -124,8 +124,7 @@ async function GetSmartOptionsPrice(tradeSettings: ITradeSettings) {
   return Number.NaN;
 }
 
-async function CloseTrade(tradeSettings: ITradeSettings, whyClosed: string, currentPrice: number) {
-  tradeSettings.whyClosed = whyClosed;
+async function CloseTrade(tradeSettings: ITradeSettings, currentPrice: number) {
   const {isMocked, userId, accountNumber, closingOrder, openingPrice} = tradeSettings;
   if (isMocked) {
     tradeSettings.closingOrderId = Random.id() + '_MOCKED';
@@ -139,7 +138,8 @@ async function CloseTrade(tradeSettings: ITradeSettings, whyClosed: string, curr
     });
     if (tradeSettings.closingOrderId) {
       tradeSettings.closingPrice = await WaitForOrderCompleted(userId, accountNumber, tradeSettings.closingOrderId).catch(reason => {
-        LogData(tradeSettings, reason, null);
+        const msg = `Exception waiting for order completion in CloseTrade: ${reason}.`;
+        LogData(tradeSettings, msg, new Meteor.Error(msg));
         return 0;
       });
     }
@@ -171,12 +171,11 @@ async function CloseTrade(tradeSettings: ITradeSettings, whyClosed: string, curr
     whyClosed: tradeSettings.whyClosed,
   };
   TradeResults.insert(result);
-  const message = `${tradeSettings.userName}: Trade closed (${whyClosed}): Entry: $${openingPrice.toFixed(2)}, ` +
+  const message = `${tradeSettings.userName}: Trade closed (${tradeSettings.whyClosed}): Entry: $${openingPrice.toFixed(2)}, ` +
     `Exit: $${tradeSettings.closingPrice?.toFixed(2)}, ` +
-    `G/L $${tradeSettings.gainLoss?.toFixed(2)} ID: ${tradeSettings._id}`;
+    `G/L $${tradeSettings.gainLoss?.toFixed(2)} at ${tradeSettings.whenClosed} NY, ID: ${tradeSettings._id}`;
   LogData(tradeSettings, message);
-  const subject = `Closed trade (${tradeSettings.whyClosed}) gain: $${tradeSettings.gainLoss.toFixed(2)} at ${tradeSettings.whenClosed} NY`;
-  SendOutInfo(subject, subject, tradeSettings.emailAddress, tradeSettings.phone);
+  SendOutInfo(message, message, tradeSettings.emailAddress, tradeSettings.phone);
 }
 
 function EmergencyCloseAllTrades() {
@@ -195,7 +194,8 @@ function EmergencyCloseAllTrades() {
       if (tradeSettings.monitoredPrices?.length > 0) {
         exitPrice = tradeSettings.monitoredPrices[tradeSettings.monitoredPrices.length - 1].price;
       }
-      await CloseTrade(tradeSettings, 'emergencyExit', exitPrice).catch(error => {
+      tradeSettings.whyClosed = 'emergencyExit';
+      await CloseTrade(tradeSettings, exitPrice).catch(error => {
         LogData(tradeSettings, error.toString(), error);
       });
     });
@@ -229,10 +229,10 @@ function MonitorTradeToCloseItOut(tradeSettings: ITradeSettings) {
   timerHandle = Meteor.setInterval(async () => {
     try {
       const activeTrade = Trades.findOne(_id);
-      if (activeTrade?.whyClosed) {
+      if (activeTrade?.whyClosed || tradeSettings.whyClosed) {
+        timerHandle = clearInterval(timerHandle);
         // trade has been completed already (probably emergency exit) so stop the interval timer and exit.
         LogData(tradeSettings, `MonitorTradeToCloseItOut: Trade ${tradeSettings._id} closed async, so stopping monitoring.`);
-        timerHandle = clearInterval(timerHandle);
         return;
       }
       // Get the current price for the trade.
@@ -263,14 +263,17 @@ function MonitorTradeToCloseItOut(tradeSettings: ITradeSettings) {
       }
       if (isGainLimit || isLossLimit || isEndOfDay) {
         timerHandle = clearInterval(timerHandle);
-        let whyClosed = 'gainLimit';
+        tradeSettings.whyClosed = 'gainLimit';
         if (isLossLimit) {
-          whyClosed = 'lossLimit';
+          tradeSettings.whyClosed = 'lossLimit';
         }
         if (isEndOfDay) {
-          whyClosed = 'timedExit';
+          tradeSettings.whyClosed = 'timedExit';
         }
-        await CloseTrade(tradeSettings, whyClosed, currentPrice);
+        await CloseTrade(tradeSettings, currentPrice).catch(reason => {
+          const msg = `Exception with MonitorTradeToCloseItOut(interval) waiting CloseTrade: ${reason}.`;
+          LogData(tradeSettings, msg, new Meteor.Error(msg));
+        });
       }
     } catch (ex) {
       timerHandle = clearInterval(timerHandle);
