@@ -211,6 +211,11 @@ export async function GetPriceForOptions(tradeSettings) {
       }
     };
     const response = await fetch(url, fetchOptions);
+    if (response.status !== 200) {
+      const msg = `Error: GetPriceForOptions fetch called failed. status: ${response.status}, ${JSON.stringify(response)}`;
+      console.error(msg);
+      return {currentPrice: Number.NaN, quoteTime: dayjs()};
+    }
     const quotesData = await response.json();
     // Now scan the quotes and add/subtract up the price.
     let currentPrice = 0;
@@ -235,7 +240,7 @@ export async function GetPriceForOptions(tradeSettings) {
   } catch (error) {
     const msg = `TDAApi.GetPriceForOptions: failed with: ${error}`;
     console.error(msg);
-    throw new Meteor.Error(msg);
+    return {currentPrice: Number.NaN, quoteTime: dayjs()};
   }
 }
 
