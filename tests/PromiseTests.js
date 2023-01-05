@@ -1,3 +1,4 @@
+
 async function thisThrows() {
   throw new Error("Thrown from thisThrows()");
 }

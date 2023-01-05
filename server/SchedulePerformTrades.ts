@@ -19,16 +19,13 @@ function SchedulePerformTrades() {
     const localTimeCheck = desiredTradeTime.format('MMM DD YYYY hh:mm a');
     const NYTimeCheck = desiredTradeTime.toDate().toLocaleString('en-US', {timeZone: 'America/New_York'});
     LogData(null, `Scheduling: 'Perform Trades For All Users' for ${localTimeCheck} local time or ${NYTimeCheck} NY time.`);
-    let timerHandle = Meteor.setTimeout(() => {
+    let timerHandle = Meteor.setTimeout(async () => {
       try {
         if (timerHandle) {
           Meteor.clearTimeout(timerHandle);
           timerHandle = null;
         }
-        PerformTradeForAllUsers()
-          .catch((reason) => {
-            LogData(null, `Failed calling PerformTradeForAllUsers. Reason: ${reason}`, reason);
-          });
+        await PerformTradeForAllUsers();
         SchedulePerformTrades();
       } catch (ex) {
         LogData(null, `Failed inside timeOut loop for 'Perform Trades For All Users' and 'SchedulePerformTrades'.`, ex);

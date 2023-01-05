@@ -225,7 +225,6 @@ function MonitorTradeToCloseItOut(tradeSettings: ITradeSettings) {
   const localEarlyExitTime = GetNewYorkTimeAt(exitHour, exitMinute);
   timerHandle = Meteor.setInterval(async () => {
     try {
-      console.debug(`Value of timerHandler: ${timerHandle}`);
       const activeTrade = Trades.findOne(_id);
       if (activeTrade?.whyClosed || tradeSettings.whyClosed) {
         timerHandle = consolidatedClearInterval(timerHandle);
@@ -439,6 +438,42 @@ No Legs: ${!hasLegsInTrade} with ${JSON.stringify(tradeSettings)}`;
   }
 }
 
+async function queueUsersTradesForTheDay(user) {
+  const accountNumber = UserSettings.findOne(user._id)?.accountNumber;
+  if (!accountNumber || accountNumber === 'None') {
+    LogData(null, `User ${user.username} has no account number so skipping this user.`, null);
+    return;
+  }
+  let countOfUsersTradesStarted = 0;
+  const tradeSettingsSet = TradeSettings.find({userId: user._id}).fetch();
+  tradeSettingsSet.forEach((tradeSettings: ITradeSettings) => {
+    try {
+      const desiredTradeTime = GetNewYorkTimeAt(tradeSettings.entryHour, tradeSettings.entryMinute);
+      let delayInMilliseconds = dayjs.duration(desiredTradeTime.diff(dayjs())).asMilliseconds();
+      if (delayInMilliseconds < 0) {
+        delayInMilliseconds = 0;
+      }
+      tradeSettings.accountNumber = accountNumber;
+      tradeSettings.userName = user.username;
+      countOfUsersTradesStarted++;
+      LogData(tradeSettings, `Scheduling opening trade for ${user.username} at ${desiredTradeTime.format('hh:mm a')}.`);
+      let timeoutHandle = Meteor.setTimeout(async () => {
+        if (timeoutHandle) {
+          Meteor.clearTimeout(timeoutHandle);
+          timeoutHandle = null;
+        }
+        await ExecuteTrade(tradeSettings)
+          .catch((reason) => {
+            LogData(tradeSettings, `Failed to ExecuteTrade ${user.username}. Reason: ${reason}`);
+          });
+      }, delayInMilliseconds);
+    } catch (ex) {
+      LogData(tradeSettings, `Failed to schedule opening trade ${user.username}.`);
+    }
+  });
+  LogData(null, `Scheduled ${countOfUsersTradesStarted} trades for user ${user.username} today.`);
+}
+
 async function PerformTradeForAllUsers() {
   LogData(null, `Entering "Perform Trade For All Users"...`, null);
   const userArch = Users.findOne({username: 'Arch'});
@@ -448,41 +483,7 @@ async function PerformTradeForAllUsers() {
     return;
   }
   const users = Users.find().fetch();
-  users.forEach((async (user) => {
-    const accountNumber = UserSettings.findOne(user._id)?.accountNumber;
-    if (!accountNumber || accountNumber === 'None') {
-      LogData(null, `User ${user.username} has no account number so skipping this user.`, null);
-      return;
-    }
-    let countOfUsersTradesStarted = 0;
-    const tradeSettingsSet = TradeSettings.find({userId: user._id}).fetch();
-    tradeSettingsSet.forEach((tradeSettings: ITradeSettings) => {
-      try {
-        const desiredTradeTime = GetNewYorkTimeAt(tradeSettings.entryHour, tradeSettings.entryMinute);
-        let delayInMilliseconds = dayjs.duration(desiredTradeTime.diff(dayjs())).asMilliseconds();
-        if (delayInMilliseconds < 0) {
-          delayInMilliseconds = 0;
-        }
-        tradeSettings.accountNumber = accountNumber;
-        tradeSettings.userName = user.username;
-        countOfUsersTradesStarted++;
-        LogData(tradeSettings, `Scheduling opening trade for ${user.username} at ${desiredTradeTime.format('hh:mm a')}.`);
-        let timeoutHandle = Meteor.setTimeout(() => {
-          if (timeoutHandle) {
-            Meteor.clearTimeout(timeoutHandle);
-            timeoutHandle = null;
-          }
-          ExecuteTrade(tradeSettings)
-            .catch((reason) => {
-              LogData(tradeSettings, `Failed to ExecuteTrade ${user.username}. Reason: ${reason}`);
-            });
-        }, delayInMilliseconds);
-      } catch (ex) {
-        LogData(tradeSettings, `Failed to schedule opening trade ${user.username}.`);
-      }
-    });
-    LogData(null, `Scheduled ${countOfUsersTradesStarted} trades for user ${user.username} today.`);
-  }));
+  users.forEach(queueUsersTradesForTheDay);
 }
 
 export {
