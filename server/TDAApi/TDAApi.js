@@ -185,6 +185,10 @@ export async function GetOrders(userId, accountNumber = '755541528', orderId) {
       }
     };
     const response = await fetch(url, options);
+    if (response.status !== 200) {
+      LogData(null, `TDAApi.GetOrders fetch returned: ${response.status} ${response}, tokenId:${tokenId}, accountNumber: ${accountNumber}`);
+      return null;
+    }
     const orders = await response.json();
     return orders;
   } catch (error) {

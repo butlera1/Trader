@@ -35,7 +35,8 @@ const isoWeekdayNames = ['skip', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', '
 
 const fiveSeconds = 5000;
 
-function clearInterval(timerHandle) {
+function consolidatedClearInterval(timerHandle) {
+  console.error(`Clearing timerHandle: ${timerHandle}`);
   if (timerHandle) {
     Meteor.clearInterval(timerHandle);
   }
@@ -79,7 +80,6 @@ function GetNewYorkTimeAt(hour: number, minute: number) {
 async function GetOptionsPriceLoop(tradeSettings: ITradeSettings) {
   let result = null;
   let currentPrice = Number.NaN;
-  let quoteTime = null;
   let count = 0;
   while (count < 3) {
     try {
@@ -88,9 +88,7 @@ async function GetOptionsPriceLoop(tradeSettings: ITradeSettings) {
       result = await GetPriceForOptions(tradeSettings);
       setTimeout(release, 1000);
       if (_.isFinite(result?.currentPrice)) {
-        currentPrice = result?.currentPrice;
-        quoteTime = result?.quoteTime;
-        return currentPrice;
+        return result.currentPrice;
       }
       count++;
     } catch (ex) {
@@ -175,7 +173,6 @@ async function CloseTrade(tradeSettings: ITradeSettings, currentPrice: number) {
     `Exit: $${tradeSettings.closingPrice?.toFixed(2)}, ` +
     `G/L $${tradeSettings.gainLoss?.toFixed(2)} at ${tradeSettings.whenClosed} NY, ID: ${tradeSettings._id}`;
   LogData(tradeSettings, message);
-  SendOutInfo(message, message, tradeSettings.emailAddress, tradeSettings.phone);
 }
 
 function EmergencyCloseAllTrades() {
@@ -228,9 +225,10 @@ function MonitorTradeToCloseItOut(tradeSettings: ITradeSettings) {
   const localEarlyExitTime = GetNewYorkTimeAt(exitHour, exitMinute);
   timerHandle = Meteor.setInterval(async () => {
     try {
+      console.debug(`Value of timerHandler: ${timerHandle}`);
       const activeTrade = Trades.findOne(_id);
       if (activeTrade?.whyClosed || tradeSettings.whyClosed) {
-        timerHandle = clearInterval(timerHandle);
+        timerHandle = consolidatedClearInterval(timerHandle);
         // trade has been completed already (probably emergency exit) so stop the interval timer and exit.
         LogData(tradeSettings, `MonitorTradeToCloseItOut: Trade ${tradeSettings._id} closed async, so stopping monitoring.`);
         return;
@@ -262,7 +260,7 @@ function MonitorTradeToCloseItOut(tradeSettings: ITradeSettings) {
         isLossLimit = (absCurrentPrice <= lossLimit);
       }
       if (isGainLimit || isLossLimit || isEndOfDay) {
-        timerHandle = clearInterval(timerHandle);
+        timerHandle = consolidatedClearInterval(timerHandle);
         tradeSettings.whyClosed = 'gainLimit';
         if (isLossLimit) {
           tradeSettings.whyClosed = 'lossLimit';
@@ -276,7 +274,7 @@ function MonitorTradeToCloseItOut(tradeSettings: ITradeSettings) {
         });
       }
     } catch (ex) {
-      timerHandle = clearInterval(timerHandle);
+      timerHandle = consolidatedClearInterval(timerHandle);
       // We have an emergency if this happens, so send communications.
       const message = `Trader has an exception in MonitorTradeToCloseItOut.`;
       LogData(tradeSettings, message, ex);
@@ -333,10 +331,19 @@ async function WaitForOrderCompleted(userId, accountNumber, orderId) {
     timerHandle = Meteor.setInterval(async () => {
       try {
         const order = await GetOrders(userId, accountNumber, orderId);
-        const isOrderFilled = calculateIfOrderIsFilled(order);
         counter++;
+        if (!order){
+          LogData(null, `WaitForOrderCompleted Failed calling GetOrders.`, null);
+          if (counter === 20) {
+            const msg = `Order ${orderId} not obtained. Rejecting WaitForOrderCompleted.`;
+            LogData(null, msg, null);
+            reject(msg);
+          }
+          return;
+        }
+        const isOrderFilled = calculateIfOrderIsFilled(order);
         if (isOrderFilled || counter === 20) {
-          timerHandle = clearInterval(timerHandle);
+          timerHandle = consolidatedClearInterval(timerHandle);
           const calculatedFillPrice = CalculateFilledOrderPrice(order);
           TradeOrders.insert({_id: orderId, calculatedFillPrice, order});
           if (counter === 20) {
@@ -346,7 +353,7 @@ async function WaitForOrderCompleted(userId, accountNumber, orderId) {
           resolve(calculatedFillPrice);
         }
       } catch (ex) {
-        timerHandle = clearInterval(timerHandle);
+        timerHandle = consolidatedClearInterval(timerHandle);
         const msg = `Failed while WaitingForOrderCompleted.`;
         LogData(null, msg, ex);
         reject(`${msg} ${ex}`);
