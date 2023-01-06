@@ -1,5 +1,5 @@
 import SibApiV3Sdk from 'sib-api-v3-sdk';
-import twilio from 'twilio';
+// import twilio from 'twilio';
 import _ from 'lodash';
 // @ts-ignore
 import process from 'process';
@@ -30,7 +30,7 @@ function SendEmail(toEmail, subject, text){
   }
 }
 
-function SendOutInfo(text: string, subject: string, to: string, phone: string) {
+function SendOutInfo(text: string, subject: string, to?: string, phone?: string) {
   if (!_.isEmpty(to)) {
     // SendEmail(to, subject, text);
   }

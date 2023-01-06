@@ -24,7 +24,7 @@ import {UserSettings} from './collections/UserSettings';
 import {Random} from 'meteor/random';
 import _ from 'lodash';
 import {LogData} from "./collections/Logs";
-import SendOutInfo, {SendTextToAdmin} from './SendOutInfo';
+import {SendTextToAdmin} from './SendOutInfo';
 import mutexify from 'mutexify/promise';
 
 const lock = mutexify();
@@ -34,14 +34,6 @@ dayjs.extend(isoWeek);
 const isoWeekdayNames = ['skip', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'];
 
 const fiveSeconds = 5000;
-
-function consolidatedClearInterval(timerHandle) {
-  console.error(`Clearing timerHandle: ${timerHandle}`);
-  if (timerHandle) {
-    Meteor.clearInterval(timerHandle);
-  }
-  return null;
-}
 
 function GetNewYorkTimeNowAsText() {
   const currentLocalTime = new Date();
@@ -53,11 +45,12 @@ function GetNewYorkTimeNowAsText() {
  * This assumes that any time zone differences from where the code is running and New York is in hours and single
  * digits at that.
  *
- * @param hour
+ * @param hourIn
  * @param minute
  * @returns {dayjs.Dayjs}
  */
-function GetNewYorkTimeAt(hour: number, minute: number) {
+function GetNewYorkTimeAt(hourIn: number, minute: number) {
+  let hour = hourIn;
   const currentLocalTime = new Date();
   const currentNYTime = new Date(currentLocalTime.toLocaleString('en-US', {timeZone: 'America/New_York'}));
   let timeZoneDifference = currentNYTime.getHours() - currentLocalTime.getHours();
@@ -79,7 +72,6 @@ function GetNewYorkTimeAt(hour: number, minute: number) {
 
 async function GetOptionsPriceLoop(tradeSettings: ITradeSettings) {
   let result = null;
-  let currentPrice = Number.NaN;
   let count = 0;
   while (count < 3) {
     try {
@@ -128,16 +120,16 @@ async function CloseTrade(tradeSettings: ITradeSettings, currentPrice: number) {
     tradeSettings.closingOrderId = Random.id() + '_MOCKED';
     tradeSettings.closingPrice = currentPrice;
   } else {
-    tradeSettings.closingOrderId = await PlaceOrder(userId, accountNumber, closingOrder).catch(error => {
-      const msg = `CloseTrade ERROR. FAILED to close a trade!!! ${error.toString()}`;
-      LogData(tradeSettings, msg, error);
+    tradeSettings.closingOrderId = await PlaceOrder(userId, accountNumber, closingOrder).catch(reason => {
+      const msg = `CloseTrade ERROR. FAILED to close a trade!!! ${reason.toString()}`;
+      LogData(tradeSettings, msg, reason);
       SendTextToAdmin(msg, msg);
       return null;
     });
     if (tradeSettings.closingOrderId) {
       tradeSettings.closingPrice = await WaitForOrderCompleted(userId, accountNumber, tradeSettings.closingOrderId).catch(reason => {
         const msg = `Exception waiting for order completion in CloseTrade: ${reason}.`;
-        LogData(tradeSettings, msg, new Meteor.Error(msg));
+        LogData(tradeSettings, msg, new Meteor.Error('FailedOrderCompletion', msg));
         return 0;
       });
     }
@@ -192,8 +184,8 @@ function EmergencyCloseAllTrades() {
         exitPrice = tradeSettings.monitoredPrices[tradeSettings.monitoredPrices.length - 1].price;
       }
       tradeSettings.whyClosed = 'emergencyExit';
-      await CloseTrade(tradeSettings, exitPrice).catch(error => {
-        LogData(tradeSettings, error.toString(), error);
+      await CloseTrade(tradeSettings, exitPrice).catch(reason => {
+        LogData(tradeSettings, reason.toString(), reason);
       });
     });
     return `${result} Closed them all down.`;
@@ -212,8 +204,7 @@ function calculateGain(tradeSettings, currentPrice) {
   return possibleGain;
 }
 
-function MonitorTradeToCloseItOut(tradeSettings: ITradeSettings) {
-  let timerHandle = null;
+function MonitorTradeToCloseItOut(liveTrade: ITradeSettings) {
   const {
     _id,
     exitHour,
@@ -221,26 +212,28 @@ function MonitorTradeToCloseItOut(tradeSettings: ITradeSettings) {
     gainLimit,
     lossLimit,
     openingPrice,
-  } = tradeSettings;
+  } = liveTrade;
   const localEarlyExitTime = GetNewYorkTimeAt(exitHour, exitMinute);
-  timerHandle = Meteor.setInterval(async () => {
+  const timerHandle = Meteor.setInterval(async function intervalMonitorTradeToClose() {
     try {
-      const activeTrade = Trades.findOne(_id);
-      if (activeTrade?.whyClosed || tradeSettings.whyClosed) {
-        timerHandle = consolidatedClearInterval(timerHandle);
+      // The latestActiveTradeRecord can be updated via an 'Emergency Exit' call so check it along with the liveTrade.
+      const latestActiveTradeRecord = Trades.findOne(_id);
+      console.error(`${liveTrade.userName}: LatestActiveTradeRecord: ${latestActiveTradeRecord._id} whyClosed: ${latestActiveTradeRecord.whyClosed}, liveTrade.whyClosed: ${liveTrade.whyClosed}, handle: ${timerHandle}`);
+      if (latestActiveTradeRecord?.whyClosed || liveTrade.whyClosed) {
+        Meteor.clearInterval(timerHandle);
         // trade has been completed already (probably emergency exit) so stop the interval timer and exit.
-        LogData(tradeSettings, `MonitorTradeToCloseItOut: Trade ${tradeSettings._id} closed async, so stopping monitoring.`);
+        LogData(liveTrade, `intervalMonitorTradeToClose: Trade ${liveTrade._id} closed async, so stopping monitoring.`);
         return;
       }
       // Get the current price for the trade.
-      const currentPrice = await GetSmartOptionsPrice(tradeSettings);
+      const currentPrice = await GetSmartOptionsPrice(liveTrade);
       if (currentPrice === Number.NaN) {
         return; // Try again on next interval timeout.
       }
-      const possibleGain = calculateGain(tradeSettings, currentPrice);
+      const possibleGain = calculateGain(liveTrade, currentPrice);
       // Record price value for historical reference and charting.
       const whenNY = GetNewYorkTimeNowAsText();
-      Trades.update(tradeSettings._id, {
+      Trades.update(liveTrade._id, {
         $addToSet: {
           monitoredPrices: {
             price: currentPrice,
@@ -259,24 +252,25 @@ function MonitorTradeToCloseItOut(tradeSettings: ITradeSettings) {
         isLossLimit = (absCurrentPrice <= lossLimit);
       }
       if (isGainLimit || isLossLimit || isEndOfDay) {
-        timerHandle = consolidatedClearInterval(timerHandle);
-        tradeSettings.whyClosed = 'gainLimit';
+        Meteor.clearInterval(timerHandle);
+        console.error(`${liveTrade.userName} TimerHandle: ${timerHandle} for live trade: ${liveTrade._id} whyClosed: ${liveTrade.whyClosed}`);
+        liveTrade.whyClosed = 'gainLimit';
         if (isLossLimit) {
-          tradeSettings.whyClosed = 'lossLimit';
+          liveTrade.whyClosed = 'lossLimit';
         }
         if (isEndOfDay) {
-          tradeSettings.whyClosed = 'timedExit';
+          liveTrade.whyClosed = 'timedExit';
         }
-        await CloseTrade(tradeSettings, currentPrice).catch(reason => {
-          const msg = `Exception with MonitorTradeToCloseItOut(interval) waiting CloseTrade: ${reason}.`;
-          LogData(tradeSettings, msg, new Meteor.Error(msg));
+        await CloseTrade(liveTrade, currentPrice).catch(reason => {
+          const msg = `Exception with intervalMonitorTradeToClose waiting CloseTrade: ${reason}.`;
+          LogData(liveTrade, msg, new Meteor.Error(msg));
         });
       }
     } catch (ex) {
-      timerHandle = consolidatedClearInterval(timerHandle);
+      Meteor.clearInterval(timerHandle);
       // We have an emergency if this happens, so send communications.
-      const message = `Trader has an exception in MonitorTradeToCloseItOut.`;
-      LogData(tradeSettings, message, ex);
+      const message = `Trader has an exception in intervalMonitorTradeToClose.`;
+      LogData(liveTrade, message, ex);
     }
   }, fiveSeconds);
 }
@@ -331,9 +325,10 @@ async function WaitForOrderCompleted(userId, accountNumber, orderId) {
       try {
         const order = await GetOrders(userId, accountNumber, orderId);
         counter++;
-        if (!order){
+        if (!order) {
           LogData(null, `WaitForOrderCompleted Failed calling GetOrders.`, null);
           if (counter === 20) {
+            Meteor.clearInterval(timerHandle);
             const msg = `Order ${orderId} not obtained. Rejecting WaitForOrderCompleted.`;
             LogData(null, msg, null);
             reject(msg);
@@ -342,7 +337,7 @@ async function WaitForOrderCompleted(userId, accountNumber, orderId) {
         }
         const isOrderFilled = calculateIfOrderIsFilled(order);
         if (isOrderFilled || counter === 20) {
-          timerHandle = consolidatedClearInterval(timerHandle);
+          Meteor.clearInterval(timerHandle);
           const calculatedFillPrice = CalculateFilledOrderPrice(order);
           TradeOrders.insert({_id: orderId, calculatedFillPrice, order});
           if (counter === 20) {
@@ -352,7 +347,7 @@ async function WaitForOrderCompleted(userId, accountNumber, orderId) {
           resolve(calculatedFillPrice);
         }
       } catch (ex) {
-        timerHandle = consolidatedClearInterval(timerHandle);
+        Meteor.clearInterval(timerHandle);
         const msg = `Failed while WaitingForOrderCompleted.`;
         LogData(null, msg, ex);
         reject(`${msg} ${ex}`);
@@ -392,7 +387,7 @@ async function PlaceOpeningOrderAndMonitorToClose(tradeSettings: ITradeSettings)
   tradeSettings.whenOpened = GetNewYorkTimeNowAsText();
   tradeSettings.monitoredPrices = [];
   calculateLimits(tradeSettings);
-  // Record this opening order data.
+  // Record this opening order data as a new active trade.
   Trades.insert({...tradeSettings});
   if (_.isFinite(tradeSettings.openingPrice)) {
     MonitorTradeToCloseItOut(tradeSettings);
@@ -438,52 +433,59 @@ No Legs: ${!hasLegsInTrade} with ${JSON.stringify(tradeSettings)}`;
   }
 }
 
-async function queueUsersTradesForTheDay(user) {
-  const accountNumber = UserSettings.findOne(user._id)?.accountNumber;
-  if (!accountNumber || accountNumber === 'None') {
-    LogData(null, `User ${user.username} has no account number so skipping this user.`, null);
-    return;
+const usersTimeoutHandles = {};
+
+function prepareUserForScheduling(user) {
+  if (usersTimeoutHandles[user._id]?.length > 0) {
+    usersTimeoutHandles[user._id].forEach(item => Meteor.clearTimeout(item));
   }
-  let countOfUsersTradesStarted = 0;
-  const tradeSettingsSet = TradeSettings.find({userId: user._id}).fetch();
-  tradeSettingsSet.forEach((tradeSettings: ITradeSettings) => {
-    try {
-      const desiredTradeTime = GetNewYorkTimeAt(tradeSettings.entryHour, tradeSettings.entryMinute);
-      let delayInMilliseconds = dayjs.duration(desiredTradeTime.diff(dayjs())).asMilliseconds();
-      if (delayInMilliseconds < 0) {
-        delayInMilliseconds = 0;
-      }
-      tradeSettings.accountNumber = accountNumber;
-      tradeSettings.userName = user.username;
-      countOfUsersTradesStarted++;
+  usersTimeoutHandles[user._id] = [];
+}
+
+function scheduleUsersTrade(tradeSettings, user) {
+  try {
+    const desiredTradeTime = GetNewYorkTimeAt(tradeSettings.entryHour, tradeSettings.entryMinute);
+    let delayInMilliseconds = dayjs.duration(desiredTradeTime.diff(dayjs())).asMilliseconds();
+    if (delayInMilliseconds > 0 && tradeSettings.isActive) {
       LogData(tradeSettings, `Scheduling opening trade for ${user.username} at ${desiredTradeTime.format('hh:mm a')}.`);
-      let timeoutHandle = Meteor.setTimeout(async () => {
-        if (timeoutHandle) {
-          Meteor.clearTimeout(timeoutHandle);
-          timeoutHandle = null;
-        }
+      const timeoutHandle = Meteor.setTimeout(async function timerMethodToOpenTrade() {
+        Meteor.clearTimeout(timeoutHandle);
         await ExecuteTrade(tradeSettings)
           .catch((reason) => {
             LogData(tradeSettings, `Failed to ExecuteTrade ${user.username}. Reason: ${reason}`);
           });
       }, delayInMilliseconds);
-    } catch (ex) {
-      LogData(tradeSettings, `Failed to schedule opening trade ${user.username}.`);
+      usersTimeoutHandles[user._id].push(timeoutHandle);
+      LogData(null, `Scheduled ${usersTimeoutHandles[user._id].length} trades for user ${user.username} today.`);
     }
-  });
-  LogData(null, `Scheduled ${countOfUsersTradesStarted} trades for user ${user.username} today.`);
+  } catch (ex) {
+    LogData(tradeSettings, `Failed to schedule opening trade ${user.username}.`);
+  }
 }
 
-async function PerformTradeForAllUsers() {
-  LogData(null, `Entering "Perform Trade For All Users"...`, null);
-  const userArch = Users.findOne({username: 'Arch'});
-  const isMarketOpened = await IsOptionMarketOpenToday(userArch._id);
+async function QueueUsersTradesForTheDay(user) {
+  const isMarketOpened = await IsOptionMarketOpenToday(user._id);
   if (!isMarketOpened) {
-    LogData(null, 'Market is closed today');
+    LogData(null, `Queueing ${user.username}'s trades but market is closed today`);
     return;
   }
+  const accountNumber = UserSettings.findOne(user._id)?.accountNumber;
+  if (!accountNumber || accountNumber === 'None') {
+    LogData(null, `User ${user.username} has no account number so skipping this user.`, null);
+    return;
+  }
+  prepareUserForScheduling(user);
+  const tradeSettingsSet = TradeSettings.find({userId: user._id}).fetch();
+  tradeSettingsSet.forEach((tradeSettings: ITradeSettings) => {
+    tradeSettings.accountNumber = accountNumber;
+    tradeSettings.userName = user.username;
+    scheduleUsersTrade(tradeSettings, user);
+  });
+}
+
+function PerformTradeForAllUsers() {
   const users = Users.find().fetch();
-  users.forEach(queueUsersTradesForTheDay);
+  users.forEach(QueueUsersTradesForTheDay);
 }
 
 export {
@@ -493,4 +495,5 @@ export {
   PerformTradeForAllUsers,
   ExecuteTrade,
   EmergencyCloseAllTrades,
+  QueueUsersTradesForTheDay,
 };

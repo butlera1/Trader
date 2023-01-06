@@ -21,7 +21,7 @@ function UserSettings({userSettings}) {
       Meteor.clearTimeout(timeoutHandle);
       timeoutHandle = null;
       console.log('Persisting changes');
-      Meteor.call('SaveUserSettings', userSettings, (error, result) => {
+      Meteor.call('SaveUserSettings', userSettings, (error) => {
         if (error) {
           setErrorText(error.toString());
         }

@@ -16,10 +16,7 @@ export const LegsEditor = ({
   let timerHandle = null;
 
   const saveSettings = () => {
-    if (timerHandle) {
-      Meteor.clearTimeout(timerHandle);
-      timerHandle = null;
-    }
+    Meteor.clearTimeout(timerHandle);
     timerHandle = Meteor.setTimeout(() => legsChangedCallback([...legs]), 2000);
   };
 
