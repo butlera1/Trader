@@ -1,0 +1,230 @@
+{
+  "session": "NORMAL",
+  "duration": "DAY",
+  "orderType": "NET_CREDIT",
+  "complexOrderStrategyType": "STRADDLE",
+  "quantity": 1,
+  "filledQuantity": 0,
+  "remainingQuantity": 1,
+  "requestedDestination": "AUTO",
+  "destinationLinkName": "AutoRoute",
+  "price": 3,
+  "orderLegCollection": [
+    {
+      "orderLegType": "OPTION",
+      "legId": 1,
+      "instrument": {
+        "assetType": "OPTION",
+        "cusip": "0QQQ..A930269000",
+        "symbol": "QQQ_010923C269",
+        "description": "QQQ Jan 09 2023 269.0 Call",
+        "type": "VANILLA",
+        "putCall": "CALL",
+        "underlyingSymbol": "QQQ"
+      },
+      "instruction": "SELL_TO_OPEN",
+      "positionEffect": "OPENING",
+      "quantity": 1
+    },
+    {
+      "orderLegType": "OPTION",
+      "legId": 2,
+      "instrument": {
+        "assetType": "OPTION",
+        "cusip": "0QQQ..M930269000",
+        "symbol": "QQQ_010923P269",
+        "description": "QQQ Jan 09 2023 269.0 Put",
+        "type": "VANILLA",
+        "putCall": "PUT",
+        "underlyingSymbol": "QQQ"
+      },
+      "instruction": "SELL_TO_OPEN",
+      "positionEffect": "OPENING",
+      "quantity": 1
+    }
+  ],
+  "orderStrategyType": "TRIGGER",
+  "orderId": 10086223525,
+  "cancelable": true,
+  "editable": false,
+  "status": "PENDING_ACTIVATION",
+  "enteredTime": "2023-01-07T17:42:27+0000",
+  "tag": "API_TOS:TRADE_ALL",
+  "accountId": 755541528,
+  "childOrderStrategies": [
+    {
+      "orderStrategyType": "OCO",
+      "orderId": 10086223526,
+      "cancelable": true,
+      "editable": false,
+      "status": "AWAITING_PARENT_ORDER",
+      "enteredTime": "2023-01-07T17:42:27+0000",
+      "accountId": 755541528,
+      "childOrderStrategies": [
+        {
+          "session": "NORMAL",
+          "duration": "DAY",
+          "orderType": "NET_DEBIT",
+          "complexOrderStrategyType": "STRADDLE",
+          "quantity": 1,
+          "filledQuantity": 0,
+          "remainingQuantity": 1,
+          "requestedDestination": "AUTO",
+          "destinationLinkName": "AutoRoute",
+          "price": 2.5,
+          "orderLegCollection": [
+            {
+              "orderLegType": "OPTION",
+              "legId": 1,
+              "instrument": {
+                "assetType": "OPTION",
+                "cusip": "0QQQ..A930269000",
+                "symbol": "QQQ_010923C269",
+                "description": "QQQ Jan 09 2023 269.0 Call",
+                "type": "VANILLA",
+                "putCall": "CALL",
+                "underlyingSymbol": "QQQ"
+              },
+              "instruction": "BUY_TO_CLOSE",
+              "positionEffect": "CLOSING",
+              "quantity": 1
+            },
+            {
+              "orderLegType": "OPTION",
+              "legId": 2,
+              "instrument": {
+                "assetType": "OPTION",
+                "cusip": "0QQQ..M930269000",
+                "symbol": "QQQ_010923P269",
+                "description": "QQQ Jan 09 2023 269.0 Put",
+                "type": "VANILLA",
+                "putCall": "PUT",
+                "underlyingSymbol": "QQQ"
+              },
+              "instruction": "BUY_TO_CLOSE",
+              "positionEffect": "CLOSING",
+              "quantity": 1
+            }
+          ],
+          "orderStrategyType": "SINGLE",
+          "orderId": 10086223527,
+          "cancelable": true,
+          "editable": false,
+          "status": "AWAITING_PARENT_ORDER",
+          "enteredTime": "2023-01-07T17:42:27+0000",
+          "tag": "API_TOS:TRADE_ALL",
+          "accountId": 755541528
+        },
+        {
+          "session": "NORMAL",
+          "duration": "DAY",
+          "orderType": "STOP",
+          "complexOrderStrategyType": "STRADDLE",
+          "quantity": 1,
+          "filledQuantity": 0,
+          "remainingQuantity": 1,
+          "requestedDestination": "AUTO",
+          "destinationLinkName": "AutoRoute",
+          "stopPrice": 4,
+          "stopType": "MARK",
+          "orderLegCollection": [
+            {
+              "orderLegType": "OPTION",
+              "legId": 1,
+              "instrument": {
+                "assetType": "OPTION",
+                "cusip": "0QQQ..A930269000",
+                "symbol": "QQQ_010923C269",
+                "description": "QQQ Jan 09 2023 269.0 Call",
+                "type": "VANILLA",
+                "putCall": "CALL",
+                "underlyingSymbol": "QQQ"
+              },
+              "instruction": "BUY_TO_CLOSE",
+              "positionEffect": "CLOSING",
+              "quantity": 1
+            },
+            {
+              "orderLegType": "OPTION",
+              "legId": 2,
+              "instrument": {
+                "assetType": "OPTION",
+                "cusip": "0QQQ..M930269000",
+                "symbol": "QQQ_010923P269",
+                "description": "QQQ Jan 09 2023 269.0 Put",
+                "type": "VANILLA",
+                "putCall": "PUT",
+                "underlyingSymbol": "QQQ"
+              },
+              "instruction": "BUY_TO_CLOSE",
+              "positionEffect": "CLOSING",
+              "quantity": 1
+            }
+          ],
+          "orderStrategyType": "SINGLE",
+          "orderId": 10086223529,
+          "cancelable": true,
+          "editable": false,
+          "status": "AWAITING_PARENT_ORDER",
+          "enteredTime": "2023-01-07T17:42:27+0000",
+          "tag": "API_TOS:TRADE_ALL",
+          "accountId": 755541528
+        },
+        {
+          "session": "NORMAL",
+          "duration": "DAY",
+          "orderType": "MARKET",
+          "complexOrderStrategyType": "STRADDLE",
+          "quantity": 1,
+          "filledQuantity": 0,
+          "remainingQuantity": 1,
+          "requestedDestination": "AUTO",
+          "destinationLinkName": "AutoRoute",
+          "releaseTime": "2023-01-07T20:55:00+0000",
+          "orderLegCollection": [
+            {
+              "orderLegType": "OPTION",
+              "legId": 1,
+              "instrument": {
+                "assetType": "OPTION",
+                "cusip": "0QQQ..A930269000",
+                "symbol": "QQQ_010923C269",
+                "description": "QQQ Jan 09 2023 269.0 Call",
+                "type": "VANILLA",
+                "putCall": "CALL",
+                "underlyingSymbol": "QQQ"
+              },
+              "instruction": "BUY_TO_CLOSE",
+              "positionEffect": "CLOSING",
+              "quantity": 1
+            },
+            {
+              "orderLegType": "OPTION",
+              "legId": 2,
+              "instrument": {
+                "assetType": "OPTION",
+                "cusip": "0QQQ..M930269000",
+                "symbol": "QQQ_010923P269",
+                "description": "QQQ Jan 09 2023 269.0 Put",
+                "type": "VANILLA",
+                "putCall": "PUT",
+                "underlyingSymbol": "QQQ"
+              },
+              "instruction": "BUY_TO_CLOSE",
+              "positionEffect": "CLOSING",
+              "quantity": 1
+            }
+          ],
+          "orderStrategyType": "SINGLE",
+          "orderId": 10086223528,
+          "cancelable": true,
+          "editable": false,
+          "status": "AWAITING_PARENT_ORDER",
+          "enteredTime": "2023-01-07T17:42:27+0000",
+          "tag": "API_TOS:TRADE_ALL",
+          "accountId": 755541528
+        }
+      ]
+    }
+  ]
+}

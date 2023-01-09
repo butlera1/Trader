@@ -16,6 +16,17 @@ Example output:
 ```
 CJkc1hRW6/JbJI6WTy3/c7KdSUOD6sRJpbrOfwWYEf7N1pN6fd8l9GtFB2IeR1nGXJzxvWeumdL6rMCe61r/K0ro6U7TLYPkAWmMAO5nBWKyG3GkFw3ZsVNMgp2yEQ2xrbTEK1zyWSB4wTJbs+pBjxKhMfBKvrcSOVsKsi1t10CucLvk7dVKlY3/m5ECqzPH0AQ7LUG9oFwyAH1Yf5OX2yWh6VAqnbsFhOYAhS7ZhOg8qW8oHUMMxfLZAujg1FrxnMbi5acMpE4K9w/CYfD40slwLCr5Mc8SEKyh2BmyEuOIuLCTAGrJEMLGPkuZkSoXY26bT9+KWNWRlDAtAS/kS//b+0F28mtT3PMeYOdMOjBJRezH+HcjElD2td1gK0PGNomf8JtrY8iKLOkotmeB4k0uXa9iShXNyccrXcMQUKfrcK3eTnNDL0QwMeJ100MQuG4LYrgoVi/JHHvlDINOjqeGSboEhyLEhcN8JCPQf/ISichlnu3dWzOmRZqhNLzqmCkTBtjAQbbEx0wOf+yPiYL7jN+1le3RxlFsFPLDd2aJ5dtHOq1me7lwYpHnYEJcVjhKvolKBla23e7iLXlyh7WzurD3UZ5NBl575D7fI2TiUnEa4/MPkICwFqMteTXwhnPSDLbGTl08Mr3GtOLNbLUOm24ykTCPoNYuUQrs21GkBolof1eee2882xeVAHWMAE/alPa3LCK5ecxe5QrOX1ivO2nqgYHJfhU9+rxiXxMQ9CjbGbejJc8MBef6NFsjciE1sQB9CP9gz4ODQFkYUFj4CrUS0rjHAbn5DKtEv2s1zG5yHQTPiZgpOrNME6XeA5S2Wrr3au6Cb5jjFbU7EacAS2TT1cy23npBRx+Fq4S9BDFF9OL6KV2z98KH/WDotwd0cW2sqo0=212FD3x19z9sWBHDJACbC00B75E
 ```
+
+## TDA API Trades that work:
+ * Trigger (first triggers second).
+ * OCO (One cancels other)
+ * Market
+ * Limit
+
+### Trades that do not work yet:
+ * Timed entry market order
+ * Stop order
+
 ## Making self-signed certs to be used within the TDAmeritrade API.
 
 The following command was used (defined at https://www.npmjs.com/package/@marknokes/tdameritrade): 

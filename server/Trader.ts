@@ -3,6 +3,7 @@ import {Meteor} from 'meteor/meteor';
 // @ts-ignore
 import {Email} from 'meteor/email';
 import {
+  CalculateLimits,
   CreateOpenAndCloseOrders,
   GetATMOptionChains,
   GetOrders,
@@ -14,6 +15,8 @@ import {Users} from './collections/users';
 import dayjs from 'dayjs';
 import duration from 'dayjs/plugin/duration';
 import isoWeek from 'dayjs/plugin/isoWeek';
+import utc from 'dayjs/plugin/utc';
+import timezone from 'dayjs/plugin/timezone';
 import {Trades} from './collections/Trades';
 import {TradeOrders} from './collections/TradeOrders';
 import {TradeResults} from './collections/TradeResults';
@@ -31,6 +34,8 @@ const lock = mutexify();
 
 dayjs.extend(duration);
 dayjs.extend(isoWeek);
+dayjs.extend(utc);
+dayjs.extend(timezone);
 const isoWeekdayNames = ['skip', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'];
 
 const fiveSeconds = 5000;
@@ -356,22 +361,6 @@ async function WaitForOrderCompleted(userId, accountNumber, orderId) {
   });
 }
 
-function calculateLimits(tradeSettings) {
-  const {
-    percentGain,
-    percentLoss,
-    openingPrice,
-  } = tradeSettings;
-  // If long entry, the openingPrice is positive (debit) and negative if short (credit).
-  if (openingPrice > 0) {
-    tradeSettings.gainLimit = Math.abs(openingPrice + openingPrice * percentGain);
-    tradeSettings.lossLimit = Math.abs(openingPrice - openingPrice * percentLoss);
-  } else {
-    tradeSettings.gainLimit = Math.abs(openingPrice - openingPrice * percentGain);
-    tradeSettings.lossLimit = Math.abs(openingPrice + openingPrice * percentLoss);
-  }
-}
-
 async function PlaceOpeningOrderAndMonitorToClose(tradeSettings: ITradeSettings) {
   let _id = Random.id();
   if (tradeSettings.isMocked) {
@@ -386,7 +375,7 @@ async function PlaceOpeningOrderAndMonitorToClose(tradeSettings: ITradeSettings)
   tradeSettings._id = _id; // Switch _id for storing into Trades collection.
   tradeSettings.whenOpened = GetNewYorkTimeNowAsText();
   tradeSettings.monitoredPrices = [];
-  calculateLimits(tradeSettings);
+  CalculateLimits(tradeSettings);
   // Record this opening order data as a new active trade.
   Trades.insert({...tradeSettings});
   if (_.isFinite(tradeSettings.openingPrice)) {

@@ -20,7 +20,12 @@ import {
   SellStraddle,
   SetUserAccessInfo
 } from './TDAApi/TDAApi';
-import {EmergencyCloseAllTrades, ExecuteTrade, MonitorTradeToCloseItOut, PerformTradeForAllUsers} from './Trader';
+import {
+  EmergencyCloseAllTrades,
+  ExecuteTrade,
+  MonitorTradeToCloseItOut,
+  PerformTradeForAllUsers
+} from './Trader';
 import {WebApp} from 'meteor/webapp';
 import {Trades} from './collections/Trades';
 import {LogData} from './collections/Logs';

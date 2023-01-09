@@ -9,7 +9,14 @@ import GetOptionOrderBuysTriggeringSells from './Templates/GetOptionOrderBuysTri
 import {DefaultTradeSettings} from '../../imports/Interfaces/ITradeSettings';
 import {BuySell, OptionType} from '../../imports/Interfaces/ILegSettings';
 import {LogData} from "../collections/Logs";
-import {IronCondorMarketOrder} from './Templates/SellIronCondorOrder';
+import {
+  IronCondorLimitOrder,
+  IronCondorMarketOrder,
+  IronCondorMarketOrderAtTime,
+  IronCondorStopOrder
+} from './Templates/IronCondorOrders';
+import {WrapOCOOrderForm} from './Templates/WrapOCOOrderForm';
+import WrapFirstTriggersSecond from './Templates/WrapFirstTriggersSecond';
 
 const clientId = 'PFVYW5LYNPRZH6Y1ZCY5OTBGINDLZDW8@AMER.OAUTHAP';
 const redirectUrl = 'https://localhost/traderOAuthCallback';
@@ -132,7 +139,6 @@ async function GetNewAccessAndRefreshToken(userId, currentRefreshToken) {
   };
   Users.update({_id: userId}, {$set: settings});
   return accessToken;
-  return null;
 }
 
 export async function GetAccessToken(userId) {
@@ -186,13 +192,13 @@ export async function GetOrders(userId, accountNumber = '755541528', orderId) {
     };
     const response = await fetch(url, options);
     if (response.status !== 200) {
-      LogData(null, `TDAApi.GetOrders fetch returned: ${response.status} ${response}, tokenId:${tokenId}, accountNumber: ${accountNumber}`);
+      LogData(null, `TDAApi.GetOrders fetch returned: ${response.status} ${response}, userId:${userId}, accountNumber: ${accountNumber}`);
       return null;
     }
     const orders = await response.json();
     return orders;
   } catch (error) {
-    LogData(null, `TDAApi.GetOrders: tokenId:${tokenId}, accountNumber: ${accountNumber}`, error);
+    LogData(null, `TDAApi.GetOrders: userId:${userId}, accountNumber: ${accountNumber}`, error);
   }
 }
 
@@ -295,7 +301,7 @@ export async function PlaceOrder(userId, accountNumber, order) {
   };
   const response = await fetch(`https://api.tdameritrade.com/v1/accounts/${accountNumber}/orders`, options);
   if (!response.ok) {
-    const msg = `Error: PlaceOrder method status is: ${response.status}\n${JSON.stringify(order)}`;
+    const msg = `Error: PlaceOrder method status is: ${response.status} ${response.statusText}\n${JSON.stringify(order)}`;
     console.error(msg);
     throw new Meteor.Error(msg);
   }
@@ -388,6 +394,22 @@ function getOptionChainsAtOrNearDelta(chains, dte) {
   return {putsChain, callsChain};
 }
 
+export function CalculateLimits(tradeSettings) {
+  const {
+    percentGain,
+    percentLoss,
+    openingPrice,
+  } = tradeSettings;
+  // If long entry, the openingPrice is positive (debit) and negative if short (credit).
+  if (openingPrice > 0) {
+    tradeSettings.gainLimit = Math.abs(openingPrice + openingPrice * percentGain);
+    tradeSettings.lossLimit = Math.abs(openingPrice - openingPrice * percentLoss);
+  } else {
+    tradeSettings.gainLimit = Math.abs(openingPrice - openingPrice * percentGain);
+    tradeSettings.lossLimit = Math.abs(openingPrice + openingPrice * percentLoss);
+  }
+}
+
 export function CreateOpenAndCloseOrders(chains, tradeSettings) {
   // For each leg, find the closest option based on Delta
   let csvSymbols = '';
@@ -410,17 +432,27 @@ export function CreateOpenAndCloseOrders(chains, tradeSettings) {
   });
   tradeSettings.csvSymbols = csvSymbols.slice(1); // Remove leading comma and save for later.
   tradeSettings.openingPrice = openingPrice; // Expected openingPrice. Will be used if isMocked. Order filled replaces.
-  if (tradeSettings.tradeType?.length > 0) {
-    if (tradeSettings.tradeType[0] === 'IC') {
-      // Create Iron Condor orders to open and to close.
-      tradeSettings.openingOrder = IronCondorMarketOrder(tradeSettings, true);
-      tradeSettings.closingOrder = IronCondorMarketOrder(tradeSettings, false);
-    }
+  // Get pre-trade gain/loss limits.
+  CalculateLimits(tradeSettings);
+  if (tradeSettings.tradeType?.length > 0) { // Must be either IC or CS.
+    // Create Iron Condor orders to open and to close.
+    tradeSettings.openingOrder = IronCondorMarketOrder(tradeSettings, true);
+    tradeSettings.closingOrder = IronCondorMarketOrder(tradeSettings, false);
+    // Make large triggerOrder => OCO (limitOrder, timedMarketOrder, stopOrder
+    const openOrder = IronCondorMarketOrder(tradeSettings, true);
+    const limitOrder = IronCondorLimitOrder(tradeSettings, false);
+    const timedMarketOrder = IronCondorMarketOrderAtTime(tradeSettings, tradeSettings.exitHour, tradeSettings.exitMinute, false);
+    const stopOrder = IronCondorStopOrder(tradeSettings, false);
+    const ocoOrder = WrapOCOOrderForm([limitOrder, stopOrder]);
+    const triggerOrder = WrapFirstTriggersSecond(openOrder, ocoOrder);
+    console.log(`BIG TRIGGER=>OCO ORDER: ${JSON.stringify(triggerOrder)}`);
+
+    tradeSettings.openingOrder = triggerOrder;
+    triggerOrder.closingOrder = null;
+
     if (tradeSettings.tradeType[0] === 'CS') {
       // Create Double Diagonal orders to open and to close.
-      tradeSettings.openingOrder = IronCondorMarketOrder(tradeSettings, true);
       tradeSettings.openingOrder.complexOrderStrategyType = 'DOUBLE_DIAGONAL';
-      tradeSettings.closingOrder = IronCondorMarketOrder(tradeSettings, false);
       tradeSettings.closingOrder.complexOrderStrategyType = 'DOUBLE_DIAGONAL';
     }
   } else {

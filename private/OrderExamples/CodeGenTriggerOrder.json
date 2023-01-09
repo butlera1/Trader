@@ -1,0 +1,136 @@
+{
+  "session": "NORMAL",
+  "duration": "DAY",
+  "orderType": "MARKET",
+  "complexOrderStrategyType": "IRON_CONDOR",
+  "quantity": 1,
+  "orderStrategyType": "TRIGGER",
+  "orderLegCollection": [
+    {
+      "instruction": "BUY_TO_OPEN",
+      "quantity": 1,
+      "instrument": {
+        "assetType": "OPTION",
+        "symbol": "QQQ_010923C282"
+      }
+    },
+    {
+      "instruction": "SELL_TO_OPEN",
+      "quantity": 1,
+      "instrument": {
+        "assetType": "OPTION",
+        "symbol": "QQQ_010923C275"
+      }
+    },
+    {
+      "instruction": "BUY_TO_OPEN",
+      "quantity": 1,
+      "instrument": {
+        "assetType": "OPTION",
+        "symbol": "QQQ_010923P265"
+      }
+    },
+    {
+      "instruction": "SELL_TO_OPEN",
+      "quantity": 1,
+      "instrument": {
+        "assetType": "OPTION",
+        "symbol": "QQQ_010923P275"
+      }
+    }
+  ],
+  "childOrderStrategies": [
+    {
+      "orderStrategyType": "OCO",
+      "childOrderStrategies": [
+        {
+          "session": "NORMAL",
+          "duration": "DAY",
+          "orderType": "NET_DEBIT",
+          "complexOrderStrategyType": "IRON_CONDOR",
+          "quantity": 1,
+          "orderStrategyType": "SINGLE",
+          "orderLegCollection": [
+            {
+              "instruction": "SELL_TO_CLOSE",
+              "quantity": 1,
+              "instrument": {
+                "assetType": "OPTION",
+                "symbol": "QQQ_010923C282"
+              }
+            },
+            {
+              "instruction": "BUY_TO_CLOSE",
+              "quantity": 1,
+              "instrument": {
+                "assetType": "OPTION",
+                "symbol": "QQQ_010923C275"
+              }
+            },
+            {
+              "instruction": "SELL_TO_CLOSE",
+              "quantity": 1,
+              "instrument": {
+                "assetType": "OPTION",
+                "symbol": "QQQ_010923P265"
+              }
+            },
+            {
+              "instruction": "BUY_TO_CLOSE",
+              "quantity": 1,
+              "instrument": {
+                "assetType": "OPTION",
+                "symbol": "QQQ_010923P275"
+              }
+            }
+          ],
+          "price": 1.53
+        },
+        {
+          "session": "NORMAL",
+          "duration": "DAY",
+          "orderType": "STOP",
+          "complexOrderStrategyType": "IRON_CONDOR",
+          "quantity": 1,
+          "orderStrategyType": "SINGLE",
+          "orderLegCollection": [
+            {
+              "instruction": "SELL_TO_CLOSE",
+              "quantity": 1,
+              "instrument": {
+                "assetType": "OPTION",
+                "symbol": "QQQ_010923C282"
+              }
+            },
+            {
+              "instruction": "BUY_TO_CLOSE",
+              "quantity": 1,
+              "instrument": {
+                "assetType": "OPTION",
+                "symbol": "QQQ_010923C275"
+              }
+            },
+            {
+              "instruction": "SELL_TO_CLOSE",
+              "quantity": 1,
+              "instrument": {
+                "assetType": "OPTION",
+                "symbol": "QQQ_010923P265"
+              }
+            },
+            {
+              "instruction": "BUY_TO_CLOSE",
+              "quantity": 1,
+              "instrument": {
+                "assetType": "OPTION",
+                "symbol": "QQQ_010923P275"
+              }
+            }
+          ],
+          "stopType": "MARK",
+          "stopPrice": 2.38
+        }
+      ]
+    }
+  ]
+}

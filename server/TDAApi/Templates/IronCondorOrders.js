@@ -1,6 +1,7 @@
 import _ from 'lodash';
 import StuffLegParams from './StuffLegParams';
 import {BuySell, OptionType} from '../../../imports/Interfaces/ILegSettings';
+import {GetNewYorkTimeAt} from '../../Trader';
 
 const SellIronCondorOrderForm = {
   'session': 'NORMAL',
@@ -88,25 +89,26 @@ function IronCondorMarketOrder(tradeSettings, isToOpen) {
   return form;
 }
 
-function IronCondorLimitOrder(tradeSettings, price, isToOpen) {
+function IronCondorLimitOrder(tradeSettings, isToOpen) {
   const form = IronCondorMarketOrder(tradeSettings, isToOpen);
-  form.orderType = 'NET_DEBIT';
-  form.price = price.toString();
+  form.orderType = (tradeSettings.openingPrice < 0) ? 'NET_DEBIT' : 'NET_CREDIT';
+  form.price = Number.parseFloat(tradeSettings.gainLimit.toFixed(2));
   return form;
 }
 
-function IronCondorStopOrder(tradeSettings, price, isToOpen) {
+function IronCondorStopOrder(tradeSettings, isToOpen) {
   const form = IronCondorMarketOrder(tradeSettings, isToOpen);
   form.orderType = 'STOP';
   form.stopType = 'MARK';
-  form.stopPrice = price.toString();
+  form.stopPrice = Number.parseFloat(tradeSettings.lossLimit.toFixed(2));
   return form;
 }
 
-function IronCondorSellMarketAtNoonOrder(buyCall, sellCall, buyPut, sellPut, quantity) {
-  const form = IronCondorMarketOrder(buyCall, sellCall, buyPut, sellPut, quantity, false);
-  // TODO (AWB) Fix the date time to be today's and adjusted for New York time.
-  form.releaseTime = '2022-10-17T16:00:00+0000';
+function IronCondorMarketOrderAtTime(tradeSettings, timeHour, timeMinute, isToOpen) {
+  const form = IronCondorMarketOrder(tradeSettings, isToOpen);
+  const time = GetNewYorkTimeAt(timeHour, timeMinute).tz('Etc/GMT', false);
+  //  Example:  "releaseTime": "2023-01-07T20:55:00+0000",
+  form.releaseTime = time.format(`YYYY-MM-DDThh:mm:ssZZ`);
   return form;
 }
 
@@ -114,6 +116,6 @@ export {
   IronCondorMarketOrder,
   IronCondorLimitOrder,
   IronCondorStopOrder,
-  IronCondorSellMarketAtNoonOrder,
+  IronCondorMarketOrderAtTime,
   Get4BuySellPutCallSymbols
 };
