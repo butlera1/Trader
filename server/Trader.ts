@@ -33,7 +33,7 @@ dayjs.extend(duration);
 dayjs.extend(isoWeek);
 const isoWeekdayNames = ['skip', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'];
 
-const fiveSeconds = 5000;
+const oneSeconds = 1000;
 
 function GetNewYorkTimeNowAsText() {
   const currentLocalTime = new Date();
@@ -163,7 +163,7 @@ async function CloseTrade(tradeSettings: ITradeSettings, currentPrice: number) {
   TradeResults.insert(result);
   const message = `${tradeSettings.userName}: Trade closed (${tradeSettings.whyClosed}): Entry: $${openingPrice.toFixed(2)}, ` +
     `Exit: $${tradeSettings.closingPrice?.toFixed(2)}, ` +
-    `G/L $${tradeSettings.gainLoss?.toFixed(2)} at ${tradeSettings.whenClosed} NY, ID: ${tradeSettings._id}`;
+    `G/L $${tradeSettings.gainLoss?.toFixed(2)} at ${tradeSettings.whenClosed} NY, TS_ID: ${tradeSettings._id}`;
   LogData(tradeSettings, message);
 }
 
@@ -205,29 +205,21 @@ function calculateGain(tradeSettings, currentPrice) {
 }
 
 function MonitorTradeToCloseItOut(liveTrade: ITradeSettings) {
-  const {
-    _id,
-    exitHour,
-    exitMinute,
-    gainLimit,
-    lossLimit,
-    openingPrice,
-  } = liveTrade;
-  const localEarlyExitTime = GetNewYorkTimeAt(exitHour, exitMinute);
-  const timerHandle = Meteor.setInterval(async function intervalMonitorTradeToClose() {
+  const localEarlyExitTime = GetNewYorkTimeAt(liveTrade.exitHour, liveTrade.exitMinute);
+  const monitorMethod = async () => {
     try {
       // The latestActiveTradeRecord can be updated via an 'Emergency Exit' call so check it along with the liveTrade.
-      const latestActiveTradeRecord = Trades.findOne(_id);
-      console.error(`${liveTrade.userName}: LatestActiveTradeRecord: ${latestActiveTradeRecord._id} whyClosed: ${latestActiveTradeRecord.whyClosed}, liveTrade.whyClosed: ${liveTrade.whyClosed}, handle: ${timerHandle}`);
-      if (latestActiveTradeRecord?.whyClosed || liveTrade.whyClosed) {
-        Meteor.clearInterval(timerHandle);
+      const latestActiveTradeRecord = Trades.findOne(liveTrade._id) ?? {};
+      const isClosedAlready = !!(latestActiveTradeRecord.whyClosed || liveTrade.whyClosed);
+      if (isClosedAlready) {
         // trade has been completed already (probably emergency exit) so stop the interval timer and exit.
-        LogData(liveTrade, `intervalMonitorTradeToClose: Trade ${liveTrade._id} closed async, so stopping monitoring.`);
+        LogData(liveTrade, `MonitorTradeToCloseItOut: Trade ${liveTrade._id} closed async, so stopping monitoring.`);
         return;
       }
       // Get the current price for the trade.
       const currentPrice = await GetSmartOptionsPrice(liveTrade);
       if (currentPrice === Number.NaN) {
+        Meteor.setTimeout(monitorMethod, oneSeconds);
         return; // Try again on next interval timeout.
       }
       const possibleGain = calculateGain(liveTrade, currentPrice);
@@ -245,15 +237,13 @@ function MonitorTradeToCloseItOut(liveTrade: ITradeSettings) {
       const localNow = dayjs();
       const isEndOfDay = localEarlyExitTime.isBefore(localNow);
       const absCurrentPrice = Math.abs(currentPrice);
-      let isGainLimit = (absCurrentPrice <= gainLimit);
-      let isLossLimit = (absCurrentPrice >= lossLimit);
-      if (openingPrice > 0) { // Means we are long the trade (we want values to go up).
-        isGainLimit = (absCurrentPrice >= gainLimit);
-        isLossLimit = (absCurrentPrice <= lossLimit);
+      let isGainLimit = (absCurrentPrice <= liveTrade.gainLimit);
+      let isLossLimit = (absCurrentPrice >= liveTrade.lossLimit);
+      if (liveTrade.openingPrice > 0) { // Means we are long the trade (we want values to go up).
+        isGainLimit = (absCurrentPrice >= liveTrade.gainLimit);
+        isLossLimit = (absCurrentPrice <= liveTrade.lossLimit);
       }
       if (isGainLimit || isLossLimit || isEndOfDay) {
-        Meteor.clearInterval(timerHandle);
-        console.error(`${liveTrade.userName} TimerHandle: ${timerHandle} for live trade: ${liveTrade._id} whyClosed: ${liveTrade.whyClosed}`);
         liveTrade.whyClosed = 'gainLimit';
         if (isLossLimit) {
           liveTrade.whyClosed = 'lossLimit';
@@ -262,17 +252,20 @@ function MonitorTradeToCloseItOut(liveTrade: ITradeSettings) {
           liveTrade.whyClosed = 'timedExit';
         }
         await CloseTrade(liveTrade, currentPrice).catch(reason => {
-          const msg = `Exception with intervalMonitorTradeToClose waiting CloseTrade: ${reason}.`;
-          LogData(liveTrade, msg, new Meteor.Error(msg));
+          const msg = `Exception with MonitorTradeToCloseItOut waiting CloseTrade: ${reason}.`;
+          LogData(liveTrade, msg, new Meteor.Error(reason, msg));
         });
+      }else {
+        // Loop again waiting for one of the close patterns to get hit.
+        Meteor.setTimeout(monitorMethod, oneSeconds);
       }
     } catch (ex) {
-      Meteor.clearInterval(timerHandle);
       // We have an emergency if this happens, so send communications.
-      const message = `Trader has an exception in intervalMonitorTradeToClose.`;
+      const message = `Trader has an exception in MonitorTradeToCloseItOut.`;
       LogData(liveTrade, message, ex);
     }
-  }, fiveSeconds);
+  };
+  Meteor.setTimeout(monitorMethod, oneSeconds);
 }
 
 function CalculateGrossOrderBuysAndSells(order) {
