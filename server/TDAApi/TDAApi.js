@@ -370,7 +370,18 @@ function getOptionChainsAtOrNearDelta(chains, dte) {
   // Get the DTE-specific option set.
   const putNames = Object.getOwnPropertyNames(chains.putExpDateMap);
   let chainName = null;
-  let count = 0;
+  // The goal here is to get the exact DTE. If not then try
+  // one less, then two less. If not either of those then
+  // try DTE+1 all the way up to DTE+5.
+  // First match wins.
+  chainName = putNames.find((name) => name.endsWith(`:${dte}`));
+  if (!chainName) {
+    chainName = putNames.find((name) => name.endsWith(`:${dte - 1}`));
+  }
+  if (!chainName) {
+    chainName = putNames.find((name) => name.endsWith(`:${dte - 2}`));
+  }
+  let count = 1;
   while (!chainName && count < 5) {
     chainName = putNames.find((name) => name.endsWith(`:${dte + count}`));
     count++;
