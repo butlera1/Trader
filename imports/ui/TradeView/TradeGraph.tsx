@@ -13,7 +13,8 @@ function TradeGraph() {
     if (intervalHandle && count > 25) {
       oldData = data.slice(1);
     }
-    const dataItem = {name: `Item ${count++}`, uv: count*10+350, pv: 2400, amt: 2400};
+    count++;
+    const dataItem = {name: `Item ${count}`, uv: count*10+350, pv: 2400, amt: 2400};
     setData([...oldData, dataItem]);
   }, 10000);
 

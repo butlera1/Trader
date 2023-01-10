@@ -309,43 +309,47 @@ function calculateIfOrderIsFilled(order) {
   order?.childOrderStrategies?.forEach((childOrder) => isFilled = isFilled && calculateIfOrderIsFilled(childOrder));
   return isFilled;
 }
+const fiveSeconds = 5000;
 
 async function WaitForOrderCompleted(userId, accountNumber, orderId) {
   return new Promise<number>(async (resolve, reject) => {
-    let timerHandle = null;
     let counter = 0;
-    timerHandle = Meteor.setInterval(async () => {
+    const worker = async () => {
       try {
         const order = await GetOrders(userId, accountNumber, orderId);
         counter++;
         if (!order) {
-          LogData(null, `WaitForOrderCompleted Failed calling GetOrders.`, null);
-          if (counter === 20) {
-            Meteor.clearInterval(timerHandle);
+          if (counter >= 20) {
             const msg = `Order ${orderId} not obtained. Rejecting WaitForOrderCompleted.`;
             LogData(null, msg, null);
             reject(msg);
+            return;
           }
+          // Try again ...
+          Meteor.setTimeout(worker, fiveSeconds);
           return;
         }
         const isOrderFilled = calculateIfOrderIsFilled(order);
-        if (isOrderFilled || counter === 20) {
-          Meteor.clearInterval(timerHandle);
+        if (isOrderFilled) {
           const calculatedFillPrice = CalculateFilledOrderPrice(order);
           TradeOrders.insert({_id: orderId, calculatedFillPrice, order});
-          if (counter === 20) {
-            const msg = `Order ${orderId} has failed to fill within the desired time. Using what completed.`;
-            LogData(null, msg, null);
-          }
           resolve(calculatedFillPrice);
+          return;
         }
+        if (counter >= 20) {
+          const msg = `Order ${orderId} has failed to fill within the desired time.`;
+          LogData(null, msg, null);
+          reject(msg);
+          return;
+        }
+        Meteor.setTimeout(worker, fiveSeconds);
       } catch (ex) {
-        Meteor.clearInterval(timerHandle);
         const msg = `Failed while WaitingForOrderCompleted.`;
         LogData(null, msg, ex);
         reject(`${msg} ${ex}`);
       }
-    }, 6000);
+    };
+    Meteor.setTimeout(worker, fiveSeconds);
   });
 }
 

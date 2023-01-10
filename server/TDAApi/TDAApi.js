@@ -91,7 +91,6 @@ async function GetNewAccessToken(userId, refreshToken) {
   };
   Users.update({_id: userId}, {$set: settings});
   return accessToken;
-  return null;
 }
 
 async function GetNewAccessAndRefreshToken(userId, currentRefreshToken) {
@@ -132,7 +131,6 @@ async function GetNewAccessAndRefreshToken(userId, currentRefreshToken) {
   };
   Users.update({_id: userId}, {$set: settings});
   return accessToken;
-  return null;
 }
 
 export async function GetAccessToken(userId) {
@@ -141,7 +139,6 @@ export async function GetAccessToken(userId) {
     accessInfo = Users.findOne(userId)?.services?.tda;
   } else {
     accessInfo = Meteor.user()?.services?.tda;
-    userId = Meteor.userId();
   }
   let result = null;
   if (accessInfo) {
@@ -170,8 +167,7 @@ export async function GetAccessToken(userId) {
 
 export async function GetOrders(userId, accountNumber = '755541528', orderId) {
   try {
-    userId = userId || Meteor.userId();
-    const token = await GetAccessToken(userId);
+    const token = await GetAccessToken(userId ?? Meteor.userId());
     if (!token) return null;
     let orderIdPart = '';
     if (orderId) {
@@ -186,13 +182,13 @@ export async function GetOrders(userId, accountNumber = '755541528', orderId) {
     };
     const response = await fetch(url, options);
     if (response.status !== 200) {
-      LogData(null, `TDAApi.GetOrders fetch returned: ${response.status} ${response}, tokenId:${tokenId}, accountNumber: ${accountNumber}`);
+      LogData(null, `TDAApi.GetOrders fetch returned: userId:${userId}, ${response.status} ${response}, accountNumber: ${accountNumber}`);
       return null;
     }
     const orders = await response.json();
     return orders;
   } catch (error) {
-    LogData(null, `TDAApi.GetOrders: tokenId:${tokenId}, accountNumber: ${accountNumber}`, error);
+    LogData(null, `TDAApi.GetOrders: userId:${userId}, accountNumber: ${accountNumber}`, error);
   }
 }
 
