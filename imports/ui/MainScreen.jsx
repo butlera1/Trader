@@ -12,7 +12,7 @@ export const MainScreen = () => {
   useEffect(() => {
     Meteor.call('GetUserSettings', (error, userSettingsRecord) => {
       if (error) {
-        setErrorText(`Failed to get user settings. Error: ${error}`);
+        alert(`Failed to get user settings. Error: ${error}`);
         return;
       }
       setUserSettings(userSettingsRecord);

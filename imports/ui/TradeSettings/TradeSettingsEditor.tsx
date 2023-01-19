@@ -12,6 +12,7 @@ import './TradeSettings.css';
 import {LegsEditor} from './LegsEditor';
 import {QuestionCircleOutlined} from '@ant-design/icons';
 import _ from 'lodash';
+import {diff} from 'deep-object-diff';
 
 const CheckboxGroup = Checkbox.Group;
 const generalMargins = 30;
@@ -84,15 +85,18 @@ export const TradeSettingsEditor = ({tradeSettings, changeCallback}: Props) => {
         tradeType,
       };
       strategy.description = GetDescription(strategy);
-      Meteor.call('SetUserTradeSettings', strategy, (error, result) => {
-        if (error) {
-          setErrorText(error.toString());
-        } else {
-          if (_.isFunction(changeCallback)) {
-            changeCallback();
+      const thereAreChanges = !_.isEmpty(diff(strategy, tradeSettings));
+      if (thereAreChanges) {
+        Meteor.call('SetUserTradeSettings', strategy, (error, result) => {
+          if (error) {
+            setErrorText(error.toString());
+          } else {
+            if (_.isFunction(changeCallback)) {
+              changeCallback();
+            }
           }
-        }
-      });
+        });
+      }
     }, 1000);
   }, [isActive, isMocked, symbol, days, entryHour, entryMinute, exitHour, exitMinute, percentGain, percentLoss, quantity, legs, tradeType]);
 

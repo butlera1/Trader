@@ -11,7 +11,7 @@ import {BuySell, OptionType} from '../../imports/Interfaces/ILegSettings';
 import {LogData} from "../collections/Logs";
 import {IronCondorMarketOrder} from './Templates/SellIronCondorOrder';
 
-const clientId = 'PFVYW5LYNPRZH6Y1ZCY5OTBGINDLZDW8@AMER.OAUTHAP';
+const clientId = '8MXX4ODNOEKHOU0COANPEZIETKPXJRQZ@AMER.OAUTHAP';
 const redirectUrl = 'https://localhost/traderOAuthCallback';
 
 export async function SetUserAccessInfo(code) {
@@ -34,7 +34,7 @@ export async function SetUserAccessInfo(code) {
       throw new Meteor.Error(`Failed: SetUserAccessInfo with ${ex}`);
     }
     if (response.status !== 200) {
-      const msg = `Error: SetUserAccessInfo method status is: ${response.status}`;
+      const msg = `Error: SetUserAccessInfo method status is: ${response.status} ${response.statusText}`;
       console.error(msg);
       throw new Meteor.Error(msg);
     }
@@ -47,7 +47,6 @@ export async function SetUserAccessInfo(code) {
     Meteor.users.update({_id: Meteor.userId()}, {
       $set: {
         'services.tda': data,
-        'services.tradeSettings': DefaultTradeSettings,
       }
     });
     result = true;
@@ -78,7 +77,7 @@ async function GetNewAccessToken(userId, refreshToken) {
       console.log(`Possible security issue with account (PW changed?) for userId: ${userId}.`);
       return null;
     }
-    const msg = `Error: GetNewAccessToken method status is: ${response.status}`;
+    const msg = `Error: GetNewAccessToken method status is: ${response.status} ${response.statusText}`;
     console.error(msg);
     throw new Meteor.Error(msg);
   }
@@ -127,7 +126,7 @@ async function GetNewAccessAndRefreshToken(userId, currentRefreshToken) {
     'services.tda.access_token': accessToken,
     'services.tda.refresh_token': refreshToken,
     'services.tda.accessTokenExpiresAt': dayjs().add(data.expires_in, 'second').valueOf(),
-    'services.tda.refreshTokenExpiresAt': dayjs().add(data.refresh_token_expires_in, 'day').valueOf(),
+    'services.tda.refreshTokenExpiresAt': dayjs().add(data.refresh_token_expires_in, 'second').valueOf(),
   };
   Users.update({_id: userId}, {$set: settings});
   return accessToken;
@@ -147,6 +146,7 @@ export async function GetAccessToken(userId) {
       let now = dayjs().add(10, 'day');
       let expireTime = dayjs(accessInfo.refreshTokenExpiresAt);
       if (now.isAfter(expireTime)) {
+        LogData(null, `User ID: ${userId}, ACCESS TOKEN AND REFRESH TOKEN IS BEING UPDATED. Should be rare (about 90-days).    ##################`);
         return await GetNewAccessAndRefreshToken(userId, accessInfo.refresh_token);
       }
       // Second, see if accessToken is expiring soon or has.

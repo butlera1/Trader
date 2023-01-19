@@ -1,9 +1,9 @@
 # Stock trading tool for TDAmeritrade API. Focused on daily option trading.
 
 ## Initial API call to get access code.
-Go to the following link in a browser and log in using your TDA credentials.:
+Go to the following link in a browser and log in using your TDA credentials. **NOTE: this link must include the client key!!!:**
 ```
-https://auth.tdameritrade.com/auth?response_type=code&redirect_uri=https://localhost/traderOAuthCallback&client_id=PFVYW5LYNPRZH6Y1ZCY5OTBGINDLZDW8@AMER.OAUTHAP
+https://auth.tdameritrade.com/auth?response_type=code&redirect_uri=https://localhost/traderOAuthCallback&client_id=8MXX4ODNOEKHOU0COANPEZIETKPXJRQZ%40AMER.OAUTHAP
 ```
 After valid signing in, the system will attempt to redirect the URL and fail. In the failed URL will be en encrypted code. Copy everything in the URL after the "?code=" and take it to the following link to decode it.
 
@@ -25,7 +25,7 @@ openssl req -x509 -newkey rsa:2048 -nodes -sha256 -out selfsigned.crt -keyout se
 printf "[dn]\nCN=localhost\n[req]\ndistinguished_name = dn\n[EXT]\nsubjectAltName=DNS:localhost\nkeyUsage=digitalSignature\nextendedKeyUsage=serverAuth")
 ```
 
-## Steps to putting nginx as an https proxy frontend
+## Steps to putting nginx as a https proxy frontend
 See: https://imagineer.in/blog/https-on-localhost-with-nginx/ 
 
 This article gives a walk through setting up of HTTPS protocol for localhost using NGINX in OSX (10.11.5).
@@ -72,7 +72,7 @@ Organizational Unit Name
 Common Name*
 Email Address
 Common Name value should be the domain name of your website. It is local.website.dev in our example.
-If you have multiple sub domains, use a wildcard *.website.dev
+If you have multiple subdomains, use a wildcard *.website.dev
 
 The generated certificate will be in x509 container format with SHA256 signature algorithm, 2048bit RSA authentication key and is valid for 365 days.
 
@@ -81,9 +81,9 @@ The generated certificate will be in x509 container format with SHA256 signature
 $ openssl x509 -text -noout -in localhost.crt
 
 STEP 2: Trust authority of the certificate
-When browsers get the certificat from server, the authenticity is verified by checking with existing CAs. Browser has a list of trusted CAs by default, if the certificate issuer is not there, then browser will be showing a security warning ‘untrusted connection’.
+When browsers get the certificate from server, the authenticity is verified by checking with existing CAs. Browser has a list of trusted CAs by default, if the certificate issuer is not there, then browser will be showing a security warning ‘untrusted connection’.
 
-Our generated certificate is self signed, so browser will give security warning. In order to bypass that, we will manually verify the trust of certificate.
+Our generated certificate is self-signed, so browser will give security warning. In order to bypass that, we will manually verify the trust of certificate.
 
 In OSX, you can do that in Keychain access as shown below: (or, open keychain access ui and add cerificate there).
 

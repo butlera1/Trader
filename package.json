@@ -17,6 +17,7 @@
     "apexcharts": "^3.36.3",
     "bcrypt": "^5.0.1",
     "dayjs": "^1.11.5",
+    "deep-object-diff": "^1.1.9",
     "later": "^1.2.0",
     "lodash": "^4.17.21",
     "meteor-node-stubs": "^1.2.1",

@@ -9,17 +9,20 @@ export const CodeOrMain = () => {
   const [validatedUser, setValidatedUser] = React.useState(null);
   const [error, setError] = React.useState(null);
 
-  Meteor.call('GetAccessToken', (error, result) => {
-    if (error) {
-      setError(error);
-      return;
-    }
-    if (result === null) {
-      setValidatedUser(false);
-    }else {
-      setValidatedUser(result);
-    }
-  });
+  React.useEffect(() => {
+    Meteor.call('GetAccessToken', (error, result) => {
+      if (error) {
+        setError(error);
+        return;
+      }
+      if (result === null) {
+        setValidatedUser(false);
+      }else {
+        setValidatedUser(result);
+      }
+    });
+  }, []);
+
   const GetView = () => {
     if (validatedUser === null) {
       return (<Spin/>);
