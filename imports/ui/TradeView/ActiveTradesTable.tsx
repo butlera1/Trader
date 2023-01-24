@@ -8,6 +8,7 @@ import ITradeSettings, {GetDescription} from '../../Interfaces/ITradeSettings';
 import {ColumnsType} from 'antd/lib/table';
 import {Space, Table} from 'antd';
 import EmergencyCloseActiveTrades from '../EmergencyCloseActiveTrades';
+import GraphActiveTrade from './GraphActiveTrade';
 
 const columns: ColumnsType<ITradeSettings> = [
   {
@@ -72,6 +73,13 @@ const columns: ColumnsType<ITradeSettings> = [
     dataIndex: 'lossLimit',
     align: 'right',
     render: lossLimit => lossLimit.toFixed(2),
+  },
+  {
+    title: 'Gain/time',
+    key: 'Gain/time',
+    dataIndex: 'monitoredPrices',
+    align: 'center',
+    render: monitoredPrices => <GraphActiveTrade monitoredPrices={monitoredPrices}/>,
   },
 ];
 
