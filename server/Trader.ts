@@ -230,7 +230,8 @@ function MonitorTradeToCloseItOut(liveTrade: ITradeSettings) {
           monitoredPrices: {
             price: currentPrice,
             whenNY,
-            gain: possibleGain
+            gain: possibleGain,
+            underlyingPrice: liveTrade.underlyingPrice,
           }
         }
       });

@@ -4,6 +4,7 @@ interface IPrice {
   price: number,
   whenNY: Date,
   gain: number,
+  underlyingPrice?: number,
 }
 
 interface ITradeSettings {
@@ -38,6 +39,7 @@ interface ITradeSettings {
   openingPrice?: number,
   closingPrice?: number,
   csvSymbols?: string,
+  underlyingPrice?: number,
   monitoredPrices?: IPrice[],
   gainLimit?: number,
   lossLimit?: number,

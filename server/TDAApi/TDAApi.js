@@ -6,7 +6,6 @@ import BuyStockOrderForm from './Templates/BuyStockOrderForm';
 import SellStraddleOrderForm from './Templates/SellStraddleOrderForm';
 import {Users} from '../collections/users';
 import GetOptionOrderBuysTriggeringSells from './Templates/GetOptionOrderBuysTriggeringSells';
-import {DefaultTradeSettings} from '../../imports/Interfaces/ITradeSettings';
 import {BuySell, OptionType} from '../../imports/Interfaces/ILegSettings';
 import {LogData} from "../collections/Logs";
 import {IronCondorMarketOrder} from './Templates/SellIronCondorOrder';
@@ -224,8 +223,20 @@ export async function GetPriceForOptions(tradeSettings) {
       console.error(`GetPriceForOptions: Transactions for price check are too fast per second...`);
       return {currentPrice: Number.NaN, quoteTime: dayjs()};
     }
+    // The quotes include the underlying stock price, so we need to manage that.
     quotes.forEach((quote) => {
       const leg = tradeSettings.legs.find((leg) => leg.option.symbol === quote.symbol);
+      // if leg not found and symbol is not the underlying stock, then something is wrong.
+      if (!leg && quote.symbol !== tradeSettings.symbol) {
+        const msg = `GetPriceForOptions: leg not found for quote symbol: ${quote.symbol}`;
+        LogData(tradeSettings, msg, new Error(msg));
+        return;
+      }
+      if (!leg && quote.symbol === tradeSettings.symbol) {
+        // This is the underlying stock price, so keep it for later.
+        tradeSettings.underlyingPrice = quote.mark;
+        return;
+      }
       // Below does the opposite math because we have already Opened these options, so we are looking at
       // "TO_CLOSE" pricing where we buy back something we sold and sell something we previously purchased.
       if (leg.buySell === BuySell.BUY) {
@@ -397,7 +408,7 @@ function getOptionChainsAtOrNearDelta(chains, dte) {
 
 export function CreateOpenAndCloseOrders(chains, tradeSettings) {
   // For each leg, find the closest option based on Delta
-  let csvSymbols = '';
+  let csvSymbols = `${tradeSettings.symbol}`;
   let openingPrice = 0.0;
   tradeSettings.legs.forEach((leg) => {
     const {putsChain, callsChain} = getOptionChainsAtOrNearDelta(chains, leg.dte);
@@ -415,7 +426,7 @@ export function CreateOpenAndCloseOrders(chains, tradeSettings) {
       openingPrice = openingPrice - leg.option.mark;
     }
   });
-  tradeSettings.csvSymbols = csvSymbols.slice(1); // Remove leading comma and save for later.
+  tradeSettings.csvSymbols = csvSymbols;
   tradeSettings.openingPrice = openingPrice; // Expected openingPrice. Will be used if isMocked. Order filled replaces.
   if (tradeSettings.tradeType?.length > 0) {
     if (tradeSettings.tradeType[0] === 'IC') {
