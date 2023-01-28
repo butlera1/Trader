@@ -1,5 +1,12 @@
 import ILegSettings, {BuySell, OptionType} from './ILegSettings';
 
+enum whyClosedEnum {
+  emergencyExit = 'emergencyExit',
+  gainLimit = 'gainLimit',
+  lossLimit = 'lossLimit',
+  timedExit = 'timedExit',
+}
+
 interface IPrice {
   price: number,
   whenNY: Date,
@@ -32,7 +39,7 @@ interface ITradeSettings {
   closingOrder?: any,
   whenOpened?: string,
   whenClosed?: string,
-  whyClosed?: string,
+  whyClosed?: whyClosedEnum,
   gainLoss?: number,
   openingOrderId?: string,
   closingOrderId?: string,
@@ -43,6 +50,7 @@ interface ITradeSettings {
   monitoredPrices?: IPrice[],
   gainLimit?: number,
   lossLimit?: number,
+  isRepeat?: boolean,
 }
 
 const DefaultIronCondorLegsSettings = [
@@ -142,6 +150,7 @@ function GetDescription(tradeSettings: ITradeSettings) {
 
 
 export {
+  whyClosedEnum,
   ITradeSettings as default,
   IPrice,
   GetDescription,

@@ -13,6 +13,7 @@ import {LegsEditor} from './LegsEditor';
 import {QuestionCircleOutlined} from '@ant-design/icons';
 import _ from 'lodash';
 import {diff} from 'deep-object-diff';
+import {CheckboxChangeEvent} from 'antd/lib/checkbox';
 
 const CheckboxGroup = Checkbox.Group;
 const generalMargins = 30;
@@ -40,7 +41,8 @@ export const TradeSettingsEditor = ({tradeSettings, changeCallback}: Props) => {
   const [quantity, setQuantity] = React.useState(tradeSettings.quantity);
   const [legs, setLegs] = React.useState(tradeSettings.legs);
   const [errorText, setErrorText] = React.useState(null);
-  const [tradeType, setTradeType] = React.useState(tradeSettings.tradeType || false);
+  const [tradeType, setTradeType] = React.useState(tradeSettings.tradeType ?? false);
+  const [isRepeat, setIsRepeat] = React.useState(tradeSettings.isRepeat ?? false);
 
   const setMap = {
     isActive: setIsActive,
@@ -58,6 +60,7 @@ export const TradeSettingsEditor = ({tradeSettings, changeCallback}: Props) => {
     quantity: setQuantity,
     legs: setLegs,
     tradeType: setTradeType,
+    isRepeat: setIsRepeat,
   };
 
   useEffect(() => {
@@ -83,6 +86,7 @@ export const TradeSettingsEditor = ({tradeSettings, changeCallback}: Props) => {
         quantity,
         legs,
         tradeType,
+        isRepeat,
       };
       strategy.description = GetDescription(strategy);
       const thereAreChanges = !_.isEmpty(diff(strategy, tradeSettings));
@@ -98,7 +102,7 @@ export const TradeSettingsEditor = ({tradeSettings, changeCallback}: Props) => {
         });
       }
     }, 1000);
-  }, [isActive, isMocked, symbol, days, entryHour, entryMinute, exitHour, exitMinute, percentGain, percentLoss, quantity, legs, tradeType]);
+  }, [isActive, isMocked, symbol, days, entryHour, entryMinute, exitHour, exitMinute, percentGain, percentLoss, quantity, legs, tradeType, isRepeat]);
 
   const RunNow = () => {
     return (
@@ -275,7 +279,7 @@ export const TradeSettingsEditor = ({tradeSettings, changeCallback}: Props) => {
       </Row>
 
       <Row style={{margin: generalMargins}}>
-        <Col span={6}>
+        <Col span={8}>
           <span>Quantity:</span>
           <InputNumber
             defaultValue={quantity}
@@ -284,12 +288,20 @@ export const TradeSettingsEditor = ({tradeSettings, changeCallback}: Props) => {
             style={{width: '50px'}}
             onChange={(value) => onChange('quantity', value)}/>
         </Col>
-        <Col span={6}>
+        <Col span={10}>
           <CheckboxGroup
             options={['IC', 'CS']}
             onChange={onChangeTradeType}
             value={tradeType}
           />
+        </Col>
+        <Col span={6}>
+          <Checkbox
+            onChange={(e: CheckboxChangeEvent) => onChange('isRepeat', e.target.checked)}
+            checked={isRepeat}
+          >
+            Repeat Trade
+          </Checkbox>
         </Col>
       </Row>
       <div style={{margin: generalMargins}}>

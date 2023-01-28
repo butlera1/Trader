@@ -17,13 +17,13 @@ import isoWeek from 'dayjs/plugin/isoWeek';
 import {Trades} from './collections/Trades';
 import {TradeOrders} from './collections/TradeOrders';
 import {TradeResults} from './collections/TradeResults';
-import ITradeSettings, {GetDescription} from '../imports/Interfaces/ITradeSettings';
+import ITradeSettings, {GetDescription, whyClosedEnum} from '../imports/Interfaces/ITradeSettings';
 import {TradeSettings} from './collections/TradeSettings';
 import {UserSettings} from './collections/UserSettings';
 // @ts-ignore
 import {Random} from 'meteor/random';
 import _ from 'lodash';
-import {LogData} from "./collections/Logs";
+import {LogData} from './collections/Logs';
 import {SendTextToAdmin} from './SendOutInfo';
 import mutexify from 'mutexify/promise';
 
@@ -165,6 +165,14 @@ async function CloseTrade(tradeSettings: ITradeSettings, currentPrice: number) {
     `Exit: $${tradeSettings.closingPrice?.toFixed(2)}, ` +
     `G/L $${tradeSettings.gainLoss?.toFixed(2)} at ${tradeSettings.whenClosed} NY, TS_ID: ${tradeSettings._id}`;
   LogData(tradeSettings, message);
+  const okToRepeat = tradeSettings.whyClosed !== whyClosedEnum.emergencyExit && tradeSettings.whyClosed !== whyClosedEnum.timedExit;
+  if (tradeSettings.isRepeat && okToRepeat) {
+    // Get fresh copy of the settings without the whyClosed and other values.
+    const settings = TradeSettings.findOne(tradeSettings._id);
+    ExecuteTrade(settings)
+      .then()
+      .catch((reason) => LogData(tradeSettings, `Failed doing a repeat ExecuteTrade ${reason}`, new Error(reason)));
+  }
 }
 
 function EmergencyCloseAllTrades() {
@@ -183,7 +191,7 @@ function EmergencyCloseAllTrades() {
       if (tradeSettings.monitoredPrices?.length > 0) {
         exitPrice = tradeSettings.monitoredPrices[tradeSettings.monitoredPrices.length - 1].price;
       }
-      tradeSettings.whyClosed = 'emergencyExit';
+      tradeSettings.whyClosed = whyClosedEnum.emergencyExit;
       await CloseTrade(tradeSettings, exitPrice).catch(reason => {
         LogData(tradeSettings, reason.toString(), reason);
       });
@@ -245,12 +253,12 @@ function MonitorTradeToCloseItOut(liveTrade: ITradeSettings) {
         isLossLimit = (absCurrentPrice <= liveTrade.lossLimit);
       }
       if (isGainLimit || isLossLimit || isEndOfDay) {
-        liveTrade.whyClosed = 'gainLimit';
+        liveTrade.whyClosed = whyClosedEnum.gainLimit;
         if (isLossLimit) {
-          liveTrade.whyClosed = 'lossLimit';
+          liveTrade.whyClosed = whyClosedEnum.lossLimit;
         }
         if (isEndOfDay) {
-          liveTrade.whyClosed = 'timedExit';
+          liveTrade.whyClosed = whyClosedEnum.timedExit;
         }
         await CloseTrade(liveTrade, currentPrice).catch(reason => {
           const msg = `Exception with MonitorTradeToCloseItOut waiting CloseTrade: ${reason}.`;
@@ -394,6 +402,7 @@ async function PlaceOpeningOrderAndMonitorToClose(tradeSettings: ITradeSettings)
 }
 
 async function ExecuteTrade(tradeSettings: ITradeSettings, forceTheTrade = false) {
+  if (!tradeSettings) return;
   const now = dayjs();
   const nowNYText = now.toDate().toLocaleString('en-US', {timeZone: 'America/New_York'});
   const currentDayOfTheWeek = isoWeekdayNames[now.isoWeekday()];
