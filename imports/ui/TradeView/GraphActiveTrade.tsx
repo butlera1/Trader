@@ -14,15 +14,20 @@ function GraphActiveTrade({monitoredPrices}: { monitoredPrices: IPrice[] }) {
     return dayjs(price.whenNY).diff(initialTime, 'minute', true).toFixed(1);
   };
 
-  const round = (num: number) => {return Math.round(num * 100) / 100};
+  const roundAndScale = (num: number) => {
+    return Math.round(num * 100);
+  };
 
   if (monitoredPrices && monitoredPrices.length) {
     initialTime = dayjs(monitoredPrices[0].whenNY);
-    // normalize to zero the underlying price.
-    const startingUnderlyingPrice = monitoredPrices[0].underlyingPrice;
+    // Normalize prices to zero and scale up.
     monitoredPrices.forEach((price: IPrice) => {
-      price.underlyingPrice = round((price.underlyingPrice - startingUnderlyingPrice) * 100);
-      price.gain = round(price.gain);
+      price.underlyingPrice = roundAndScale((price.underlyingPrice ?? 0) - monitoredPrices[0].underlyingPrice ?? 0);
+      price.vix = roundAndScale((price.vix ?? 0) - monitoredPrices[0].vix ?? 0);
+      price.shortStraddlePrice = roundAndScale((price.shortStraddlePrice ?? 0) - monitoredPrices[0].shortStraddlePrice ?? 0);
+      price.extrinsicShort = roundAndScale((price.extrinsicShort ?? 0) - monitoredPrices[0].extrinsicShort ?? 0);
+      price.extrinsicLong = roundAndScale((price.extrinsicLong ?? 0) - monitoredPrices[0].extrinsicLong ?? 0);
+      price.gain = roundAndScale(price.gain);
     });
   }
 

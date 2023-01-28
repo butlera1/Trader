@@ -7,7 +7,7 @@ import SellStraddleOrderForm from './Templates/SellStraddleOrderForm';
 import {Users} from '../collections/users';
 import GetOptionOrderBuysTriggeringSells from './Templates/GetOptionOrderBuysTriggeringSells';
 import {BuySell, OptionType} from '../../imports/Interfaces/ILegSettings';
-import {LogData} from "../collections/Logs";
+import {LogData} from '../collections/Logs';
 import {IronCondorMarketOrder} from './Templates/SellIronCondorOrder';
 
 const clientId = '8MXX4ODNOEKHOU0COANPEZIETKPXJRQZ@AMER.OAUTHAP';
@@ -194,6 +194,12 @@ export async function GetOrders(userId, accountNumber = '755541528', orderId) {
 // Returns a Promise that resolves after "ms" Milliseconds
 export const WaitMs = ms => new Promise(res => setTimeout(res, ms));
 
+const badPriceDataForOptions = {
+  currentPrice: Number.NaN,
+  vix: Number.NaN,
+  underlyingPrice: Number.NaN,
+};
+
 export async function GetPriceForOptions(tradeSettings) {
   try {
     const token = await GetAccessToken(tradeSettings.userId);
@@ -213,16 +219,19 @@ export async function GetPriceForOptions(tradeSettings) {
     if (response.status !== 200) {
       const msg = `Error: GetPriceForOptions fetch called failed. status: ${response.status}, ${JSON.stringify(response)}`;
       console.error(msg);
-      return {currentPrice: Number.NaN, quoteTime: dayjs()};
+      return {...badPriceDataForOptions, quoteTime: dayjs()};
     }
     const quotesData = await response.json();
-    // Now scan the quotes and add/subtract up the price.
-    let currentPrice = 0;
     const quotes = Object.values(quotesData);
     if (quotes?.length === 1 && _.isString(quotes[0]) && quotes[0].includes('transactions per seconds restriction')) {
       console.error(`GetPriceForOptions: Transactions for price check are too fast per second...`);
-      return {currentPrice: Number.NaN, quoteTime: dayjs()};
+      return {...badPriceDataForOptions, quoteTime: dayjs()};
     }
+    // Now scan the quotes and add/subtract up the price.
+    let currentPrice = 0;
+    let underlyingPrice = 0;
+    let vix = 0;
+
     // The quotes include the underlying stock price, so we need to manage that.
     quotes.forEach((quote) => {
       const leg = tradeSettings.legs.find((leg) => leg.option.symbol === quote.symbol);
@@ -234,7 +243,12 @@ export async function GetPriceForOptions(tradeSettings) {
       }
       if (!leg && quote.symbol === tradeSettings.symbol) {
         // This is the underlying stock price, so keep it for later.
-        tradeSettings.underlyingPrice = quote.mark;
+        underlyingPrice = quote.mark;
+        return;
+      }
+      if (!leg && 'VIX' === tradeSettings.symbol) {
+        // This is the underlying stock price, so keep it for later.
+        vix = quote.mark;
         return;
       }
       // Below does the opposite math because we have already Opened these options, so we are looking at
@@ -247,7 +261,7 @@ export async function GetPriceForOptions(tradeSettings) {
     });
     // Get quote time in local hours.
     const quoteTime = dayjs();
-    return {currentPrice, quoteTime};
+    return {currentPrice, quoteTime, underlyingPrice, vix};
   } catch (error) {
     const msg = `TDAApi.GetPriceForOptions: failed with: ${error}`;
     console.error(msg);
@@ -407,9 +421,9 @@ function getOptionChainsAtOrNearDelta(chains, dte) {
 }
 
 export function CreateOpenAndCloseOrders(chains, tradeSettings) {
-  // For each leg, find the closest option based on Delta
-  let csvSymbols = `${tradeSettings.symbol}`;
+  let csvSymbols = `${tradeSettings.symbol},VIX`; // Include underlying symbol and VIX in pricing polling later on.
   let openingPrice = 0.0;
+  // For each leg, find the closest option based on Delta
   tradeSettings.legs.forEach((leg) => {
     const {putsChain, callsChain} = getOptionChainsAtOrNearDelta(chains, leg.dte);
     if (leg.callPut === OptionType.CALL) {

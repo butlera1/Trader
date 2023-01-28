@@ -9,15 +9,16 @@ import {ColumnsType} from 'antd/lib/table';
 import {Space, Table} from 'antd';
 import EmergencyCloseActiveTrades from '../EmergencyCloseActiveTrades';
 import GraphActiveTrade from './GraphActiveTrade';
+import './activeTable.css';
 
 const columns: ColumnsType<ITradeSettings> = [
-  {
-    title: 'Mocked',
-    dataIndex: 'isMocked',
-    key: 'isMocked',
-    align: 'center',
-    render: isMocked => isMocked ? 'True' : 'False',
-  },
+  // {
+  //   title: 'Mocked',
+  //   dataIndex: 'isMocked',
+  //   key: 'isMocked',
+  //   align: 'center',
+  //   render: isMocked => isMocked ? 'True' : 'False',
+  // },
   {
     title: 'Description',
     dataIndex: 'description',
@@ -25,14 +26,14 @@ const columns: ColumnsType<ITradeSettings> = [
     render: (description, record) => GetDescription(record)
   },
   {
-    title: 'Opening Price',
+    title: 'Open $',
     dataIndex: 'openingPrice',
     key: 'openingPrice',
     align: 'right',
     render: (_, record) => record.openingPrice.toFixed(2)
   },
   {
-    title: 'Current Price',
+    title: 'Price',
     dataIndex: 'currentPrice',
     key: 'currentPrice',
     align: 'right',
@@ -103,6 +104,7 @@ function ActiveTradesTable() {
       columns={columns}
       rowKey="_id"
       dataSource={liveTrades}
+      rowClassName={(record) => record.isMocked ? 'mockedRow' : 'realTradeRow'}
     >
     </Table>
   );

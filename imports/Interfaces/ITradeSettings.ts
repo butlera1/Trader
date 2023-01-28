@@ -12,6 +12,11 @@ interface IPrice {
   whenNY: Date,
   gain: number,
   underlyingPrice?: number,
+  vix?: number,
+  shortStraddlePrice?: number,
+  longStraddlePrice?: number,
+  extrinsicShort?: number,
+  extrinsicLong?: number,
 }
 
 interface ITradeSettings {

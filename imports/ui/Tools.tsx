@@ -13,7 +13,10 @@ function Tools() {
       }
     });
   };
-  return <Button onClick={getOrders} style={{marginBottom: 2}}>Orders</Button>;
+  const showTools = Meteor.user().username === 'Arch';
+  if (showTools) return <Button onClick={getOrders} style={{marginBottom: 20, backgroundColor: 'pink'}}>Console LOG
+    existing TDA orders.</Button>;
+  return null;
 }
 
 export default Tools;
