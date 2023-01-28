@@ -10,15 +10,46 @@ After valid signing in, the system will attempt to redirect the URL and fail. In
 ```
 https://www.url-encode-decode.com/
 ```
-Then take the decoded information and paste it into the "Enter code here:" location in the option trader application and click the "Store Data" button.
+
+Then take the decoded information and paste it into the "Enter code here:" location in the option trader application and
+click the "Store Data" button.
 
 Example output:
+
 ```
 CJkc1hRW6/JbJI6WTy3/c7KdSUOD6sRJpbrOfwWYEf7N1pN6fd8l9GtFB2IeR1nGXJzxvWeumdL6rMCe61r/K0ro6U7TLYPkAWmMAO5nBWKyG3GkFw3ZsVNMgp2yEQ2xrbTEK1zyWSB4wTJbs+pBjxKhMfBKvrcSOVsKsi1t10CucLvk7dVKlY3/m5ECqzPH0AQ7LUG9oFwyAH1Yf5OX2yWh6VAqnbsFhOYAhS7ZhOg8qW8oHUMMxfLZAujg1FrxnMbi5acMpE4K9w/CYfD40slwLCr5Mc8SEKyh2BmyEuOIuLCTAGrJEMLGPkuZkSoXY26bT9+KWNWRlDAtAS/kS//b+0F28mtT3PMeYOdMOjBJRezH+HcjElD2td1gK0PGNomf8JtrY8iKLOkotmeB4k0uXa9iShXNyccrXcMQUKfrcK3eTnNDL0QwMeJ100MQuG4LYrgoVi/JHHvlDINOjqeGSboEhyLEhcN8JCPQf/ISichlnu3dWzOmRZqhNLzqmCkTBtjAQbbEx0wOf+yPiYL7jN+1le3RxlFsFPLDd2aJ5dtHOq1me7lwYpHnYEJcVjhKvolKBla23e7iLXlyh7WzurD3UZ5NBl575D7fI2TiUnEa4/MPkICwFqMteTXwhnPSDLbGTl08Mr3GtOLNbLUOm24ykTCPoNYuUQrs21GkBolof1eee2882xeVAHWMAE/alPa3LCK5ecxe5QrOX1ivO2nqgYHJfhU9+rxiXxMQ9CjbGbejJc8MBef6NFsjciE1sQB9CP9gz4ODQFkYUFj4CrUS0rjHAbn5DKtEv2s1zG5yHQTPiZgpOrNME6XeA5S2Wrr3au6Cb5jjFbU7EacAS2TT1cy23npBRx+Fq4S9BDFF9OL6KV2z98KH/WDotwd0cW2sqo0=212FD3x19z9sWBHDJACbC00B75E
 ```
+
+# Basic system design
+
+The server-side runs a timer to wakeup at 9:25 AM New York time. It then checks if any user has tradeSettings defined
+that could be scheduled.
+
+A trade is scheduled using an intervalTimer. The trade is then executed at that time. The system does this by first
+figuring out the opening trade structure for TDA API. It also figures out the closing trade pattern. It then sends the
+opening trade request to TDA API. Once that opening trade request has been fullfilled by TDA, the system then runs
+another interval timer to monitor the trade looking for gain limit, loss limit, or end of time for the trade.
+
+Whenever a user modifies any of their tradeSettings, the server checks to see if the tradeSetting should be scheduled
+for that day.
+
+If a tradeSetting's start time has already passed for that day, the trade will not get scheduled.
+
+### Database
+
+A trade pattern is defined by a record in the 'tradeSettings' collection.
+
+When a trade is started, a copy of a tradeSettings record is copied into the 'trades' collection. Here the tradeSettings
+record becomes a live trade and monitoring data is recorded in this record within the trades collection. Thus the
+original tradeSettings record is not modified during a trade.
+
+When a trade completes (gainLimit, lossLimit, emergencyClose, or timedExpired), the results of the trade are recorded
+into the 'tradeResults' collection.
+
 ## Making self-signed certs to be used within the TDAmeritrade API.
 
-The following command was used (defined at https://www.npmjs.com/package/@marknokes/tdameritrade): 
+The following command was used (defined at https://www.npmjs.com/package/@marknokes/tdameritrade):
+
 ```
 openssl req -x509 -newkey rsa:2048 -nodes -sha256 -out selfsigned.crt -keyout selfsigned.key \
 -subj '/CN=localhost' -extensions EXT -config <( \

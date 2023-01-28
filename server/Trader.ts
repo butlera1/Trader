@@ -165,9 +165,10 @@ async function CloseTrade(tradeSettings: ITradeSettings, currentPrice: number) {
     `Exit: $${tradeSettings.closingPrice?.toFixed(2)}, ` +
     `G/L $${tradeSettings.gainLoss?.toFixed(2)} at ${tradeSettings.whenClosed} NY, TS_ID: ${tradeSettings._id}`;
   LogData(tradeSettings, message);
+  // See if we should repeat the trade now that it is closed.
   const okToRepeat = tradeSettings.whyClosed !== whyClosedEnum.emergencyExit && tradeSettings.whyClosed !== whyClosedEnum.timedExit;
   if (tradeSettings.isRepeat && okToRepeat) {
-    // Get fresh copy of the settings without the whyClosed and other values.
+    // Get fresh copy of the settings without values for whyClosed, openingPrice, closingPrice, gainLoss, etc.
     const settings = TradeSettings.findOne(tradeSettings._id);
     ExecuteTrade(settings)
       .then()
@@ -402,7 +403,11 @@ async function PlaceOpeningOrderAndMonitorToClose(tradeSettings: ITradeSettings)
 }
 
 async function ExecuteTrade(tradeSettings: ITradeSettings, forceTheTrade = false) {
-  if (!tradeSettings) return;
+  if (!tradeSettings) {
+    const msg = `ExecuteTrade called without 'tradeSettings'.`;
+    LogData(null, msg, new Error(msg));
+    return;
+  }
   const now = dayjs();
   const nowNYText = now.toDate().toLocaleString('en-US', {timeZone: 'America/New_York'});
   const currentDayOfTheWeek = isoWeekdayNames[now.isoWeekday()];
