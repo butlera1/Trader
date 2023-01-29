@@ -17,7 +17,12 @@ import isoWeek from 'dayjs/plugin/isoWeek';
 import {Trades} from './collections/Trades';
 import {TradeOrders} from './collections/TradeOrders';
 import {TradeResults} from './collections/TradeResults';
-import ITradeSettings, {GetDescription, whyClosedEnum} from '../imports/Interfaces/ITradeSettings';
+import ITradeSettings, {
+  BadDefaultIPrice,
+  GetDescription,
+  IPrice,
+  whyClosedEnum
+} from '../imports/Interfaces/ITradeSettings';
 import {TradeSettings} from './collections/TradeSettings';
 import {UserSettings} from './collections/UserSettings';
 // @ts-ignore
@@ -34,11 +39,6 @@ dayjs.extend(isoWeek);
 const isoWeekdayNames = ['skip', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'];
 
 const oneSeconds = 1000;
-
-function GetNewYorkTimeNowAsText() {
-  const currentLocalTime = new Date();
-  return currentLocalTime.toLocaleString('en-US', {timeZone: 'America/New_York'});
-}
 
 /**
  * Given an hour number 0-23 and minutes, this returns a dayjs object that is that time in New York times zone.
@@ -70,8 +70,13 @@ function GetNewYorkTimeAt(hourIn: number, minute: number) {
   return dayjs(newYorkTimeAtGivenHourAndMinuteText);
 }
 
-async function GetOptionsPriceLoop(tradeSettings: ITradeSettings) {
-  let result = null;
+function GetNewYorkTimeNowAsText() {
+  const currentLocalTime = new Date();
+  return currentLocalTime.toLocaleString('en-US', {timeZone: 'America/New_York'});
+}
+
+async function GetOptionsPriceLoop(tradeSettings: ITradeSettings): Promise<IPrice> {
+  let result = {...BadDefaultIPrice};
   let count = 0;
   while (count < 3) {
     try {
@@ -79,8 +84,8 @@ async function GetOptionsPriceLoop(tradeSettings: ITradeSettings) {
       const release = await lock();
       result = await GetPriceForOptions(tradeSettings);
       setTimeout(release, 1000);
-      if (_.isFinite(result?.currentPrice)) {
-        return result.currentPrice;
+      if (_.isFinite(result?.price)) {
+        return result;
       }
       count++;
     } catch (ex) {
@@ -89,29 +94,28 @@ async function GetOptionsPriceLoop(tradeSettings: ITradeSettings) {
   }
   const message = `GetOptionsPriceLoop: Failed to get currentPrice (probably too fast). User: ${tradeSettings.userName}`;
   console.error(message);
-  return Number.NaN;
+  return result;
 }
 
-async function GetSmartOptionsPrice(tradeSettings: ITradeSettings) {
+async function GetSmartOptionsPrice(tradeSettings: ITradeSettings): Promise<IPrice> {
   const sampleSize = 2;
   let prices = [];
+  let lastSample: IPrice = {...BadDefaultIPrice};
   for (let i = 0; i < sampleSize; i++) {
-    const price = await GetOptionsPriceLoop(tradeSettings);
-    if (_.isFinite(price)) {
-      prices.push(price);
+    lastSample = await GetOptionsPriceLoop(tradeSettings);
+    if (_.isFinite(lastSample.price)) {
+      prices.push(lastSample.price);
     }
   }
   if (prices.length > 0) {
     if (prices.length > 3) {
-      // Remove the smallest number (index zero is filtered out since it's truthy is false).
-      prices = prices.sort().filter((_, i) => i);
-      // Remove the largest number
-      prices = prices.slice(0, prices.length - 1);
+      // Sort the array and remove the smallest and largest numbers (aberrations).
+      prices = prices.sort().slice(1, prices.length - 1);
     }
     const average = (array) => array.reduce((a, b) => a + b, 0) / array.length;
-    return Math.abs(average(prices));
+    lastSample.price = Math.abs(average(prices));
   }
-  return Number.NaN;
+  return lastSample;
 }
 
 async function CloseTrade(tradeSettings: ITradeSettings, currentPrice: number) {
@@ -226,27 +230,17 @@ function MonitorTradeToCloseItOut(liveTrade: ITradeSettings) {
         return;
       }
       // Get the current price for the trade.
-      const currentPrice = await GetSmartOptionsPrice(liveTrade);
-      if (currentPrice === Number.NaN) {
+      const sample = await GetSmartOptionsPrice(liveTrade);
+      if (sample.price === Number.NaN) {
         Meteor.setTimeout(monitorMethod, oneSeconds);
         return; // Try again on next interval timeout.
       }
-      const possibleGain = calculateGain(liveTrade, currentPrice);
+      sample.gain = calculateGain(liveTrade, sample.price);
       // Record price value for historical reference and charting.
-      const whenNY = GetNewYorkTimeNowAsText();
-      Trades.update(liveTrade._id, {
-        $addToSet: {
-          monitoredPrices: {
-            price: currentPrice,
-            whenNY,
-            gain: possibleGain,
-            underlyingPrice: liveTrade.underlyingPrice,
-          }
-        }
-      });
+      Trades.update(liveTrade._id, {$addToSet: {monitoredPrices: sample}});
       const localNow = dayjs();
       const isEndOfDay = localEarlyExitTime.isBefore(localNow);
-      const absCurrentPrice = Math.abs(currentPrice);
+      const absCurrentPrice = Math.abs(sample.price);
       let isGainLimit = (absCurrentPrice <= liveTrade.gainLimit);
       let isLossLimit = (absCurrentPrice >= liveTrade.lossLimit);
       if (liveTrade.openingPrice > 0) { // Means we are long the trade (we want values to go up).
@@ -261,11 +255,11 @@ function MonitorTradeToCloseItOut(liveTrade: ITradeSettings) {
         if (isEndOfDay) {
           liveTrade.whyClosed = whyClosedEnum.timedExit;
         }
-        await CloseTrade(liveTrade, currentPrice).catch(reason => {
+        await CloseTrade(liveTrade, sample.price).catch(reason => {
           const msg = `Exception with MonitorTradeToCloseItOut waiting CloseTrade: ${reason}.`;
           LogData(liveTrade, msg, new Meteor.Error(reason, msg));
         });
-      }else {
+      } else {
         // Loop again waiting for one of the close patterns to get hit.
         Meteor.setTimeout(monitorMethod, oneSeconds);
       }
@@ -319,6 +313,7 @@ function calculateIfOrderIsFilled(order) {
   order?.childOrderStrategies?.forEach((childOrder) => isFilled = isFilled && calculateIfOrderIsFilled(childOrder));
   return isFilled;
 }
+
 const fiveSeconds = 5000;
 
 async function WaitForOrderCompleted(userId, accountNumber, orderId) {
@@ -504,6 +499,7 @@ export {
   WaitForOrderCompleted,
   MonitorTradeToCloseItOut,
   GetNewYorkTimeAt,
+  GetNewYorkTimeNowAsText,
   PerformTradeForAllUsers,
   ExecuteTrade,
   EmergencyCloseAllTrades,

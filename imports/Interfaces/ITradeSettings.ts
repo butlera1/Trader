@@ -9,8 +9,8 @@ enum whyClosedEnum {
 
 interface IPrice {
   price: number,
-  whenNY: Date,
-  gain: number,
+  whenNY?: Date,
+  gain?: number,
   underlyingPrice?: number,
   vix?: number,
   shortStraddlePrice?: number,
@@ -18,6 +18,18 @@ interface IPrice {
   extrinsicShort?: number,
   extrinsicLong?: number,
 }
+
+const BadDefaultIPrice = {
+  price: Number.NaN,
+  whenNY: undefined,
+  gain: 0,
+  underlyingPrice: 0,
+  vix: 0,
+  shortStraddlePrice: 0,
+  longStraddlePrice: 0,
+  extrinsicShort: 0,
+  extrinsicLong: 0,
+};
 
 interface ITradeSettings {
   _id?: string,
@@ -161,5 +173,6 @@ export {
   GetDescription,
   DefaultTradeSettings,
   DefaultIronCondorLegsSettings,
-  DefaultCalendarSpreadLegsSettings
+  DefaultCalendarSpreadLegsSettings,
+  BadDefaultIPrice,
 };
