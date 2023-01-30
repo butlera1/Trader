@@ -10,6 +10,10 @@ import {Space, Table} from 'antd';
 import EmergencyCloseActiveTrades from '../EmergencyCloseActiveTrades';
 import GraphActiveTrade from './GraphActiveTrade';
 import './activeTable.css';
+import dayjs from 'dayjs';
+import duration from 'dayjs/plugin/duration';
+
+dayjs.extend(duration);
 
 const columns: ColumnsType<ITradeSettings> = [
   // {
@@ -46,7 +50,7 @@ const columns: ColumnsType<ITradeSettings> = [
     }
   },
   {
-    title: '$ Gain',
+    title: '$ G/L',
     key: 'gainLoss',
     dataIndex: 'gainLoss',
     align: 'right',
@@ -62,18 +66,57 @@ const columns: ColumnsType<ITradeSettings> = [
     },
   },
   {
+    title: 'H:M:S',
+    key: 'duration',
+    dataIndex: 'monitoredPrices',
+    align: 'center',
+    render: (_, {monitoredPrices}) => {
+      let durationText = '00:00:00';
+      if (monitoredPrices?.length > 0) {
+        const start = dayjs(monitoredPrices[0].whenNY);
+        const end = dayjs(monitoredPrices[monitoredPrices.length - 1].whenNY);
+        durationText = dayjs.duration(end.diff(start)).format('H:m:ss');
+      }
+      return durationText;
+    },
+  },
+  {
+    title: 'XShort',
+    key: 'xShort',
+    dataIndex: 'monitoredPrices',
+    align: 'center',
+    render: (_, {monitoredPrices}) => {
+      if (monitoredPrices?.length > 0) {
+        return monitoredPrices[monitoredPrices.length - 1].extrinsicShort.toFixed(2);
+      }
+      return 0;
+    },
+  },
+  {
+    title: 'XLong',
+    key: 'xLong',
+    dataIndex: 'monitoredPrices',
+    align: 'center',
+    render: (_, {monitoredPrices}) => {
+      if (monitoredPrices?.length > 0) {
+        return monitoredPrices[monitoredPrices.length - 1].extrinsicLong.toFixed(2);
+      }
+      return 0;
+    },
+  },
+  {
     title: 'Gain Limit',
     key: 'gainLimit',
     dataIndex: 'gainLimit',
     align: 'right',
-    render: gainLimit => gainLimit.toFixed(2),
+    render: (_, record) => (record.gainLimit).toFixed(2),
   },
   {
     title: 'Loss Limit',
     key: 'lossLimit',
     dataIndex: 'lossLimit',
     align: 'right',
-    render: lossLimit => lossLimit.toFixed(2),
+    render: (lossLimit, record) => (lossLimit).toFixed(2),
   },
   {
     title: 'Gain/time',

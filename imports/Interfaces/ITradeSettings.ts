@@ -160,7 +160,7 @@ function GetDescription(tradeSettings: ITradeSettings) {
   let part4 = '';
   if (tradeSettings.csvSymbols) {
     const regex = new RegExp(`${tradeSettings.symbol}_......`, 'g');
-    part4 = `\n${tradeSettings.csvSymbols.replace(regex, '')}`;
+    part4 = `\n${tradeSettings.csvSymbols.replace(regex, '').replace('VIX', '')}`;
   }
   return `${part1}\n${part2}\n${part3}${part4}`;
 }

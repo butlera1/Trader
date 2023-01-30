@@ -2,5 +2,9 @@
 
 /* For real live trades, show the row with a special background color. */
 .realTradeRow {
-    background-color: lightyellow;
+    background-color: yellow;
+}
+
+.mockedRow {
+    background-color: white;
 }

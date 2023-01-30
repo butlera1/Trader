@@ -2,6 +2,7 @@ import React, {useEffect, useState} from 'react';
 import TabTradeSettings from './TradeSettings/TabTradeSettings';
 import UserSettings from './UserSettings';
 import {Meteor} from 'meteor/meteor';
+import {Space} from 'antd';
 import TradeResultsView from './TradeView/TradeResultsView';
 import Tools from './Tools';
 import ActiveTradesTable from './TradeView/ActiveTradesTable';
@@ -20,10 +21,14 @@ export const MainScreen = () => {
 
 
   return (<>
-    <UserSettings userSettings={userSettings}/>
-    <Tools/>
-    <ActiveTradesTable/>
-    <TabTradeSettings/>
-    <TradeResultsView/>
+    <Space>
+      <div>
+        <UserSettings userSettings={userSettings}/>
+        <Tools/>
+        <ActiveTradesTable/>
+        <TabTradeSettings/>
+      </div>
+      <TradeResultsView/>
+    </Space>
   </>);
 };

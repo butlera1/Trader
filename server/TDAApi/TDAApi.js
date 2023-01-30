@@ -234,29 +234,30 @@ export async function GetPriceForOptions(tradeSettings) {
     // The quotes include the underlying stock price, so we need to manage that.
     quotes.forEach((quote) => {
       const leg = tradeSettings.legs.find((leg) => leg.option.symbol === quote.symbol);
-      if (!leg && 'VIX' === tradeSettings.symbol) {
-        result.vix = quote.mark;
-        return {...BadDefaultIPrice};
-      }
       // if leg not found, then something is wrong.
       if (!leg) {
         const msg = `GetPriceForOptions: leg not found for quote symbol: ${quote.symbol}`;
         LogData(tradeSettings, msg, new Error(msg));
-        return {...BadDefaultIPrice};
+        return;
+      }
+      result.underlyingPrice = quote.underlyingPrice;
+      if (quote.contractType === 'C') {// CALL
+        quote.intrinsic = Math.max(0, quote.underlyingPrice - quote.strikePrice);
+      } else {
+        quote.intrinsic = Math.max(0, quote.strikePrice - quote.underlyingPrice);
       }
       // Below does the opposite math because we have already Opened these options, so we are looking at
       // "TO_CLOSE" pricing where we buy back something we sold and sell something we previously purchased.
       if (leg.buySell === BuySell.BUY) {
         result.price = result.price - quote.mark;
         result.longStraddlePrice = result.longStraddlePrice - quote.mark;
-        result.extrinsicLong = result.extrinsicLong + (quote.mark - quote.moneyIntrinsicValue);
+        result.extrinsicLong += quote.mark - quote.intrinsic;
       } else {
         // Sold options
         result.price = result.price + quote.mark;
         result.shortStraddlePrice = result.shortStraddlePrice + quote.mark;
-        result.extrinsicShort = result.extrinsicShort + (quote.mark - quote.moneyIntrinsicValue);
+        result.extrinsicShort += quote.mark - quote.intrinsic;
       }
-      result.underlyingPrice = quote.underlyingPrice;
     });
     return result;
   } catch (error) {
@@ -336,7 +337,7 @@ export async function IsOptionMarketOpenToday(userId) {
   const dateText = dayjs().format('YYYY-MM-DD');
   const response = await fetch(`https://api.tdameritrade.com/v1/marketdata/OPTION/hours?date=${dateText}`, options);
   if (!response.ok) {
-    const msg = `Error: IsOptionMarketOpen method status is: ${response.status}`;
+    const msg = `Error: IsOptionMarketOpen method status is: ${response.status} for user ${userId}`;
     LogData(null, msg, new Error(msg));
     return false;
   }
@@ -418,7 +419,7 @@ function getOptionChainsAtOrNearDelta(chains, dte) {
 }
 
 export function CreateOpenAndCloseOrders(chains, tradeSettings) {
-  let csvSymbols = `VIX`; // Include VIX in pricing polling later on.
+  let csvSymbols = ``;
   let openingPrice = 0.0;
   // For each leg, find the closest option based on Delta
   tradeSettings.legs.forEach((leg) => {
@@ -437,7 +438,7 @@ export function CreateOpenAndCloseOrders(chains, tradeSettings) {
       openingPrice = openingPrice - leg.option.mark;
     }
   });
-  tradeSettings.csvSymbols = csvSymbols;
+  tradeSettings.csvSymbols = csvSymbols.slice(1); // remove leading comma
   tradeSettings.openingPrice = openingPrice; // Expected openingPrice. Will be used if isMocked. Order filled replaces.
   if (tradeSettings.tradeType?.length > 0) {
     if (tradeSettings.tradeType[0] === 'IC') {

@@ -19,15 +19,16 @@ function GraphActiveTrade({monitoredPrices}: { monitoredPrices: IPrice[] }) {
   };
 
   if (monitoredPrices && monitoredPrices.length) {
-    initialTime = dayjs(monitoredPrices[0].whenNY);
+    const initialUnderlyingPrice = monitoredPrices[0].underlyingPrice ?? 0;
+    const initialPrice = monitoredPrices[0].price ?? 0;
     // Normalize prices to zero and scale up.
     monitoredPrices.forEach((price: IPrice) => {
-      price.underlyingPrice = roundAndScale((price.underlyingPrice ?? 0) - monitoredPrices[0].underlyingPrice ?? 0);
-      price.vix = roundAndScale((price.vix ?? 0) - monitoredPrices[0].vix ?? 0);
-      price.shortStraddlePrice = roundAndScale((price.shortStraddlePrice ?? 0) - monitoredPrices[0].shortStraddlePrice ?? 0);
-      price.extrinsicShort = roundAndScale((price.extrinsicShort ?? 0) - monitoredPrices[0].extrinsicShort ?? 0);
-      price.extrinsicLong = roundAndScale((price.extrinsicLong ?? 0) - monitoredPrices[0].extrinsicLong ?? 0);
-      price.gain = roundAndScale(price.gain);
+      price.underlyingPrice = roundAndScale((price.underlyingPrice ?? 0) - initialUnderlyingPrice) / 10;
+      // price.shortStraddlePrice = roundAndScale(price.shortStraddlePrice)/100;
+      // price.extrinsicShort = roundAndScale(price.extrinsicShort)/100;
+      // price.extrinsicLong = roundAndScale(price.extrinsicLong)/100;
+      price.gain = roundAndScale(price.gain) / 100;
+      // price.price = roundAndScale(price.price - initialPrice);
     });
   }
 
@@ -44,8 +45,12 @@ function GraphActiveTrade({monitoredPrices}: { monitoredPrices: IPrice[] }) {
       <XAxis dataKey={getTime} unit={'m'}/>
       <Tooltip/>
       <Legend/>
+      {/*<Line type="monotone" dataKey="price" stroke="black" dot={false} isAnimationActive={false}/>*/}
       <Line type="monotone" dataKey="gain" stroke="green" dot={false} isAnimationActive={false}/>
       <Line type="monotone" dataKey="underlyingPrice" stroke="red" dot={false} isAnimationActive={false}/>
+      {/*<Line type="monotone" dataKey="shortStraddlePrice" stroke="pink" dot={false} isAnimationActive={false}/>*/}
+      {/*<Line type="monotone" dataKey="extrinsicLong" stroke="blue" dot={false} isAnimationActive={false}/>*/}
+      {/*<Line type="monotone" dataKey="extrinsicShort" stroke="orange" dot={false} isAnimationActive={false}/>*/}
     </LineChart>
   );
 }
