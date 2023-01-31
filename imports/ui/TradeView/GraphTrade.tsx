@@ -18,11 +18,12 @@ function GraphTrade({liveTrade}: { liveTrade: ITradeSettings }) {
 
   const monitoredPrices = liveTrade.monitoredPrices;
   if (monitoredPrices && monitoredPrices.length) {
+    initialTime = dayjs(monitoredPrices[0].whenNY);
     const initialUnderlyingPrice = monitoredPrices[0].underlyingPrice ?? 0;
     const initialPrice = monitoredPrices[0].price ?? 0;
     // Normalize prices to zero and scale up.
     monitoredPrices.forEach((price: IPrice) => {
-      price.underlyingPrice = round((price.underlyingPrice ?? 0) - initialUnderlyingPrice) * liveTrade.quantity;
+      price.underlyingPrice = round((price.underlyingPrice ?? 0) - initialUnderlyingPrice) * liveTrade.quantity * 10;
       price.gain = round(price.gain);
     });
   }
