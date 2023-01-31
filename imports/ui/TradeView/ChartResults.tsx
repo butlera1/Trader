@@ -4,6 +4,7 @@ import {CartesianGrid, Line, LineChart, Tooltip, XAxis, YAxis} from 'recharts';
 import {useTracker} from 'meteor/react-meteor-data';
 import TradeResults from '../../Collections/TradeResults';
 import {Select, Space} from 'antd';
+import ITradeSettings from '../../Interfaces/ITradeSettings';
 
 interface ISumResults {
   description: string,
@@ -31,7 +32,7 @@ function ChartResults() {
   const [maxLoss, setMaxLoss] = React.useState(0);
 
   const tradeResults: ISumResults[] = useTracker(() => {
-    const records: ITradeResults[] = TradeResults.find().fetch();
+    const records: ITradeSettings[] = TradeResults.find().fetch();
     const sumResults: ISumResults[] = [];
     let winsTmp = 0.0;
     let lossesTmp = 0.0;

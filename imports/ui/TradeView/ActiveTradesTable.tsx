@@ -8,21 +8,14 @@ import ITradeSettings, {GetDescription} from '../../Interfaces/ITradeSettings';
 import {ColumnsType} from 'antd/lib/table';
 import {Space, Table} from 'antd';
 import EmergencyCloseActiveTrades from '../EmergencyCloseActiveTrades';
-import GraphActiveTrade from './GraphActiveTrade';
-import './activeTable.css';
+import GraphTrade from './GraphTrade.tsx';
+import './graphTrade.css';
 import dayjs from 'dayjs';
 import duration from 'dayjs/plugin/duration';
 
 dayjs.extend(duration);
 
 const columns: ColumnsType<ITradeSettings> = [
-  // {
-  //   title: 'Mocked',
-  //   dataIndex: 'isMocked',
-  //   key: 'isMocked',
-  //   align: 'center',
-  //   render: isMocked => isMocked ? 'True' : 'False',
-  // },
   {
     title: 'Description',
     dataIndex: 'description',
@@ -87,7 +80,7 @@ const columns: ColumnsType<ITradeSettings> = [
     align: 'center',
     render: (_, {monitoredPrices}) => {
       if (monitoredPrices?.length > 0) {
-        return monitoredPrices[monitoredPrices.length - 1].extrinsicShort.toFixed(2);
+        return monitoredPrices[monitoredPrices.length - 1].extrinsicShort?.toFixed(2);
       }
       return 0;
     },
@@ -99,7 +92,7 @@ const columns: ColumnsType<ITradeSettings> = [
     align: 'center',
     render: (_, {monitoredPrices}) => {
       if (monitoredPrices?.length > 0) {
-        return monitoredPrices[monitoredPrices.length - 1].extrinsicLong.toFixed(2);
+        return monitoredPrices[monitoredPrices.length - 1].extrinsicLong?.toFixed(2);
       }
       return 0;
     },
@@ -109,21 +102,21 @@ const columns: ColumnsType<ITradeSettings> = [
     key: 'gainLimit',
     dataIndex: 'gainLimit',
     align: 'right',
-    render: (_, record) => (record.gainLimit).toFixed(2),
+    render: (gainLimit, record) => gainLimit?.toFixed(2),
   },
   {
     title: 'Loss Limit',
     key: 'lossLimit',
     dataIndex: 'lossLimit',
     align: 'right',
-    render: (lossLimit, record) => (lossLimit).toFixed(2),
+    render: (lossLimit, record) => lossLimit?.toFixed(2),
   },
   {
     title: 'Gain/time',
     key: 'Gain/time',
     dataIndex: 'monitoredPrices',
     align: 'center',
-    render: monitoredPrices => <GraphActiveTrade monitoredPrices={monitoredPrices}/>,
+    render: (monitoredPrices, record) => <GraphTrade liveTrade={record}/>,
   },
 ];
 
@@ -137,7 +130,9 @@ function title() {
 }
 
 function ActiveTradesTable() {
-  const liveTrades: ITradeSettings[] = useTracker(() => LiveTrades.find({}).fetch());
+  const query = {whyClosed: {$exists: false}};
+  const opts = {sort: {whenClosed: -1}};
+  const liveTrades: ITradeSettings[] = useTracker(() => LiveTrades.find(query, opts).fetch());
   return (
     <Table
       style={{border: 'solid 1px red'}}

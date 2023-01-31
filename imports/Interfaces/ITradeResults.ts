@@ -1,3 +1,5 @@
+import {IPrice} from './ITradeSettings';
+
 interface ITradeResults {
   _id?: string,
   userId: string,
@@ -13,4 +15,7 @@ interface ITradeResults {
   tradeId: string,
   isMocked: boolean,
   sum?: number,
+  monitoredPrices?: IPrice[],
 }
+
+export default ITradeResults;

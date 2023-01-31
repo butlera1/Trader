@@ -6,38 +6,39 @@ import {ColumnsType} from 'antd/lib/table';
 import {Table} from 'antd';
 import dayjs from 'dayjs';
 import {DeleteOutlined} from '@ant-design/icons';
+import ITradeSettings, {GetDescription} from '../../Interfaces/ITradeSettings';
+import GraphTrade from './GraphTrade';
 
-function getDescription(record) {
-  return record.description ?? `${record.symbol}(${record.quantity})`;
-}
-
-function deleteTradeResults(record:ITradeResults){
+function deleteTradeResults(record: ITradeSettings) {
   TradeResults.remove(record._id);
 }
 
-const columns: ColumnsType<ITradeResults> = [
+const columns: ColumnsType<ITradeSettings> = [
   {
     title: <DeleteOutlined/>,
     key: 'action',
-    render: (_:any, record: ITradeResults) => <a onClick={() => deleteTradeResults(record)}><DeleteOutlined/></a>,
-  },
-  {
-    title: 'Mocked',
-    dataIndex: 'isMocked',
-    key: 'isMocked',
-    render: isMocked => isMocked ? 'True' : 'False',
-    sorter: (a, b) => a.isMocked ? 1 : 0,
+    render: (_: any, record: ITradeSettings) => <a onClick={() => deleteTradeResults(record)}><DeleteOutlined/></a>,
   },
   {
     title: 'Description',
     dataIndex: 'description',
     key: 'description',
-    render: (description, record) => <span title={'test me out'}
-                                           style={{color: 'blue'}}>{getDescription(record)}</span>,
-    sorter: (a, b) => getDescription(a).localeCompare(getDescription(b)),
+    render: (description, record) => GetDescription(record),
+    sorter: (a, b) => GetDescription(a).localeCompare(GetDescription(b)),
   },
   {
-    title: 'Closed (NY)',
+    title: 'Opened @ (NY)',
+    dataIndex: 'whenOpened',
+    defaultSortOrder: 'descend',
+    key: 'whenOpened',
+    sorter: (a, b) => {
+      const aDj = dayjs(a.whenOpened);
+      const bDj = dayjs(b.whenOpened);
+      return aDj.valueOf() - bDj.valueOf();
+    },
+  },
+  {
+    title: 'Closed @ (NY)',
     dataIndex: 'whenClosed',
     defaultSortOrder: 'descend',
     key: 'whenClosed',
@@ -48,7 +49,7 @@ const columns: ColumnsType<ITradeResults> = [
     },
   },
   {
-    title: 'Gain',
+    title: '$ G/L',
     key: 'gainLoss',
     dataIndex: 'gainLoss',
     sorter: (a, b) => a.gainLoss - b.gainLoss,
@@ -60,20 +61,45 @@ const columns: ColumnsType<ITradeResults> = [
     },
   },
   {
-    title: 'Why Closed',
+    title: 'Why',
     key: 'whyClosed',
     dataIndex: 'whyClosed',
+  },
+  {
+    title: 'H:M:S',
+    key: 'duration',
+    dataIndex: 'monitoredPrices',
+    align: 'center',
+    render: monitoredPrices => {
+      let durationText = '0:0:00';
+      if (monitoredPrices?.length > 0) {
+        const start = dayjs(monitoredPrices[0].whenNY);
+        const end = dayjs(monitoredPrices[monitoredPrices.length - 1].whenNY);
+        durationText = dayjs.duration(end.diff(start)).format('H:m:ss');
+      }
+      return durationText;
+    },
+  },
+  {
+    title: 'Gain/time',
+    key: 'Gain/time',
+    dataIndex: 'monitoredPrices',
+    align: 'center',
+    render: (_, record) => <GraphTrade liveTrade={record}/>,
   },
 ];
 
 function TradeResultsTable() {
-  const tradeResults: ITradeResults[] = useTracker(() => TradeResults.find({}, {sort: {whenClosed: -1}}).fetch());
+  const query = {whyClosed: {$exists: true}};
+  const opts = {sort: {whenClosed: -1}, limit: 300};
+  const tradeResults: ITradeSettings[] = useTracker(() => TradeResults.find(query, opts).fetch());
   return (<Table
       pagination={{pageSize: 10}}
       title={() => <h1>Trade Results</h1>}
       size="small" columns={columns}
       dataSource={tradeResults}
       rowKey="_id"
+      rowClassName={(record) => record.isMocked ? 'mockedRow' : 'realTradeRow'}
     />
   );
 }
