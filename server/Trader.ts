@@ -152,10 +152,15 @@ async function CloseTrade(tradeSettings: ITradeSettings, currentPrice: number) {
   const okToRepeat = tradeSettings.whyClosed !== whyClosedEnum.emergencyExit && tradeSettings.whyClosed !== whyClosedEnum.timedExit;
   if (tradeSettings.isRepeat && okToRepeat) {
     // Get fresh copy of the settings without values for whyClosed, openingPrice, closingPrice, gainLoss, etc.
-    const settings = TradeSettings.findOne(tradeSettings._id);
-    ExecuteTrade(settings)
-      .then()
-      .catch((reason) => LogData(tradeSettings, `Failed doing a repeat ExecuteTrade ${reason}`, new Error(reason)));
+    const settings = TradeSettings.findOne(tradeSettings.originalTradeSettingsId);
+    if (!settings) {
+      const msg = `Failed to get originalTradeSettingsId: ${tradeSettings.originalTradeSettingsId} after closing a trade.`;
+      LogData(tradeSettings, msg, new Error(msg));
+    } else {
+      ExecuteTrade(settings)
+        .then()
+        .catch((reason) => LogData(tradeSettings, `Failed doing a repeat ExecuteTrade ${reason}`, new Error(reason)));
+    }
   }
 }
 
@@ -364,6 +369,7 @@ async function PlaceOpeningOrderAndMonitorToClose(tradeSettings: ITradeSettings)
     tradeSettings.openingPrice = await WaitForOrderCompleted(tradeSettings.userId, tradeSettings.accountNumber, tradeSettings.openingOrderId)
       .catch(() => 0);
   }
+  tradeSettings.originalTradeSettingsId = tradeSettings._id;
   tradeSettings._id = _id; // Switch _id for storing into Trades collection.
   tradeSettings.whenOpened = GetNewYorkTimeNowAsText();
   tradeSettings.monitoredPrices = [];

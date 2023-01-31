@@ -68,6 +68,7 @@ interface ITradeSettings {
   gainLimit?: number,
   lossLimit?: number,
   isRepeat?: boolean,
+  originalTradeSettingsId?: string,
 }
 
 const DefaultIronCondorLegsSettings = [

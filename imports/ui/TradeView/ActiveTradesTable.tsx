@@ -59,21 +59,6 @@ const columns: ColumnsType<ITradeSettings> = [
     },
   },
   {
-    title: 'H:M:S',
-    key: 'duration',
-    dataIndex: 'monitoredPrices',
-    align: 'center',
-    render: (_, {monitoredPrices}) => {
-      let durationText = '00:00:00';
-      if (monitoredPrices?.length > 0) {
-        const start = dayjs(monitoredPrices[0].whenNY);
-        const end = dayjs(monitoredPrices[monitoredPrices.length - 1].whenNY);
-        durationText = dayjs.duration(end.diff(start)).format('H:m:ss');
-      }
-      return durationText;
-    },
-  },
-  {
     title: 'XShort',
     key: 'xShort',
     dataIndex: 'monitoredPrices',
@@ -93,6 +78,30 @@ const columns: ColumnsType<ITradeSettings> = [
     render: (_, {monitoredPrices}) => {
       if (monitoredPrices?.length > 0) {
         return monitoredPrices[monitoredPrices.length - 1].extrinsicLong?.toFixed(2);
+      }
+      return 0;
+    },
+  },
+  {
+    title: 'LStrad$',
+    key: 'LStrad$',
+    dataIndex: 'monitoredPrices',
+    align: 'center',
+    render: (_, {monitoredPrices}) => {
+      if (monitoredPrices?.length > 0) {
+        return monitoredPrices[monitoredPrices.length - 1].longStraddlePrice?.toFixed(2);
+      }
+      return 0;
+    },
+  },
+  {
+    title: 'SStrad$',
+    key: 'SStrad$',
+    dataIndex: 'monitoredPrices',
+    align: 'center',
+    render: (_, {monitoredPrices}) => {
+      if (monitoredPrices?.length > 0) {
+        return monitoredPrices[monitoredPrices.length - 1].shortStraddlePrice?.toFixed(2);
       }
       return 0;
     },

@@ -64,7 +64,7 @@ const columns: ColumnsType<ITradeSettings> = [
     title: 'Why',
     key: 'whyClosed',
     dataIndex: 'whyClosed',
-    render: why => whyClosedEnum[why].slice(0, 3),
+    render: why => whyClosedEnum[why].slice(0, 4),
   },
   {
     title: 'H:M:S',
