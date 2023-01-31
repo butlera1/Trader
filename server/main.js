@@ -24,7 +24,6 @@ import {EmergencyCloseAllTrades, ExecuteTrade, MonitorTradeToCloseItOut, Perform
 import {WebApp} from 'meteor/webapp';
 import {Trades} from './collections/Trades';
 import {LogData} from './collections/Logs';
-import SendOutInfo from './SendOutInfo';
 import SchedulePerformTrades from './SchedulePerformTrades';
 import {AppSettings} from './collections/AppSettings';
 import Constants from '../imports/Constants';
@@ -45,10 +44,10 @@ function TestStrategy(tradeSettingsId) {
 }
 
 function CheckForAnyExistingTradesAndMonitorThem() {
+  console.log(`Checking for existing trades...`);
   // Find all live trades for this user.
   const liveTrades = Trades.find({whyClosed: {$exists: false}}).fetch();
-  const text = `Trader rebooting: Found ${liveTrades.length} existing trades to start monitoring.`;
-  SendOutInfo(text, text); // Send to admin
+  console.log(`Found ${liveTrades.length} existing trades. Monitoring each...`);
   liveTrades.forEach(async (tradeSettings) => {
     LogData(tradeSettings, `BootTime: Start monitoring existing trade ${tradeSettings._id} for ${tradeSettings.userName}.`);
     MonitorTradeToCloseItOut(tradeSettings);

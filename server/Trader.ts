@@ -461,6 +461,7 @@ async function QueueUsersTradesForTheDay(user) {
     LogData(null, `Queueing ${user.username}'s trades but market is closed today`);
     return;
   }
+  LogData(null, `Market is open today so queueing ${user.username}'s trades.`);
   const accountNumber = UserSettings.findOne(user._id)?.accountNumber;
   if (!accountNumber || accountNumber === 'None') {
     LogData(null, `User ${user.username} has no account number so skipping this user.`, null);
