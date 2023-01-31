@@ -67,21 +67,6 @@ const columns: ColumnsType<ITradeSettings> = [
     render: why => whyClosedEnum[why].slice(0, 4),
   },
   {
-    title: 'H:M:S',
-    key: 'duration',
-    dataIndex: 'monitoredPrices',
-    align: 'center',
-    render: monitoredPrices => {
-      let durationText = '0:0:00';
-      if (monitoredPrices?.length > 0) {
-        const start = dayjs(monitoredPrices[0].whenNY);
-        const end = dayjs(monitoredPrices[monitoredPrices.length - 1].whenNY);
-        durationText = dayjs.duration(end.diff(start)).format('H:m:ss');
-      }
-      return durationText;
-    },
-  },
-  {
     title: 'Gain/time',
     key: 'Gain/time',
     dataIndex: 'monitoredPrices',
