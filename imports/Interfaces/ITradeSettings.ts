@@ -147,7 +147,7 @@ function getTwoDTEValues(legs) {
   if (legs.length != 4) {
     return '???';
   }
-  return `${legs[0].dte},${legs[2].dte}`;
+  return `${legs[0].actualDte || legs[0].dte},${legs[2].actualDte || legs[2].dte}`;
 }
 
 function GetDescription(tradeSettings: ITradeSettings) {
@@ -157,7 +157,7 @@ function GetDescription(tradeSettings: ITradeSettings) {
   }
   const part1 = `${tradeSettings.symbol}(${tradeSettings.quantity}) ${type}`;
   const part2 = `${tradeSettings.entryHour}:${tradeSettings.entryMinute}-${tradeSettings.exitHour}:${tradeSettings.exitMinute}`;
-  const part3 = `${Math.trunc(tradeSettings.percentGain * 100)}/${Math.trunc(tradeSettings.percentLoss * 100)} %`;
+  const part3 = `${(tradeSettings.percentGain * 100).toFixed(1)}/${(tradeSettings.percentLoss * 100).toFixed(1)} %`;
   let part4 = '';
   if (tradeSettings.csvSymbols) {
     const regex = new RegExp(`${tradeSettings.symbol}_......`, 'g');
