@@ -5,6 +5,16 @@ import {CartesianGrid, Legend, Line, LineChart, Tooltip, XAxis, YAxis} from 'rec
 import ITradeSettings, {IPrice} from '../../Interfaces/ITradeSettings';
 import dayjs from 'dayjs';
 
+function calculateGainGraphLine(tradeSettings, price) {
+  const {openingPrice, quantity} = tradeSettings;
+  let gainOrLoss = (Math.abs(openingPrice) - price) * 100.0 * quantity;
+  if (openingPrice > 0) {
+    // We are in a long position.
+    gainOrLoss = (Math.abs(price) - openingPrice) * 100.0 * quantity;
+  }
+  return Math.round(gainOrLoss * 100) / 100;
+}
+
 function GraphTrade({liveTrade}: { liveTrade: ITradeSettings }) {
   let initialTime = dayjs();
 
@@ -16,8 +26,12 @@ function GraphTrade({liveTrade}: { liveTrade: ITradeSettings }) {
     return Math.round(num * 100) / 100;
   };
 
+  let gainLine = 0;
+  let lossLine = 0;
   const monitoredPrices = liveTrade.monitoredPrices;
   if (monitoredPrices && monitoredPrices.length) {
+    gainLine = calculateGainGraphLine(liveTrade, liveTrade.gainLimit);
+    lossLine = calculateGainGraphLine(liveTrade, liveTrade.lossLimit);
     initialTime = dayjs(monitoredPrices[0].whenNY);
     const initialUnderlyingPrice = monitoredPrices[0].underlyingPrice ?? 0;
     const initialLongStraddlePrice = monitoredPrices[0].longStraddlePrice ?? 0;
@@ -42,12 +56,17 @@ function GraphTrade({liveTrade}: { liveTrade: ITradeSettings }) {
       <XAxis dataKey={getTime} unit={'m'}/>
       <Tooltip/>
       <Legend/>
-      <Line type="monotone" dataKey="gain" name={'G/L'} stroke="green" dot={false} isAnimationActive={false}/>
-      <Line type="monotone" dataKey="underlyingPrice" name={'Underlying'} stroke="red" dot={false}
+      <Line type="monotone" strokeWidth={2} dataKey="gain" name={'G/L'} stroke="green" dot={false}
+            isAnimationActive={false}/>
+      <Line type="monotone" strokeWidth={2} dataKey="underlyingPrice" name={'Underlying'} stroke="red" dot={false}
             isAnimationActive={false}/>
       <Line type="monotone" dataKey="longStraddlePrice" name={'L-Strad'} stroke="lightblue" dot={false}
             isAnimationActive={false}/>
       <Line type="monotone" dataKey="shortStraddlePrice" name={'S-Strad'} stroke="lightgreen" dot={false}
+            isAnimationActive={false}/>
+      <Line type="monotone" dataKey={() => gainLine} name={'G-limit'} stroke="cyan" dot={false}
+            isAnimationActive={false}/>
+      <Line type="monotone" dataKey={() => lossLine} name={'L-limit'} stroke="cyan" dot={false}
             isAnimationActive={false}/>
     </LineChart>
   );
