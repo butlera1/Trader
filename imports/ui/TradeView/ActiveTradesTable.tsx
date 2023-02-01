@@ -15,6 +15,8 @@ import duration from 'dayjs/plugin/duration';
 
 dayjs.extend(duration);
 
+const commissionFee = 0.50;
+
 const columns: ColumnsType<ITradeSettings> = [
   {
     title: 'Description',
@@ -98,35 +100,18 @@ const columns: ColumnsType<ITradeSettings> = [
     render: (lossLimit, record) => lossLimit?.toFixed(2),
   },
   {
+    title: 'Fees',
+    key: 'Costs',
+    dataIndex: 'monitoredPrices',
+    align: 'center',
+    render: (_, record) => (commissionFee * record.legs.length * record.quantity * 2).toFixed(2),
+  },
+  {
     title: 'Gain/time',
     key: 'Gain/time',
     dataIndex: 'monitoredPrices',
     align: 'center',
     render: (monitoredPrices, record) => <GraphTrade liveTrade={record}/>,
-  },
-  {
-    title: 'XShort',
-    key: 'xShort',
-    dataIndex: 'monitoredPrices',
-    align: 'center',
-    render: (_, {monitoredPrices}) => {
-      if (monitoredPrices?.length > 0) {
-        return monitoredPrices[monitoredPrices.length - 1].extrinsicShort?.toFixed(2);
-      }
-      return 0;
-    },
-  },
-  {
-    title: 'XLong',
-    key: 'xLong',
-    dataIndex: 'monitoredPrices',
-    align: 'center',
-    render: (_, {monitoredPrices}) => {
-      if (monitoredPrices?.length > 0) {
-        return monitoredPrices[monitoredPrices.length - 1].extrinsicLong?.toFixed(2);
-      }
-      return 0;
-    },
   },
 ];
 

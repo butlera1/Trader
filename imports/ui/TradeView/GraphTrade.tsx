@@ -20,15 +20,16 @@ function GraphTrade({liveTrade}: { liveTrade: ITradeSettings }) {
   if (monitoredPrices && monitoredPrices.length) {
     initialTime = dayjs(monitoredPrices[0].whenNY);
     const initialUnderlyingPrice = monitoredPrices[0].underlyingPrice ?? 0;
-    const initialPrice = monitoredPrices[0].price ?? 0;
+    const initialLongStraddlePrice = monitoredPrices[0].longStraddlePrice ?? 0;
+    const initialShortStraddlePrice = monitoredPrices[0].shortStraddlePrice ?? 0;
     // Normalize prices to zero and scale up.
     monitoredPrices.forEach((price: IPrice) => {
       price.underlyingPrice = round((price.underlyingPrice ?? 0) - initialUnderlyingPrice) * liveTrade.quantity * 10;
+      price.longStraddlePrice = round((price.longStraddlePrice ?? 0) - initialLongStraddlePrice) * 100;
+      price.shortStraddlePrice = round((price.shortStraddlePrice ?? 0) - initialShortStraddlePrice) * 100;
       price.gain = round(price.gain);
     });
   }
-
-
 
   return (
     <LineChart
@@ -41,8 +42,13 @@ function GraphTrade({liveTrade}: { liveTrade: ITradeSettings }) {
       <XAxis dataKey={getTime} unit={'m'}/>
       <Tooltip/>
       <Legend/>
-      <Line type="monotone" dataKey="gain" stroke="green" dot={false} isAnimationActive={false}/>
-      <Line type="monotone" dataKey="underlyingPrice" stroke="red" dot={false} isAnimationActive={false}/>
+      <Line type="monotone" dataKey="gain" name={'G/L'} stroke="green" dot={false} isAnimationActive={false}/>
+      <Line type="monotone" dataKey="underlyingPrice" name={'Underlying'} stroke="red" dot={false}
+            isAnimationActive={false}/>
+      <Line type="monotone" dataKey="longStraddlePrice" name={'L-Strad'} stroke="lightblue" dot={false}
+            isAnimationActive={false}/>
+      <Line type="monotone" dataKey="shortStraddlePrice" name={'S-Strad'} stroke="lightgreen" dot={false}
+            isAnimationActive={false}/>
     </LineChart>
   );
 }
