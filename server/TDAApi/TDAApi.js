@@ -389,7 +389,7 @@ function getOptionAtDelta(options, desiredDelta) {
   throw new Meteor.Error(msg);
 }
 
-function getOptionChainsAtOrNearDelta(chains, dte) {
+function getOptionChainsAtOrNearDTE(chains, dte) {
   // Get the DTE-specific option set.
   const putNames = Object.getOwnPropertyNames(chains.putExpDateMap);
   let chainName = null;
@@ -415,7 +415,8 @@ function getOptionChainsAtOrNearDelta(chains, dte) {
   }
   const putsChain = chains.putExpDateMap[chainName];
   const callsChain = chains.callExpDateMap[chainName]; // Same name for both is correct.
-  return {putsChain, callsChain};
+  const dteValue = chainName.slice(chainName.indexOf(':') + 1);
+  return {putsChain, callsChain, dteValue};
 }
 
 export function CreateOpenAndCloseOrders(chains, tradeSettings) {
@@ -423,7 +424,8 @@ export function CreateOpenAndCloseOrders(chains, tradeSettings) {
   let openingPrice = 0.0;
   // For each leg, find the closest option based on Delta
   tradeSettings.legs.forEach((leg) => {
-    const {putsChain, callsChain} = getOptionChainsAtOrNearDelta(chains, leg.dte);
+    const {putsChain, callsChain, dteValue} = getOptionChainsAtOrNearDTE(chains, leg.dte);
+    leg.actualDte = dteValue;
     if (leg.callPut === OptionType.CALL) {
       leg.option = getOptionAtDelta(callsChain, leg.delta);
     } else {

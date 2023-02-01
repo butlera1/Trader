@@ -1,11 +1,11 @@
 import React from 'react';
 // @ts-ignore
 import {useTracker} from 'meteor/react-meteor-data';
-import LiveTrades from '../../Collections/LiveTrades';
+import Trades from '../../Collections/Trades';
 import ITradeSettings from '../../Interfaces/ITradeSettings';
 
 function ActiveTradesView() {
-  const liveTrades: ITradeSettings[] = useTracker(() => LiveTrades.find({}).fetch());
+  const liveTrades: ITradeSettings[] = useTracker(() => Trades.find({}).fetch());
 
   return (
     <>

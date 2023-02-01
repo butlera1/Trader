@@ -3,7 +3,7 @@ import React from 'react';
 import {Meteor} from 'meteor/meteor';
 // @ts-ignore
 import {useTracker} from 'meteor/react-meteor-data';
-import LiveTrades from '../../Collections/LiveTrades';
+import Trades from '../../Collections/Trades';
 import ITradeSettings, {GetDescription} from '../../Interfaces/ITradeSettings';
 import {ColumnsType} from 'antd/lib/table';
 import {Space, Table} from 'antd';
@@ -59,25 +59,13 @@ const columns: ColumnsType<ITradeSettings> = [
     },
   },
   {
-    title: 'XShort',
-    key: 'xShort',
+    title: 'SStrad$',
+    key: 'SStrad$',
     dataIndex: 'monitoredPrices',
     align: 'center',
     render: (_, {monitoredPrices}) => {
       if (monitoredPrices?.length > 0) {
-        return monitoredPrices[monitoredPrices.length - 1].extrinsicShort?.toFixed(2);
-      }
-      return 0;
-    },
-  },
-  {
-    title: 'XLong',
-    key: 'xLong',
-    dataIndex: 'monitoredPrices',
-    align: 'center',
-    render: (_, {monitoredPrices}) => {
-      if (monitoredPrices?.length > 0) {
-        return monitoredPrices[monitoredPrices.length - 1].extrinsicLong?.toFixed(2);
+        return monitoredPrices[monitoredPrices.length - 1].shortStraddlePrice?.toFixed(2);
       }
       return 0;
     },
@@ -90,18 +78,6 @@ const columns: ColumnsType<ITradeSettings> = [
     render: (_, {monitoredPrices}) => {
       if (monitoredPrices?.length > 0) {
         return monitoredPrices[monitoredPrices.length - 1].longStraddlePrice?.toFixed(2);
-      }
-      return 0;
-    },
-  },
-  {
-    title: 'SStrad$',
-    key: 'SStrad$',
-    dataIndex: 'monitoredPrices',
-    align: 'center',
-    render: (_, {monitoredPrices}) => {
-      if (monitoredPrices?.length > 0) {
-        return monitoredPrices[monitoredPrices.length - 1].shortStraddlePrice?.toFixed(2);
       }
       return 0;
     },
@@ -127,6 +103,30 @@ const columns: ColumnsType<ITradeSettings> = [
     align: 'center',
     render: (monitoredPrices, record) => <GraphTrade liveTrade={record}/>,
   },
+  {
+    title: 'XShort',
+    key: 'xShort',
+    dataIndex: 'monitoredPrices',
+    align: 'center',
+    render: (_, {monitoredPrices}) => {
+      if (monitoredPrices?.length > 0) {
+        return monitoredPrices[monitoredPrices.length - 1].extrinsicShort?.toFixed(2);
+      }
+      return 0;
+    },
+  },
+  {
+    title: 'XLong',
+    key: 'xLong',
+    dataIndex: 'monitoredPrices',
+    align: 'center',
+    render: (_, {monitoredPrices}) => {
+      if (monitoredPrices?.length > 0) {
+        return monitoredPrices[monitoredPrices.length - 1].extrinsicLong?.toFixed(2);
+      }
+      return 0;
+    },
+  },
 ];
 
 function title() {
@@ -141,7 +141,7 @@ function title() {
 function ActiveTradesTable() {
   const query = {whyClosed: {$exists: false}};
   const opts = {sort: {whenClosed: -1}};
-  const liveTrades: ITradeSettings[] = useTracker(() => LiveTrades.find(query, opts).fetch());
+  const liveTrades: ITradeSettings[] = useTracker(() => Trades.find(query, opts).fetch());
   return (
     <Table
       style={{border: 'solid 1px red'}}

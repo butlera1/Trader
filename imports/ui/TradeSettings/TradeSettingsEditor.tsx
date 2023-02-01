@@ -259,6 +259,7 @@ export const TradeSettingsEditor = ({tradeSettings, changeCallback}: Props) => {
             <span>Percent Gain:</span>
             <InputNumber
               min={0}
+              step="0.1"
               defaultValue={Math.trunc(percentGain * 100)}
               max={100}
               addonAfter={'%'}
@@ -268,6 +269,7 @@ export const TradeSettingsEditor = ({tradeSettings, changeCallback}: Props) => {
             <span style={{marginLeft: 50}}>Percent Loss:</span>
             <InputNumber
               min={0}
+              step="0.1"
               max={400}
               defaultValue={Math.trunc(percentLoss * 100)}
               addonAfter={'%'}

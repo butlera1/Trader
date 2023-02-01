@@ -67,6 +67,7 @@ interface ILegSettings {
   delta: number,
   option?: IOption,
   dte: number,
+  actualDte?: number,
 }
 
 const DefaultLegSettings = {

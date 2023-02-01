@@ -1,7 +1,7 @@
 import React from 'react';
 // @ts-ignore
 import {useTracker} from 'meteor/react-meteor-data';
-import LiveTrades from '../../Collections/LiveTrades';
+import Trades from '../../Collections/Trades';
 import {ColumnsType} from 'antd/lib/table';
 import {Table} from 'antd';
 import dayjs from 'dayjs';
@@ -10,7 +10,7 @@ import ITradeSettings, {GetDescription, whyClosedEnum} from '../../Interfaces/IT
 import GraphTrade from './GraphTrade';
 
 function deleteTradeResults(record: ITradeSettings) {
-  LiveTrades.remove(record._id);
+  Trades.remove(record._id);
 }
 
 const columns: ColumnsType<ITradeSettings> = [
@@ -78,7 +78,7 @@ const columns: ColumnsType<ITradeSettings> = [
 function TradeResultsTable() {
   const query = {whyClosed: {$exists: true}};
   const opts = {sort: {whenClosed: -1}, limit: 300};
-  const tradeResults: ITradeSettings[] = useTracker(() => LiveTrades.find(query, opts).fetch());
+  const tradeResults: ITradeSettings[] = useTracker(() => Trades.find(query, opts).fetch());
   return (<Table
       pagination={{pageSize: 10}}
       title={() => <h1>Trade Results</h1>}
