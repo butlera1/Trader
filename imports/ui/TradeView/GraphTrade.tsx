@@ -30,12 +30,14 @@ function GraphTrade({liveTrade}: { liveTrade: ITradeSettings }) {
   let lossLine = calculateGainGraphLine(liveTrade, liveTrade.lossLimit);
   const monitoredPrices = liveTrade.monitoredPrices;
   const initialUnderlyingPrice = monitoredPrices[0]?.underlyingPrice ?? 0;
-  const initialLongStraddlePrice = monitoredPrices[0]?.longStraddlePrice ?? 0;
-  let initialShortStraddlePrice = monitoredPrices[0]?.shortStraddlePrice ?? 0;
+  const initialLongStraddlePrice = Math.abs(monitoredPrices[0]?.longStraddlePrice ?? 0);
+  let initialShortStraddlePrice = Math.abs(monitoredPrices[0]?.shortStraddlePrice ?? 0);
 
   const getUnderlying = (price) => round((price.underlyingPrice ?? 0) - initialUnderlyingPrice) * liveTrade.quantity * 10;
-  const getLongStraddlePrice = (price) => round((price.longStraddlePrice ?? 0) - initialLongStraddlePrice) * 100 * liveTrade.quantity;
-  const getShortStraddlePrice = (price) => round((price.shortStraddlePrice ?? 0) - initialShortStraddlePrice) * 100 * liveTrade.quantity;
+  const getLongStraddlePrice = (price) => {
+    return round((Math.abs(price.longStraddlePrice) ?? 0) - initialLongStraddlePrice) * 100 * liveTrade.quantity;
+  };
+  const getShortStraddlePrice = (price) => round((Math.abs(price.shortStraddlePrice) ?? 0) - initialShortStraddlePrice) * 100 * liveTrade.quantity;
   const getGain = (price) => round(price.gain);
 
   return (
