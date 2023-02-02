@@ -7,7 +7,6 @@ import {Table} from 'antd';
 import dayjs from 'dayjs';
 import {DeleteOutlined} from '@ant-design/icons';
 import ITradeSettings, {GetDescription, whyClosedEnum} from '../../Interfaces/ITradeSettings';
-import GraphTrade from './GraphTrade';
 
 function deleteTradeResults(record: ITradeSettings) {
   Trades.remove(record._id);
@@ -66,13 +65,13 @@ const columns: ColumnsType<ITradeSettings> = [
     dataIndex: 'whyClosed',
     render: why => whyClosedEnum[why].slice(0, 4),
   },
-  {
-    title: 'Gain/time',
-    key: 'Gain/time',
-    dataIndex: 'monitoredPrices',
-    align: 'center',
-    render: (_, record) => <GraphTrade liveTrade={record}/>,
-  },
+  // {
+  //   title: 'Gain/time',
+  //   key: 'Gain/time',
+  //   dataIndex: 'monitoredPrices',
+  //   align: 'center',
+  //   render: (_, record) => <GraphTrade liveTrade={record}/>,
+  // },
 ];
 
 function TradeResultsTable() {
