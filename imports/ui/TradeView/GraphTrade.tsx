@@ -16,7 +16,7 @@ function calculateGainGraphLine(tradeSettings, price) {
 }
 
 function GraphTrade({liveTrade}: { liveTrade: ITradeSettings }) {
-  let initialTime = dayjs();
+  let initialTime = liveTrade.monitoredPrices[0] ? dayjs(liveTrade.monitoredPrices[0].whenNY) : dayjs();
 
   const getTime = (price: IPrice) => {
     return dayjs(price.whenNY).diff(initialTime, 'minute', true).toFixed(1);
@@ -26,24 +26,17 @@ function GraphTrade({liveTrade}: { liveTrade: ITradeSettings }) {
     return Math.round(num * 100) / 100;
   };
 
-  let gainLine = 0;
-  let lossLine = 0;
+  let gainLine = calculateGainGraphLine(liveTrade, liveTrade.gainLimit);
+  let lossLine = calculateGainGraphLine(liveTrade, liveTrade.lossLimit);
   const monitoredPrices = liveTrade.monitoredPrices;
-  if (monitoredPrices && monitoredPrices.length) {
-    gainLine = calculateGainGraphLine(liveTrade, liveTrade.gainLimit);
-    lossLine = calculateGainGraphLine(liveTrade, liveTrade.lossLimit);
-    initialTime = dayjs(monitoredPrices[0].whenNY);
-    const initialUnderlyingPrice = monitoredPrices[0].underlyingPrice ?? 0;
-    const initialLongStraddlePrice = monitoredPrices[0].longStraddlePrice ?? 0;
-    const initialShortStraddlePrice = monitoredPrices[0].shortStraddlePrice ?? 0;
-    // Normalize prices to zero and scale up.
-    monitoredPrices.forEach((price: IPrice) => {
-      price.underlyingPrice = round((price.underlyingPrice ?? 0) - initialUnderlyingPrice) * liveTrade.quantity * 10;
-      price.longStraddlePrice = round((price.longStraddlePrice ?? 0) - initialLongStraddlePrice) * 100;
-      price.shortStraddlePrice = round((price.shortStraddlePrice ?? 0) - initialShortStraddlePrice) * 100;
-      price.gain = round(price.gain);
-    });
-  }
+  const initialUnderlyingPrice = monitoredPrices[0]?.underlyingPrice ?? 0;
+  const initialLongStraddlePrice = monitoredPrices[0]?.longStraddlePrice ?? 0;
+  let initialShortStraddlePrice = monitoredPrices[0]?.shortStraddlePrice ?? 0;
+
+  const getUnderlying = (price) => round((price.underlyingPrice ?? 0) - initialUnderlyingPrice) * liveTrade.quantity * 10;
+  const getLongStraddlePrice = (price) => round((price.longStraddlePrice ?? 0) - initialLongStraddlePrice) * 100 * liveTrade.quantity;
+  const getShortStraddlePrice = (price) => round((price.shortStraddlePrice ?? 0) - initialShortStraddlePrice) * 100 * liveTrade.quantity;
+  const getGain = (price) => round(price.gain);
 
   return (
     <LineChart
@@ -56,13 +49,13 @@ function GraphTrade({liveTrade}: { liveTrade: ITradeSettings }) {
       <XAxis dataKey={getTime} unit={'m'}/>
       <Tooltip/>
       <Legend/>
-      <Line type="monotone" strokeWidth={2} dataKey="gain" name={'G/L'} stroke="green" dot={false}
+      <Line type="monotone" strokeWidth={2} dataKey={getGain} name={'G/L'} stroke="green" dot={false}
             isAnimationActive={false}/>
-      <Line type="monotone" strokeWidth={2} dataKey="underlyingPrice" name={'Underlying'} stroke="red" dot={false}
+      <Line type="monotone" strokeWidth={2} dataKey={getUnderlying} name={'Underlying'} stroke="red" dot={false}
             isAnimationActive={false}/>
-      <Line type="monotone" dataKey="longStraddlePrice" name={'L-Strad'} stroke="lightblue" dot={false}
+      <Line type="monotone" dataKey={getLongStraddlePrice} name={'L-Strad'} stroke="lightpink" dot={false}
             isAnimationActive={false}/>
-      <Line type="monotone" dataKey="shortStraddlePrice" name={'S-Strad'} stroke="lightgreen" dot={false}
+      <Line type="monotone" dataKey={getShortStraddlePrice} name={'S-Strad'} stroke="lightgreen" dot={false}
             isAnimationActive={false}/>
       <Line type="monotone" dataKey={() => gainLine} name={'G-limit'} stroke="cyan" dot={false}
             isAnimationActive={false}/>

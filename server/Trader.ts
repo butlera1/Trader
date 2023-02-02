@@ -75,9 +75,13 @@ async function GetOptionsPriceLoop(tradeSettings: ITradeSettings): Promise<IPric
   while (count < 3) {
     try {
       result = null;
+      console.log(`Before lock call...`);
       const release = await lock();
       result = await GetPriceForOptions(tradeSettings);
-      setTimeout(release, 1000);
+      setTimeout(() => {
+        console.log(`At release...`);
+        release();
+      }, 1000);
       if (_.isFinite(result?.price)) {
         return result;
       }
@@ -92,7 +96,7 @@ async function GetOptionsPriceLoop(tradeSettings: ITradeSettings): Promise<IPric
 }
 
 async function GetSmartOptionsPrice(tradeSettings: ITradeSettings): Promise<IPrice> {
-  const sampleSize = 2;
+  const sampleSize = 1;
   let prices = [];
   let lastSample: IPrice = {...BadDefaultIPrice};
   for (let i = 0; i < sampleSize; i++) {
@@ -359,10 +363,8 @@ function calculateLimits(tradeSettings) {
 }
 
 async function PlaceOpeningOrderAndMonitorToClose(tradeSettings: ITradeSettings) {
-  let _id = Random.id();
   if (tradeSettings.isMocked) {
-    _id = _id + '_MOCKED';
-    tradeSettings.openingOrderId = _id;
+    tradeSettings.openingOrderId = Random.id() + '_MOCKED';
     // tradeSettings.openingPrice has already been estimated when orders were created.
   } else {
     tradeSettings.openingOrderId = await PlaceOrder(tradeSettings.userId, tradeSettings.accountNumber, tradeSettings.openingOrder);
@@ -370,12 +372,12 @@ async function PlaceOpeningOrderAndMonitorToClose(tradeSettings: ITradeSettings)
       .catch(() => 0);
   }
   tradeSettings.originalTradeSettingsId = tradeSettings._id;
-  tradeSettings._id = _id; // Switch _id for storing into Trades collection.
+  delete tradeSettings._id; // Remove the old _id for so when storing into Trades collection, a new _id is created.
   tradeSettings.whenOpened = GetNewYorkTimeNowAsText();
   tradeSettings.monitoredPrices = [];
   calculateLimits(tradeSettings);
   // Record this opening order data as a new active trade.
-  Trades.insert({...tradeSettings});
+  tradeSettings._id = Trades.insert({...tradeSettings});
   if (_.isFinite(tradeSettings.openingPrice)) {
     MonitorTradeToCloseItOut(tradeSettings);
   }

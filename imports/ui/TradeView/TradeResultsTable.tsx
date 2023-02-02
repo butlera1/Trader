@@ -7,6 +7,7 @@ import {Table} from 'antd';
 import dayjs from 'dayjs';
 import {DeleteOutlined} from '@ant-design/icons';
 import ITradeSettings, {GetDescription, whyClosedEnum} from '../../Interfaces/ITradeSettings';
+import GraphTrade from './GraphTrade';
 
 function deleteTradeResults(record: ITradeSettings) {
   Trades.remove(record._id);
@@ -28,7 +29,6 @@ const columns: ColumnsType<ITradeSettings> = [
   {
     title: 'Opened @ (NY)',
     dataIndex: 'whenOpened',
-    defaultSortOrder: 'descend',
     key: 'whenOpened',
     sorter: (a, b) => {
       const aDj = dayjs(a.whenOpened);
@@ -39,7 +39,6 @@ const columns: ColumnsType<ITradeSettings> = [
   {
     title: 'Closed @ (NY)',
     dataIndex: 'whenClosed',
-    defaultSortOrder: 'descend',
     key: 'whenClosed',
     sorter: (a, b) => {
       const aDj = dayjs(a.whenClosed);
@@ -63,20 +62,20 @@ const columns: ColumnsType<ITradeSettings> = [
     title: 'Why',
     key: 'whyClosed',
     dataIndex: 'whyClosed',
-    render: why => whyClosedEnum[why].slice(0, 4),
+    render: why => whyClosedEnum[why]?.slice(0, 4),
   },
-  // {
-  //   title: 'Gain/time',
-  //   key: 'Gain/time',
-  //   dataIndex: 'monitoredPrices',
-  //   align: 'center',
-  //   render: (_, record) => <GraphTrade liveTrade={record}/>,
-  // },
+  {
+    title: 'Gain/time',
+    key: 'Gain/time',
+    dataIndex: 'monitoredPrices',
+    align: 'center',
+    render: (_, record) => <GraphTrade liveTrade={record}/>,
+  },
 ];
 
 function TradeResultsTable() {
   const query = {whyClosed: {$exists: true}};
-  const opts = {sort: {whenClosed: -1}, limit: 300};
+  const opts = {sort: {_id: 1}};
   const tradeResults: ITradeSettings[] = useTracker(() => Trades.find(query, opts).fetch());
   return (<Table
       pagination={{pageSize: 10}}

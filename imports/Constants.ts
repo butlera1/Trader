@@ -1,5 +1,5 @@
 const Constants = {
-  version: '1.7.9',
+  version: '1.7.10',
   appSettingsId: 'AppSettings',
 };
 
