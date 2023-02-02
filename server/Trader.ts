@@ -75,11 +75,9 @@ async function GetOptionsPriceLoop(tradeSettings: ITradeSettings): Promise<IPric
   while (count < 3) {
     try {
       result = null;
-      console.log(`Before lock call...`);
       const release = await lock();
       result = await GetPriceForOptions(tradeSettings);
       setTimeout(() => {
-        console.log(`At release...`);
         release();
       }, 1000);
       if (_.isFinite(result?.price)) {
