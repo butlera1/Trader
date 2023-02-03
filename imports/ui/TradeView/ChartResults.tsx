@@ -33,7 +33,7 @@ function ChartResults() {
 
   const tradeResults: ISumResults[] = useTracker(() => {
     const query = {whyClosed: {$exists: true}};
-    const opts = {sort: {whenClosed: -1}, limit: 300};
+    const opts = {sort: {_id: -1}};
     const records: ITradeSettings[] = Trades.find(query, opts).fetch();
     const sumResults: ISumResults[] = [];
     let winsTmp = 0.0;
@@ -85,7 +85,7 @@ function ChartResults() {
     setMaxWin(maxWinTmp);
     setMaxLoss(maxLossTmp);
     return sumResults;
-  }, [filterSelections]);
+  }, [filterSelections, Trades]);
 
   const handleFilterChange = (value) => {
     setFilterSelections([...value]);

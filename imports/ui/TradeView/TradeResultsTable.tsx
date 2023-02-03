@@ -76,7 +76,7 @@ const columns: ColumnsType<ITradeSettings> = [
 function TradeResultsTable() {
   const query = {whyClosed: {$exists: true}};
   const opts = {sort: {_id: 1}};
-  const tradeResults: ITradeSettings[] = useTracker(() => Trades.find(query, opts).fetch());
+  const tradeResults: ITradeSettings[] = useTracker(() => Trades.find(query, opts).fetch(), [Trades]);
   return (<Table
       pagination={{pageSize: 10}}
       title={() => <h1>Trade Results</h1>}
