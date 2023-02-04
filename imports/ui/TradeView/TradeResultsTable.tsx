@@ -27,7 +27,7 @@ const columns: ColumnsType<ITradeSettings> = [
     sorter: (a, b) => GetDescription(a).localeCompare(GetDescription(b)),
   },
   {
-    title: 'Opened @ (NY)',
+    title: 'Opened',
     dataIndex: 'whenOpened',
     key: 'whenOpened',
     sorter: (a, b) => {
@@ -37,7 +37,7 @@ const columns: ColumnsType<ITradeSettings> = [
     },
   },
   {
-    title: 'Closed @ (NY)',
+    title: 'Closed',
     dataIndex: 'whenClosed',
     key: 'whenClosed',
     sorter: (a, b) => {
@@ -59,6 +59,20 @@ const columns: ColumnsType<ITradeSettings> = [
     },
   },
   {
+    title: 'UOpen',
+    dataIndex: 'monitoredPrices',
+    key: 'UOpen $',
+    align: 'right',
+    render: monitoredPrices => monitoredPrices.length > 0 ? monitoredPrices[monitoredPrices.length - 1]?.underlyingPrice ?? 0 : 0,
+  },
+  {
+    title: 'UClose',
+    dataIndex: 'monitoredPrices',
+    key: 'UPrice $',
+    align: 'right',
+    render: monitoredPrices => monitoredPrices.length > 0 ? monitoredPrices[0]?.underlyingPrice ?? 0 : 0,
+  },
+  {
     title: 'Why',
     key: 'whyClosed',
     dataIndex: 'whyClosed',
@@ -73,15 +87,11 @@ const columns: ColumnsType<ITradeSettings> = [
   },
 ];
 
-function TradeResultsTable() {
-  const query = {whyClosed: {$exists: true}};
-  const opts = {sort: {_id: 1}};
-  const tradeResults: ITradeSettings[] = useTracker(() => Trades.find(query, opts).fetch(), [Trades]);
+function TradeResultsTable({records}: { records: ITradeSettings[] }) {
   return (<Table
       pagination={{pageSize: 10}}
-      title={() => <h1>Trade Results</h1>}
       size="small" columns={columns}
-      dataSource={tradeResults}
+      dataSource={records}
       rowKey="_id"
       rowClassName={(record) => record.isMocked ? 'mockedRow' : 'realTradeRow'}
     />

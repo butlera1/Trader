@@ -33,7 +33,7 @@ const columns: ColumnsType<ITradeSettings> = [
     render: (_, record) => record.openingPrice.toFixed(2)
   },
   {
-    title: 'Price',
+    title: 'Price $',
     dataIndex: 'currentPrice',
     key: 'currentPrice',
     align: 'right',
@@ -46,7 +46,21 @@ const columns: ColumnsType<ITradeSettings> = [
     }
   },
   {
-    title: '$ G/L',
+    title: 'UOpen',
+    dataIndex: 'monitoredPrices',
+    key: 'UOpen',
+    align: 'right',
+    render: monitoredPrices => monitoredPrices.length > 0 ? monitoredPrices[monitoredPrices.length - 1]?.underlyingPrice ?? 0 : 0,
+  },
+  {
+    title: 'UPrice',
+    dataIndex: 'monitoredPrices',
+    key: 'UPrice',
+    align: 'right',
+    render: monitoredPrices => monitoredPrices.length > 0 ? monitoredPrices[0]?.underlyingPrice ?? 0 : 0,
+  },
+  {
+    title: 'G/L $',
     key: 'gainLoss',
     dataIndex: 'gainLoss',
     align: 'right',
@@ -62,8 +76,8 @@ const columns: ColumnsType<ITradeSettings> = [
     },
   },
   {
-    title: 'SStrad$',
-    key: 'SStrad$',
+    title: 'SStrad $',
+    key: 'SStrad $',
     dataIndex: 'monitoredPrices',
     align: 'center',
     render: (_, {monitoredPrices}) => {
@@ -74,8 +88,8 @@ const columns: ColumnsType<ITradeSettings> = [
     },
   },
   {
-    title: 'LStrad$',
-    key: 'LStrad$',
+    title: 'LStrad $',
+    key: 'LStrad $',
     dataIndex: 'monitoredPrices',
     align: 'center',
     render: (_, {monitoredPrices}) => {
@@ -86,23 +100,9 @@ const columns: ColumnsType<ITradeSettings> = [
     },
   },
   {
-    title: 'Gain Limit',
-    key: 'gainLimit',
-    dataIndex: 'gainLimit',
-    align: 'right',
-    render: (gainLimit, record) => gainLimit?.toFixed(2),
-  },
-  {
-    title: 'Loss Limit',
-    key: 'lossLimit',
-    dataIndex: 'lossLimit',
-    align: 'right',
-    render: (lossLimit, record) => lossLimit?.toFixed(2),
-  },
-  {
     title: 'Fees',
-    key: 'Costs',
-    dataIndex: 'monitoredPrices',
+    key: 'Fees',
+    dataIndex: 'legs',
     align: 'center',
     render: (_, record) => (commissionFee * record.legs.length * record.quantity * 2).toFixed(2),
   },

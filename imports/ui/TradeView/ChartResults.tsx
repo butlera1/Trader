@@ -2,9 +2,9 @@ import React from 'react';
 import {CartesianGrid, Line, LineChart, Tooltip, XAxis, YAxis} from 'recharts';
 // @ts-ignore
 import {useTracker} from 'meteor/react-meteor-data';
-import Trades from '../../Collections/Trades';
-import {Select, Space} from 'antd';
+import {Space} from 'antd';
 import ITradeSettings from '../../Interfaces/ITradeSettings';
+import dayjs from 'dayjs';
 
 interface ISumResults {
   description: string,
@@ -17,116 +17,89 @@ function getDescription(record) {
   return record.description ?? `${record.symbol}(${record.quantity ?? 1})`;
 }
 
-function ChartResults() {
-  const [filterSelections, setFilterSelections] = React.useState([]);
-  const [filterList, setFilterList] = React.useState([]);
-  const [avgLossText, setAvgLossText] = React.useState('0');
-  const [avgWinText, setAvgWinText] = React.useState('0');
-  const [winRate, setWinRate] = React.useState('0');
-  const [lossRate, setLossRate] = React.useState('0');
-  const [wins, setWins] = React.useState(0);
-  const [losses, setLosses] = React.useState(0);
-  const [avgWin, setAvgWin] = React.useState(0);
-  const [avgLoss, setAvgLoss] = React.useState(0);
-  const [maxWin, setMaxWin] = React.useState(0);
-  const [maxLoss, setMaxLoss] = React.useState(0);
+function getDateTime(record) {
+  return dayjs(record.whenClosed).format('MM/DD h:mm:ss');
+}
 
-  const tradeResults: ISumResults[] = useTracker(() => {
-    const query = {whyClosed: {$exists: true}};
-    const opts = {sort: {_id: -1}};
-    const records: ITradeSettings[] = Trades.find(query, opts).fetch();
-    const sumResults: ISumResults[] = [];
-    let winsTmp = 0.0;
-    let lossesTmp = 0.0;
-    let avgLossTmp = 0;
-    let avgWinTmp = 0;
-    let maxWinTmp = 0;
-    let maxLossTmp = 0;
-    const tempFilterList = [];
-    records.reduce((sum, record) => {
-      const description = getDescription(record);
-      if (!tempFilterList.some(item => item.label === description)) {
-        tempFilterList.push({label:description, value: description});
-      }
-      // If record is within the filtering (no filtering then select all).
-      if (filterSelections.length === 0 || filterSelections.includes(description)) {
-        sum = sum + record.gainLoss;
-        sumResults.push({
-          description,
-          whenClosed: record.whenClosed,
-          sum,
-          gainLoss: record.gainLoss,
-        });
-        if (record.gainLoss >= 0.0) {
-          winsTmp++;
-          avgWinTmp += record.gainLoss;
-          if (record.gainLoss > maxWinTmp) {
-            maxWinTmp = record.gainLoss;
-          }
-        } else {
-          lossesTmp++;
-          avgLossTmp += record.gainLoss;
-          if (record.gainLoss < maxLossTmp) {
-            maxLossTmp = record.gainLoss;
-          }
-        }
-      }
-      return sum;
-    }, 0.0);
-    setFilterList([...tempFilterList]);
-    setAvgLossText((avgLossTmp / lossesTmp).toFixed(2));
-    setAvgWinText((avgWinTmp / winsTmp).toFixed(2));
-    setWinRate(((winsTmp / sumResults.length) * 100).toFixed(1));
-    setLossRate(((lossesTmp / sumResults.length) * 100).toFixed(1));
-    setWins(winsTmp);
-    setLosses(lossesTmp);
-    setAvgLoss(avgLossTmp);
-    setAvgWin(avgWinTmp);
-    setMaxWin(maxWinTmp);
-    setMaxLoss(maxLossTmp);
-    return sumResults;
-  }, [filterSelections, Trades]);
+function getTradeDurationMinutes(trade: ITradeSettings) {
+  let initialTime = dayjs(trade.whenOpened);
+  return dayjs(trade.whenClosed).diff(initialTime, 'minute', true);
+}
 
-  const handleFilterChange = (value) => {
-    setFilterSelections([...value]);
-  };
+function ChartResults({records}: { records: ITradeSettings[] }) {
+  const sumResults: ISumResults[] = [];
+  let wins = 0.0;
+  let losses = 0.0;
+  let avgLossTmp = 0;
+  let avgWinTmp = 0;
+  let maxWin = 0;
+  let maxLoss = 0;
+  let avgDuration = 0;
+
+  records.reduce((sum, record) => {
+    const description = getDescription(record);
+    sum = sum + record.gainLoss;
+    sumResults.push({
+      description,
+      whenClosed: record.whenClosed,
+      sum,
+      gainLoss: record.gainLoss,
+    });
+    if (record.gainLoss >= 0.0) {
+      wins++;
+      avgWinTmp += record.gainLoss;
+      if (record.gainLoss > maxWin) {
+        maxWin = record.gainLoss;
+      }
+    } else {
+      losses++;
+      avgLossTmp += record.gainLoss;
+      if (record.gainLoss < maxLoss) {
+        maxLoss = record.gainLoss;
+      }
+    }
+    avgDuration += getTradeDurationMinutes(record);
+    return sum;
+  }, 0.0);
+  const avgLossText = ((avgLossTmp / losses).toFixed(2));
+  const avgWinText = ((avgWinTmp / wins).toFixed(2));
+  const winRate = (((wins / sumResults.length) * 100).toFixed(1));
+  const lossRate = (((losses / sumResults.length) * 100).toFixed(1));
+  avgDuration = avgDuration / records.length;
 
   return (
     <Space>
-      <LineChart width={400} height={200} data={tradeResults ?? []} margin={{top: 5, right: 20, bottom: 5, left: 0}}>
+      <LineChart width={400} height={200} data={sumResults ?? []} margin={{top: 5, right: 20, bottom: 5, left: 0}}>
         <Line type="monotone" dataKey="sum" stroke="blue" dot={false}/>
         <Line type="monotone" dataKey="gainLoss" stroke="pink" dot={false}/>
         <CartesianGrid stroke="#ccc" strokeDasharray="5 5"/>
-        <XAxis dataKey="description"/>
+        <XAxis dataKey={getDateTime}/>
         <YAxis/>
         <Tooltip/>
       </LineChart>
       <div>
-        <Space>
-          <h2>Filter: </h2>
-          <Select
-            mode="multiple"
-            style={{ width: '300px' }}
-            placeholder="To Filter data, select ..."
-            onChange={handleFilterChange}
-            options={filterList}
-          />
-        </Space>
         <Space>
           <h2>WINS:</h2>
           <h3>{winRate}%</h3>
           <h3>Avg: ${avgWinText}</h3>
           <h3>Max: ${maxWin.toFixed(2)}</h3>
         </Space>
+        <br/>
         <Space>
           <h2>Losses:</h2>
           <h3>{lossRate}%</h3>
           <h3>Avg: ${avgLossText}</h3>
           <h3>Max: ${maxLoss.toFixed(2)}</h3>
         </Space>
+        <br/>
+        <Space>
+          <h2>Average Duration:</h2>
+          <h3>{avgDuration.toFixed(1)} min</h3>
+        </Space>
+        <br/>
         <Space>
           <h2>Totals:</h2>
-          <h3>{tradeResults.length}, Wins: {wins}, Losses: {losses}</h3>
+          <h3>{sumResults.length}, Wins: {wins}, Losses: {losses}</h3>
         </Space>
       </div>
     </Space>
