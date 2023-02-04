@@ -55,13 +55,13 @@ function GraphTrade({liveTrade}: { liveTrade: ITradeSettings }) {
             isAnimationActive={false}/>
       <Line type="monotone" strokeWidth={2} dataKey={getUnderlying} name={'Underlying'} stroke="red" dot={false}
             isAnimationActive={false}/>
-      <Line type="monotone" dataKey={getLongStraddlePrice} name={'L-Strad'} stroke="lightpink" dot={false}
+      <Line type="monotone" dataKey={getLongStraddlePrice} name={'Long Straddle'} stroke="lightpink" dot={false}
             isAnimationActive={false}/>
-      <Line type="monotone" dataKey={getShortStraddlePrice} name={'S-Strad'} stroke="lightgreen" dot={false}
+      <Line type="monotone" dataKey={getShortStraddlePrice} name={'Short Straddle'} stroke="lightgreen" dot={false}
             isAnimationActive={false}/>
-      <Line type="monotone" dataKey={() => gainLine} name={'G-limit'} stroke="cyan" dot={false}
+      <Line type="monotone" dataKey={() => gainLine} name={'Max Gain'} stroke="cyan" dot={false}
             isAnimationActive={false}/>
-      <Line type="monotone" dataKey={() => lossLine} name={'L-limit'} stroke="cyan" dot={false}
+      <Line type="monotone" dataKey={() => lossLine} name={'Max Loss'} stroke="cyan" dot={false}
             isAnimationActive={false}/>
     </LineChart>
   );

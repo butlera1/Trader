@@ -28,9 +28,6 @@ function TradeResultsView() {
   return (
     <>
       <h1>Overall Results</h1>
-      <Divider/>
-      <h3>Filters go here.</h3>
-      <Divider/>
       <ChartResults records={filteredRecords}/>
       <Divider/>
       <TradeResultsTable records={[...filteredRecords].reverse()}/>

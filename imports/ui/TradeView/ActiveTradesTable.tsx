@@ -8,6 +8,7 @@ import ITradeSettings, {GetDescription} from '../../Interfaces/ITradeSettings';
 import {ColumnsType} from 'antd/lib/table';
 import {Space, Table} from 'antd';
 import EmergencyCloseActiveTrades from '../EmergencyCloseActiveTrades';
+// @ts-ignore
 import GraphTrade from './GraphTrade.tsx';
 import './graphTrade.css';
 import dayjs from 'dayjs';
