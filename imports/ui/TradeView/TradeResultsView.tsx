@@ -18,12 +18,12 @@ function sortFunction(a: ITradeSettings, b: ITradeSettings) {
 function TradeResultsView() {
   const [filteredRecords, setFilteredRecords] = React.useState([]);
 
-  useEffect(() => {
+  useTracker(() => {
     const query = {whyClosed: {$exists: true}};
     const opts = {sort: sortFunction};
     const records: ITradeSettings[] = Trades.find(query, opts).fetch();
     setFilteredRecords(records);
-  }, []);
+  }, [Trades]);
 
   return (
     <>

@@ -23,7 +23,13 @@ const columns: ColumnsType<ITradeSettings> = [
     title: 'Description',
     dataIndex: 'description',
     key: 'description',
-    render: (description, record) => GetDescription(record),
+    render: (_, record) => {
+      const description = GetDescription(record);
+      let color = (record.isMocked) ? 'white' : 'pink';
+      return (
+        <span style={{backgroundColor: color}} key={description}>{description}</span>
+      );
+    },
     sorter: (a, b) => GetDescription(a).localeCompare(GetDescription(b)),
   },
   {
@@ -35,6 +41,9 @@ const columns: ColumnsType<ITradeSettings> = [
       const bDj = dayjs(b.whenOpened);
       return aDj.valueOf() - bDj.valueOf();
     },
+    render: (whenOpened) => {
+      return dayjs(whenOpened).format('MM/DD/YYYY hh:mm');
+    }
   },
   {
     title: 'Closed',
@@ -45,6 +54,9 @@ const columns: ColumnsType<ITradeSettings> = [
       const bDj = dayjs(b.whenClosed);
       return aDj.valueOf() - bDj.valueOf();
     },
+    render: (whenOpened) => {
+      return dayjs(whenOpened).format('MM/DD/YYYY hh:mm');
+    }
   },
   {
     title: '$ G/L',
@@ -93,7 +105,6 @@ function TradeResultsTable({records}: { records: ITradeSettings[] }) {
       size="small" columns={columns}
       dataSource={records}
       rowKey="_id"
-      rowClassName={(record) => record.isMocked ? 'mockedRow' : 'realTradeRow'}
     />
   );
 }

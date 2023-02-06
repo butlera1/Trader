@@ -11,7 +11,7 @@ import {
   PlaceOrder
 } from './TDAApi/TDAApi.js';
 import {Users} from './collections/users';
-import dayjs from 'dayjs';
+import dayjs, {Dayjs} from 'dayjs';
 import duration from 'dayjs/plugin/duration';
 import isoWeek from 'dayjs/plugin/isoWeek';
 import {Trades} from './collections/Trades';
@@ -134,7 +134,7 @@ async function CloseTrade(tradeSettings: ITradeSettings, currentPrice: number) {
       });
     }
   }
-  tradeSettings.whenClosed = GetNewYorkTimeNowAsText();
+  tradeSettings.whenClosed = new Date(GetNewYorkTimeNowAsText());
   // Adding: one credit/sold, other debit/bought.
   tradeSettings.gainLoss = calculateGain(tradeSettings, tradeSettings.closingPrice);
   Trades.update(tradeSettings._id, {
@@ -371,7 +371,7 @@ async function PlaceOpeningOrderAndMonitorToClose(tradeSettings: ITradeSettings)
   }
   tradeSettings.originalTradeSettingsId = tradeSettings._id;
   delete tradeSettings._id; // Remove the old _id for so when storing into Trades collection, a new _id is created.
-  tradeSettings.whenOpened = GetNewYorkTimeNowAsText();
+  tradeSettings.whenOpened = new Date(GetNewYorkTimeNowAsText());
   tradeSettings.monitoredPrices = [];
   calculateLimits(tradeSettings);
   // Record this opening order data as a new active trade.

@@ -144,7 +144,6 @@ function ActiveTradesTable() {
       columns={columns}
       rowKey="_id"
       dataSource={liveTrades}
-      rowClassName={(record) => record.isMocked ? 'mockedRow' : 'realTradeRow'}
     >
     </Table>
   );
