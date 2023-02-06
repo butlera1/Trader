@@ -5,9 +5,15 @@ import Trades from '../../Collections/Trades';
 import {ColumnsType} from 'antd/lib/table';
 import {Table} from 'antd';
 import dayjs from 'dayjs';
+import utc from 'dayjs/plugin/utc';
+import timezone from 'dayjs/plugin/timezone';
+
 import {DeleteOutlined} from '@ant-design/icons';
 import ITradeSettings, {GetDescription, whyClosedEnum} from '../../Interfaces/ITradeSettings';
 import GraphTrade from './GraphTrade';
+
+dayjs.extend(utc);
+dayjs.extend(timezone);
 
 function deleteTradeResults(record: ITradeSettings) {
   Trades.remove(record._id);
@@ -42,7 +48,7 @@ const columns: ColumnsType<ITradeSettings> = [
       return aDj.valueOf() - bDj.valueOf();
     },
     render: (whenOpened) => {
-      return dayjs(whenOpened).format('MM/DD/YYYY hh:mm');
+      return dayjs(whenOpened).format('MM/DD/YY hh:mm A');
     }
   },
   {
@@ -54,9 +60,7 @@ const columns: ColumnsType<ITradeSettings> = [
       const bDj = dayjs(b.whenClosed);
       return aDj.valueOf() - bDj.valueOf();
     },
-    render: (whenOpened) => {
-      return dayjs(whenOpened).format('MM/DD/YYYY hh:mm');
-    }
+    render: (whenClosed) => dayjs(whenClosed).format('MM/DD/YY hh:mm A'),
   },
   {
     title: '$ G/L',
