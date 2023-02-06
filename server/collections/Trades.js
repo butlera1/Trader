@@ -14,7 +14,7 @@ Meteor.publish('liveTrades', publishLiveTrades);
 /********************* Publish tradeResults **********************************/
 function publishTradeResults() {
   const query = {userId: this.userId, whyClosed: {$exists: true}};
-  return Trades.find(query, {limit: 100});
+  return Trades.find(query, {limit: 100, sort: {whenOpened: -1}});
 }
 
 Meteor.publish('tradeResults', publishTradeResults);

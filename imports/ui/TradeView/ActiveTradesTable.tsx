@@ -24,7 +24,13 @@ const columns: ColumnsType<ITradeSettings> = [
     dataIndex: 'description',
     key: 'description',
     width: 150,
-    render: (description, record) => GetDescription(record)
+    render: (_, record) => {
+      const description = GetDescription(record);
+      let color = (record.isMocked) ? 'white' : 'pink';
+      return (
+        <span style={{backgroundColor: color}} key={description}>{description}</span>
+      );
+    },
   },
   {
     title: 'Open $',
@@ -51,14 +57,14 @@ const columns: ColumnsType<ITradeSettings> = [
     dataIndex: 'monitoredPrices',
     key: 'UOpen',
     align: 'right',
-    render: monitoredPrices => monitoredPrices.length > 0 ? monitoredPrices[monitoredPrices.length - 1]?.underlyingPrice ?? 0 : 0,
+    render: monitoredPrices => monitoredPrices.length > 0 ? monitoredPrices[0]?.underlyingPrice.toFixed(2) ?? 0 : 0,
   },
   {
     title: 'UPrice',
     dataIndex: 'monitoredPrices',
     key: 'UPrice',
     align: 'right',
-    render: monitoredPrices => monitoredPrices.length > 0 ? monitoredPrices[0]?.underlyingPrice ?? 0 : 0,
+    render: monitoredPrices => monitoredPrices.length > 0 ? monitoredPrices[monitoredPrices.length - 1]?.underlyingPrice.toFixed(2) ?? 0 : 0,
   },
   {
     title: 'G/L $',
