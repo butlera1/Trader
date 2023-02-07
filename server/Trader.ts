@@ -30,6 +30,7 @@ const lock = mutexify();
 
 dayjs.extend(duration);
 dayjs.extend(isoWeek);
+
 const isoWeekdayNames = ['skip', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'];
 
 const oneSeconds = 1000;
@@ -134,7 +135,7 @@ async function CloseTrade(tradeSettings: ITradeSettings, currentPrice: number) {
       });
     }
   }
-  tradeSettings.whenClosed = new Date(GetNewYorkTimeNowAsText());
+  tradeSettings.whenClosed = new Date();
   // Adding: one credit/sold, other debit/bought.
   tradeSettings.gainLoss = calculateGain(tradeSettings, tradeSettings.closingPrice);
   Trades.update(tradeSettings._id, {
@@ -371,7 +372,7 @@ async function PlaceOpeningOrderAndMonitorToClose(tradeSettings: ITradeSettings)
   }
   tradeSettings.originalTradeSettingsId = tradeSettings._id;
   delete tradeSettings._id; // Remove the old _id for so when storing into Trades collection, a new _id is created.
-  tradeSettings.whenOpened = new Date(GetNewYorkTimeNowAsText());
+  tradeSettings.whenOpened = new Date();
   tradeSettings.monitoredPrices = [];
   calculateLimits(tradeSettings);
   // Record this opening order data as a new active trade.

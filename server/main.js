@@ -28,6 +28,13 @@ import SchedulePerformTrades from './SchedulePerformTrades';
 import {AppSettings} from './collections/AppSettings';
 import Constants from '../imports/Constants';
 
+import dayjs from 'dayjs';
+import utc from 'dayjs/plugin/utc';
+import timezone from 'dayjs/plugin/timezone';
+dayjs.extend(utc);
+dayjs.extend(timezone);
+
+
 // Listen to incoming HTTP requests (can only be used on the server).
 WebApp.connectHandlers.use('/traderOAuthCallback', (req, res) => {
   res.writeHead(200);
@@ -88,4 +95,3 @@ if (!settings) {
 SchedulePerformTrades();
 
 CheckForAnyExistingTradesAndMonitorThem();
-

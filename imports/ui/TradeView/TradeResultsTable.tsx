@@ -15,6 +15,10 @@ import GraphTrade from './GraphTrade';
 dayjs.extend(utc);
 dayjs.extend(timezone);
 
+function GetNewYorkTimeAsText(date: Date) {
+  return dayjs(date).tz('America/New_York').format('MM/DD/YY hh:mm A');
+}
+
 function deleteTradeResults(record: ITradeSettings) {
   Trades.remove(record._id);
 }
@@ -47,9 +51,7 @@ const columns: ColumnsType<ITradeSettings> = [
       const bDj = dayjs(b.whenOpened);
       return aDj.valueOf() - bDj.valueOf();
     },
-    render: (whenOpened) => {
-      return dayjs(whenOpened).format('MM/DD/YY hh:mm A');
-    }
+    render: (whenOpened) => GetNewYorkTimeAsText(whenOpened),
   },
   {
     title: 'Closed',
@@ -60,7 +62,7 @@ const columns: ColumnsType<ITradeSettings> = [
       const bDj = dayjs(b.whenClosed);
       return aDj.valueOf() - bDj.valueOf();
     },
-    render: (whenClosed) => dayjs(whenClosed).format('MM/DD/YY hh:mm A'),
+    render: (whenClosed) => GetNewYorkTimeAsText(whenClosed),
   },
   {
     title: '$ G/L',
