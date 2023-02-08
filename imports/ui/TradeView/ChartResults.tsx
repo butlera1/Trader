@@ -8,7 +8,7 @@ import dayjs from 'dayjs';
 
 interface ISumResults {
   description: string,
-  whenClosed: string,
+  whenClosed: Date,
   gainLoss: number,
   sum: number,
 }
@@ -27,6 +27,7 @@ function getTradeDurationMinutes(trade: ITradeSettings) {
 }
 
 function ChartResults({records}: { records: ITradeSettings[] }) {
+
   const sumResults: ISumResults[] = [];
   let wins = 0.0;
   let losses = 0.0;

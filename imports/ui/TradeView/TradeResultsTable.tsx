@@ -23,6 +23,10 @@ function deleteTradeResults(record: ITradeSettings) {
   Trades.remove(record._id);
 }
 
+function RenderOpenOrClosedData(when, record: ITradeSettings) {
+  const text = `${GetNewYorkTimeAsText(when)}\n${record.openingPrice.toFixed(2)}`;
+}
+
 const columns: ColumnsType<ITradeSettings> = [
   {
     title: <DeleteOutlined/>,
@@ -31,6 +35,7 @@ const columns: ColumnsType<ITradeSettings> = [
   },
   {
     title: 'Description',
+    width: 200,
     dataIndex: 'description',
     key: 'description',
     render: (_, record) => {
@@ -44,6 +49,7 @@ const columns: ColumnsType<ITradeSettings> = [
   },
   {
     title: 'Opened',
+    width: 100,
     dataIndex: 'whenOpened',
     key: 'whenOpened',
     sorter: (a, b) => {
@@ -51,10 +57,14 @@ const columns: ColumnsType<ITradeSettings> = [
       const bDj = dayjs(b.whenOpened);
       return aDj.valueOf() - bDj.valueOf();
     },
-    render: (whenOpened) => GetNewYorkTimeAsText(whenOpened),
+    render: (when, record) => {
+      const under = record.monitoredPrices.length > 0 ? record.monitoredPrices[0]?.underlyingPrice ?? 0 : 0;
+      return `${GetNewYorkTimeAsText(when)}\n$${record.openingPrice.toFixed(2)}\n$${under.toFixed(2)}`;
+    }
   },
   {
     title: 'Closed',
+    width: 100,
     dataIndex: 'whenClosed',
     key: 'whenClosed',
     sorter: (a, b) => {
@@ -62,11 +72,24 @@ const columns: ColumnsType<ITradeSettings> = [
       const bDj = dayjs(b.whenClosed);
       return aDj.valueOf() - bDj.valueOf();
     },
-    render: (whenClosed) => GetNewYorkTimeAsText(whenClosed),
+    render: (when, record) => {
+      const under = record.monitoredPrices.length > 0 ? record.monitoredPrices[record.monitoredPrices.length - 1]?.underlyingPrice ?? 0 : 0;
+      return `${GetNewYorkTimeAsText(when)}\n$${record.closingPrice.toFixed(2)}\n$${under.toFixed(2)}`;
+    },
+  },
+  {
+    title: 'Why',
+    key: 'whyClosed',
+    width: 100,
+    align: 'center',
+    dataIndex: 'whyClosed',
+    render: why => whyClosedEnum[why]?.slice(0, 4),
   },
   {
     title: '$ G/L',
     key: 'gainLoss',
+    width: 100,
+    align: 'center',
     dataIndex: 'gainLoss',
     sorter: (a, b) => a.gainLoss - b.gainLoss,
     render: (gainLoss) => {
@@ -77,30 +100,10 @@ const columns: ColumnsType<ITradeSettings> = [
     },
   },
   {
-    title: 'UOpen',
-    dataIndex: 'monitoredPrices',
-    key: 'UOpen $',
-    align: 'right',
-    render: monitoredPrices => monitoredPrices.length > 0 ? monitoredPrices[monitoredPrices.length - 1]?.underlyingPrice ?? 0 : 0,
-  },
-  {
-    title: 'UClose',
-    dataIndex: 'monitoredPrices',
-    key: 'UPrice $',
-    align: 'right',
-    render: monitoredPrices => monitoredPrices.length > 0 ? monitoredPrices[0]?.underlyingPrice ?? 0 : 0,
-  },
-  {
-    title: 'Why',
-    key: 'whyClosed',
-    dataIndex: 'whyClosed',
-    render: why => whyClosedEnum[why]?.slice(0, 4),
-  },
-  {
     title: 'Gain/time',
     key: 'Gain/time',
     dataIndex: 'monitoredPrices',
-    align: 'center',
+    align: 'left',
     render: (_, record) => <GraphTrade liveTrade={record}/>,
   },
 ];
