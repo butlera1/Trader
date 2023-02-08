@@ -39,6 +39,12 @@ function GetOptionOrderBuysTriggeringSells(legs: ILegSettings[], quantity, isToC
       sellForm.orderLegCollection.push(legOrder);
     }
   });
+  if (buyForm.orderLegCollection.length === 0) {
+    return sellForm;
+  }
+  if (sellForm.orderLegCollection.length === 0) {
+    return buyForm;
+  }
   const firstTriggersSecondOrder = WrapFirstTriggersSecond(buyForm, sellForm);
   return firstTriggersSecondOrder;
 }
