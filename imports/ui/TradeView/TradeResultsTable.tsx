@@ -3,7 +3,7 @@ import React from 'react';
 import {useTracker} from 'meteor/react-meteor-data';
 import Trades from '../../Collections/Trades';
 import {ColumnsType} from 'antd/lib/table';
-import {Table} from 'antd';
+import {Space, Table} from 'antd';
 import dayjs from 'dayjs';
 import utc from 'dayjs/plugin/utc';
 import timezone from 'dayjs/plugin/timezone';
@@ -23,8 +23,14 @@ function deleteTradeResults(record: ITradeSettings) {
   Trades.remove(record._id);
 }
 
-function RenderOpenOrClosedData(when, record: ITradeSettings) {
-  const text = `${GetNewYorkTimeAsText(when)}\n${record.openingPrice.toFixed(2)}`;
+function RenderOpenOrClosedData(when, price, under) {
+  return (
+    <Space direction="vertical">
+      <span>{when}</span>
+      <span>${price}</span>
+      <span>${under}</span>
+    </Space>
+  )
 }
 
 const columns: ColumnsType<ITradeSettings> = [
@@ -49,7 +55,7 @@ const columns: ColumnsType<ITradeSettings> = [
   },
   {
     title: 'Opened',
-    width: 100,
+    width: 150,
     dataIndex: 'whenOpened',
     key: 'whenOpened',
     sorter: (a, b) => {
@@ -59,12 +65,12 @@ const columns: ColumnsType<ITradeSettings> = [
     },
     render: (when, record) => {
       const under = record.monitoredPrices.length > 0 ? record.monitoredPrices[0]?.underlyingPrice ?? 0 : 0;
-      return `${GetNewYorkTimeAsText(when)}\n$${record.openingPrice.toFixed(2)}\n$${under.toFixed(2)}`;
+      return RenderOpenOrClosedData(GetNewYorkTimeAsText(when), record.openingPrice.toFixed(2), under.toFixed(2));
     }
   },
   {
     title: 'Closed',
-    width: 100,
+    width: 150,
     dataIndex: 'whenClosed',
     key: 'whenClosed',
     sorter: (a, b) => {
@@ -73,8 +79,13 @@ const columns: ColumnsType<ITradeSettings> = [
       return aDj.valueOf() - bDj.valueOf();
     },
     render: (when, record) => {
+      // Show the closing price, the difference from open to close, the closing underlying price, and its difference.
+      const initialUnder = record.monitoredPrices.length > 0 ? record.monitoredPrices[0]?.underlyingPrice ?? 0 : 0;
       const under = record.monitoredPrices.length > 0 ? record.monitoredPrices[record.monitoredPrices.length - 1]?.underlyingPrice ?? 0 : 0;
-      return `${GetNewYorkTimeAsText(when)}\n$${record.closingPrice.toFixed(2)}\n$${under.toFixed(2)}`;
+      const priceDiff = record.openingPrice < 0 ? Math.abs(record.openingPrice) - record.closingPrice  : record.openingPrice - record.closingPrice;
+      const priceDiffAll = `${record.closingPrice.toFixed(2)} (${(priceDiff).toFixed(2)})`;
+      const underDiff = `${under.toFixed(2)} (${(initialUnder - under).toFixed(2)})`;
+      return RenderOpenOrClosedData(GetNewYorkTimeAsText(when), priceDiffAll, underDiff);
     },
   },
   {

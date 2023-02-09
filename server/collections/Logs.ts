@@ -1,7 +1,7 @@
 // @ts-ignore
 import {Mongo} from 'meteor/mongo';
 import ITradeSettings from "../../imports/Interfaces/ITradeSettings";
-import SendOutInfo, {SendTextToAdmin} from "../SendOutInfo";
+import {SendTextToAdmin} from "../SendOutInfo";
 import {atob} from 'buffer';
 import Constants from '../../imports/Constants';
 
