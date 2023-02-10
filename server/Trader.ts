@@ -137,7 +137,7 @@ async function CloseTrade(tradeSettings: ITradeSettings, currentPrice: number) {
   }
   tradeSettings.whenClosed = new Date();
   // Adding: one credit/sold, other debit/bought.
-  tradeSettings.gainLoss = calculateGain(tradeSettings, tradeSettings.closingPrice);
+  tradeSettings.gainLoss = CalculateGain(tradeSettings, tradeSettings.closingPrice);
   Trades.update(tradeSettings._id, {
     $set: {
       closingOrderId: tradeSettings.closingOrderId,
@@ -194,14 +194,15 @@ function EmergencyCloseAllTrades() {
   }
 }
 
-function calculateGain(tradeSettings, currentPrice) {
+function CalculateGain(tradeSettings, currentPrice) {
   const {openingPrice, quantity} = tradeSettings;
   let possibleGain = (Math.abs(openingPrice) - currentPrice) * 100.0 * quantity;
   if (openingPrice > 0) {
     // We are in a long position.
     possibleGain = (Math.abs(currentPrice) - openingPrice) * 100.0 * quantity;
   }
-  return possibleGain;
+  const fees = (tradeSettings.commissionPerContract ?? 0) * tradeSettings.legs.length * tradeSettings.quantity * 2;
+  return possibleGain - fees;
 }
 
 function MonitorTradeToCloseItOut(liveTrade: ITradeSettings) {
@@ -222,7 +223,7 @@ function MonitorTradeToCloseItOut(liveTrade: ITradeSettings) {
         Meteor.setTimeout(monitorMethod, oneSeconds);
         return; // Try again on next interval timeout.
       }
-      sample.gain = calculateGain(liveTrade, sample.price);
+      sample.gain = CalculateGain(liveTrade, sample.price);
       // Record price value for historical reference and charting.
       Trades.update(liveTrade._id, {$addToSet: {monitoredPrices: sample}});
       const localNow = dayjs();

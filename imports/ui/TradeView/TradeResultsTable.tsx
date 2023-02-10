@@ -97,6 +97,13 @@ const columns: ColumnsType<ITradeSettings> = [
     render: why => whyClosedEnum[why]?.slice(0, 4),
   },
   {
+    title: 'Fees',
+    key: 'Fees',
+    dataIndex: 'legs',
+    align: 'center',
+    render: (_, record) => ((record.commissionPerContract ?? 0) * record.legs.length * record.quantity * 2).toFixed(2),
+  },
+  {
     title: '$ G/L',
     key: 'gainLoss',
     width: 100,

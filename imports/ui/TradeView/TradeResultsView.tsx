@@ -30,6 +30,7 @@ function TradeResultsView() {
   const [endDate, setEndDate] = React.useState(dayjs());
 
   useTracker(() => {
+    console.log(`Reloading the result trades records list due to a change in the DB.`);
     const query = {whyClosed: {$exists: true}};
     if (isRealTradesOnly) {
       query['isMocked'] = false;
@@ -44,16 +45,18 @@ function TradeResultsView() {
     }
     const opts = {sort: sortFunction};
     const records: ITradeSettings[] = Trades.find(query, opts).fetch();
-    setFilteredRecords(records);
+    setFilteredRecords([...records]);
   }, [Trades, isRealTradesOnly, startDate, endDate]);
 
   const onStartDateChange = (date: Dayjs) => {
-    const result = date.set('hour', 0).set('minute', 0).set('second', 0);
+    const value = date ? date : dayjs().subtract(1, 'year');
+    const result = value.set('hour', 0).set('minute', 0).set('second', 0);
     setStartDate(result);
   };
 
   const onEndDateChange = (date: Dayjs) => {
-    const result = date.set('hour', 23).set('minute', 59).set('second', 59);
+    const value = date ? date : dayjs();
+    const result = value.set('hour', 23).set('minute', 59).set('second', 59);
     setEndDate(result);
   };
 

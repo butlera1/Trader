@@ -16,8 +16,6 @@ import duration from 'dayjs/plugin/duration';
 
 dayjs.extend(duration);
 
-const commissionFee = 0.50;
-
 const columns: ColumnsType<ITradeSettings> = [
   {
     title: 'Description',
@@ -111,7 +109,7 @@ const columns: ColumnsType<ITradeSettings> = [
     key: 'Fees',
     dataIndex: 'legs',
     align: 'center',
-    render: (_, record) => (commissionFee * record.legs.length * record.quantity * 2).toFixed(2),
+    render: (_, record) => ((record.commissionPerContract ?? 0) * record.legs.length * record.quantity * 2).toFixed(2),
   },
   {
     title: 'Gain/time',

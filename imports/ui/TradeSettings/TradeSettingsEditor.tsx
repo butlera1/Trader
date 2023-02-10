@@ -39,6 +39,7 @@ export const TradeSettingsEditor = ({tradeSettings, changeCallback}: Props) => {
   const [percentGain, setPercentGain] = React.useState(tradeSettings.percentGain);
   const [percentLoss, setPercentLoss] = React.useState(tradeSettings.percentLoss);
   const [quantity, setQuantity] = React.useState(tradeSettings.quantity);
+  const [commissionPerContract, setCommissionPerContract] = React.useState(tradeSettings.commissionPerContract || 0);
   const [legs, setLegs] = React.useState(tradeSettings.legs);
   const [errorText, setErrorText] = React.useState(null);
   const [tradeType, setTradeType] = React.useState(tradeSettings.tradeType ?? false);
@@ -58,6 +59,7 @@ export const TradeSettingsEditor = ({tradeSettings, changeCallback}: Props) => {
     percentGain: setPercentGain,
     percentLoss: setPercentLoss,
     quantity: setQuantity,
+    commissionPerContract: setCommissionPerContract,
     legs: setLegs,
     tradeType: setTradeType,
     isRepeat: setIsRepeat,
@@ -84,6 +86,7 @@ export const TradeSettingsEditor = ({tradeSettings, changeCallback}: Props) => {
         percentGain,
         percentLoss,
         quantity,
+        commissionPerContract,
         legs,
         tradeType,
         isRepeat,
@@ -102,7 +105,7 @@ export const TradeSettingsEditor = ({tradeSettings, changeCallback}: Props) => {
         });
       }
     }, 1000);
-  }, [isActive, isMocked, symbol, days, entryHour, entryMinute, exitHour, exitMinute, percentGain, percentLoss, quantity, legs, tradeType, isRepeat]);
+  }, [isActive, isMocked, symbol, days, entryHour, entryMinute, exitHour, exitMinute, percentGain, percentLoss, quantity, commissionPerContract, legs, tradeType, isRepeat]);
 
   const RunNow = () => {
     return (
@@ -275,6 +278,23 @@ export const TradeSettingsEditor = ({tradeSettings, changeCallback}: Props) => {
               addonAfter={'%'}
               style={{width: '100px'}}
               onChange={(value) => onChange('percentLoss', (value) / 100)}
+            />
+          </Space>
+        </Col>
+      </Row>
+
+      <Row style={{margin: generalMargins}}>
+        <Col>
+          <Space>
+            <span>Fee Per Contract:</span>
+            <InputNumber
+              min={0}
+              step="0.01"
+              max={1}
+              defaultValue={commissionPerContract }
+              addonAfter={'$'}
+              style={{width: '100px'}}
+              onChange={(value) => onChange('commissionPerContract', value)}
             />
           </Space>
         </Col>
