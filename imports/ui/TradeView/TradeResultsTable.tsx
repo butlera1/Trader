@@ -101,7 +101,7 @@ const columns: ColumnsType<ITradeSettings> = [
     key: 'Fees',
     dataIndex: 'totalFees',
     align: 'center',
-    render: (totalFees) => totalFees.toFixed(2),
+    render: (totalFees) => (totalFees ?? 0).toFixed(2),
   },
   {
     title: '$ G/L',

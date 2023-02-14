@@ -4,14 +4,11 @@ import {useTracker} from 'meteor/react-meteor-data';
 import {CartesianGrid, Legend, Line, LineChart, Tooltip, XAxis, YAxis} from 'recharts';
 import ITradeSettings, {IPrice} from '../../Interfaces/ITradeSettings';
 import dayjs from 'dayjs';
+import {CalculateGain} from '../../Utils';
 
 function calculateGainGraphLine(tradeSettings, price) {
-  const {openingPrice, quantity} = tradeSettings;
-  let gainOrLoss = (Math.abs(openingPrice) - price) * 100.0 * quantity;
-  if (openingPrice > 0) {
-    // We are in a long position.
-    gainOrLoss = (Math.abs(price) - openingPrice) * 100.0 * quantity;
-  }
+  let gainOrLoss = CalculateGain(tradeSettings, price);
+  gainOrLoss = gainOrLoss + tradeSettings.totalFees;
   return Math.round(gainOrLoss * 100) / 100;
 }
 

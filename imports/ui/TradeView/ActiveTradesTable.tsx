@@ -114,9 +114,9 @@ const columns: ColumnsType<ITradeSettings> = [
   {
     title: 'Fees',
     key: 'Fees',
-    dataIndex: 'legs',
+    dataIndex: 'totalFees',
     align: 'center',
-    render: (_, record) => ((record.commissionPerContract ?? 0) * record.legs.length * record.quantity * 2).toFixed(2),
+    render: (totalFees) => (totalFees ?? 0).toFixed(2),
   },
   {
     title: 'Gain/time',
