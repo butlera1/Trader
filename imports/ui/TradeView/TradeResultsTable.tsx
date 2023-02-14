@@ -83,8 +83,8 @@ const columns: ColumnsType<ITradeSettings> = [
       const initialUnder = record.monitoredPrices.length > 0 ? record.monitoredPrices[0]?.underlyingPrice ?? 0 : 0;
       const under = record.monitoredPrices.length > 0 ? record.monitoredPrices[record.monitoredPrices.length - 1]?.underlyingPrice ?? 0 : 0;
       const priceDiff = record.openingPrice < 0 ? Math.abs(record.openingPrice) - record.closingPrice  : record.openingPrice - record.closingPrice;
-      const priceDiffAll = `${record.closingPrice.toFixed(2)} (${(priceDiff).toFixed(2)})`;
-      const underDiff = `${under.toFixed(2)} (${(initialUnder - under).toFixed(2)})`;
+      const priceDiffAll = `${record.closingPrice.toFixed(2)} (${(priceDiff).toFixed(3)})`;
+      const underDiff = `${under.toFixed(2)} (${(initialUnder - under).toFixed(3)})`;
       return RenderOpenOrClosedData(GetNewYorkTimeAsText(when), priceDiffAll, underDiff);
     },
   },
@@ -99,9 +99,9 @@ const columns: ColumnsType<ITradeSettings> = [
   {
     title: 'Fees',
     key: 'Fees',
-    dataIndex: 'legs',
+    dataIndex: 'totalFees',
     align: 'center',
-    render: (_, record) => ((record.commissionPerContract ?? 0) * record.legs.length * record.quantity * 2).toFixed(2),
+    render: (totalFees) => totalFees.toFixed(2),
   },
   {
     title: '$ G/L',

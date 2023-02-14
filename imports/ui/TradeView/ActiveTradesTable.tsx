@@ -69,14 +69,21 @@ const columns: ColumnsType<ITradeSettings> = [
     key: 'gainLoss',
     dataIndex: 'gainLoss',
     align: 'right',
-    render: (_, {monitoredPrices}) => {
+    render: (_, record) => {
       let gainLoss = 0;
+      const monitoredPrices = record.monitoredPrices;
+      let priceDiff = '0';
       if (monitoredPrices?.length > 0) {
-        gainLoss = monitoredPrices[monitoredPrices.length - 1].gain;
+        gainLoss = (monitoredPrices[monitoredPrices.length - 1].gain);
+        priceDiff = (monitoredPrices[monitoredPrices.length - 1].price - record.openingPrice).toFixed(3);
       }
       let color = (gainLoss < 0) ? 'red' : 'green';
+      const gainLossStr = gainLoss.toFixed(2);
       return (
-        <span style={{color: color}} key={gainLoss}>{gainLoss.toFixed(2)}</span>
+        <Space direction={'vertical'}>
+          <span key={1} style={{color: color}} >{`${gainLossStr}`}</span>
+          <span key={2} style={{color: color}} >{`(${priceDiff})`}</span>
+        </Space>
       );
     },
   },

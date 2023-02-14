@@ -25,6 +25,7 @@ import _ from 'lodash';
 import {LogData} from './collections/Logs';
 import {SendTextToAdmin} from './SendOutInfo';
 import mutexify from 'mutexify/promise';
+import {CalculateGain} from '../imports/Utils';
 
 const lock = mutexify();
 
@@ -195,17 +196,6 @@ function EmergencyCloseAllTrades() {
   }
 }
 
-function CalculateGain(tradeSettings, currentPrice) {
-  const {openingPrice, quantity} = tradeSettings;
-  let possibleGain = (Math.abs(openingPrice) - currentPrice) * 100.0 * quantity;
-  if (openingPrice > 0) {
-    // We are in a long position.
-    possibleGain = (Math.abs(currentPrice) - openingPrice) * 100.0 * quantity;
-  }
-  const fees = (tradeSettings.commissionPerContract ?? 0) * tradeSettings.legs.length * tradeSettings.quantity * 2;
-  return possibleGain - fees;
-}
-
 /**
  * Return true if profitable after a set number of minutes.
  * @param tradeSettings
@@ -216,7 +206,9 @@ function checkRule1Exit(liveTrade: ITradeSettings, currentSample: IPrice) {
     const initialTime = liveTrade.monitoredPrices[0] ? dayjs(liveTrade.monitoredPrices[0].whenNY) : dayjs();
     const latestTime = liveTrade.monitoredPrices[liveTrade.monitoredPrices.length - 1] ? dayjs(liveTrade.monitoredPrices[liveTrade.monitoredPrices.length - 1].whenNY) : dayjs();
     const duration = latestTime.diff(initialTime, 'minute', true);
-    return (duration > liveTrade.rule1Value) && (currentSample.gain > 0);
+    const absCurrentPrice = Math.abs(currentSample.price);
+    let isGainLimit = (absCurrentPrice <= (liveTrade.gainLimit * liveTrade.rule1Value.profitPercentage));
+    return (duration > liveTrade.rule1Value.minutes) && (isGainLimit);
   }
   return false;
 }
@@ -389,13 +381,15 @@ async function WaitForOrderCompleted(userId, accountNumber, orderId) {
   });
 }
 
-function calculateLimits(tradeSettings: ITradeSettings) {
+function calculateLimitsAndFees(tradeSettings: ITradeSettings) {
   const {
     percentGain,
     percentLoss,
   } = tradeSettings;
   let {openingPrice} = tradeSettings;
-  const fees = ((tradeSettings.commissionPerContract ?? 0) * tradeSettings.legs.length * 2 * tradeSettings.quantity)/100;
+  tradeSettings.totalFees = (tradeSettings.commissionPerContract ?? 0) * tradeSettings.legs.length * tradeSettings.quantity * 2;
+  // Calculate the fees for a single trade in option cents
+  const feesPerTrade = tradeSettings.totalFees / tradeSettings.quantity / 100;
 
   if (tradeSettings.useShortOnlyForLimits) {
     if (openingPrice > 0) {
@@ -406,11 +400,11 @@ function calculateLimits(tradeSettings: ITradeSettings) {
   }
   // If long entry, the openingPrice is positive (debit) and negative if short (credit).
   if (openingPrice > 0) {
-    tradeSettings.gainLimit = Math.abs(tradeSettings.openingPrice + openingPrice * percentGain + fees);
-    tradeSettings.lossLimit = Math.abs(tradeSettings.openingPrice - openingPrice * percentLoss - fees);
+    tradeSettings.gainLimit = Math.abs(tradeSettings.openingPrice + openingPrice * percentGain + feesPerTrade);
+    tradeSettings.lossLimit = Math.abs(tradeSettings.openingPrice - openingPrice * percentLoss - feesPerTrade);
   } else {
-    tradeSettings.gainLimit = Math.abs(tradeSettings.openingPrice - openingPrice * percentGain - fees);
-    tradeSettings.lossLimit = Math.abs(tradeSettings.openingPrice + openingPrice * percentLoss + fees);
+    tradeSettings.gainLimit = Math.abs(tradeSettings.openingPrice - openingPrice * percentGain - feesPerTrade);
+    tradeSettings.lossLimit = Math.abs(tradeSettings.openingPrice + openingPrice * percentLoss + feesPerTrade);
   }
 }
 
@@ -435,7 +429,7 @@ async function PlaceOpeningOrderAndMonitorToClose(tradeSettings: ITradeSettings)
   delete tradeSettings._id; // Remove the old _id for so when storing into Trades collection, a new _id is created.
   tradeSettings.whenOpened = new Date();
   tradeSettings.monitoredPrices = [];
-  calculateLimits(tradeSettings);
+  calculateLimitsAndFees(tradeSettings);
   // Record this opening order data as a new active trade.
   tradeSettings._id = Trades.insert({...tradeSettings});
   if (_.isFinite(tradeSettings.openingPrice)) {

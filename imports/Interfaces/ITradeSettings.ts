@@ -1,4 +1,5 @@
 import ILegSettings, {BuySell, OptionType} from './ILegSettings';
+import {IRule1Value} from '../ui/TradeSettings/Rules/Rule1';
 
 enum whyClosedEnum {
   emergencyExit = 'emergencyExit',
@@ -74,10 +75,11 @@ interface ITradeSettings {
   isRepeat?: boolean,
   originalTradeSettingsId?: string,
   useShortOnlyForLimits?: boolean,
-  isRule1?: boolean,
+  isRule1?: IRule1Value,
   isRule2?: boolean,
   rule1Value?: any,
   rule2Value?: any,
+  totalFees?: number,
 }
 
 const DefaultIronCondorLegsSettings = [

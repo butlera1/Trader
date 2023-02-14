@@ -23,11 +23,19 @@ function sortFunction(a: ITradeSettings, b: ITradeSettings) {
   return result;
 }
 
+function setEndOfDay(date: Dayjs) {
+  return date.set('hour', 23).set('minute', 59).set('second', 59);
+}
+
+function setStartOfDay(date: Dayjs) {
+  return date.set('hour', 0).set('minute', 0).set('second', 0);
+}
+
 function TradeResultsView() {
   const [isRealTradesOnly, setIsRealTradesOnly] = React.useState(false);
   const [filteredRecords, setFilteredRecords] = React.useState([]);
-  const [startDate, setStartDate] = React.useState(dayjs().subtract(1, 'year'));
-  const [endDate, setEndDate] = React.useState(dayjs());
+  const [startDate, setStartDate] = React.useState(setStartOfDay(dayjs()));
+  const [endDate, setEndDate] = React.useState(setEndOfDay(dayjs()));
 
   useTracker(() => {
     console.log(`Reloading the result trades records list due to a change in the DB.`);
@@ -49,14 +57,14 @@ function TradeResultsView() {
   }, [Trades, isRealTradesOnly, startDate, endDate]);
 
   const onStartDateChange = (date: Dayjs) => {
-    const value = date ? date : dayjs().subtract(1, 'year');
-    const result = value.set('hour', 0).set('minute', 0).set('second', 0);
+    const value = date ? date : dayjs();
+    const result = setStartOfDay(value);
     setStartDate(result);
   };
 
   const onEndDateChange = (date: Dayjs) => {
     const value = date ? date : dayjs();
-    const result = value.set('hour', 23).set('minute', 59).set('second', 59);
+    const result = setEndOfDay(value);
     setEndDate(result);
   };
 

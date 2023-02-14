@@ -1,22 +1,36 @@
 import React from 'react';
-import {Input, InputNumber, Space} from 'antd';
+import {InputNumber, Space} from 'antd';
 
+interface IRule1Value {
+  profitPercent: number;
+  minutes: number;
+}
 
-function Rule1({value, onChange}: { value: number, onChange: (value: number) => void }) {
+function Rule1({value, onChange}: { value: IRule1Value, onChange: (value: IRule1Value) => void }) {
   return (
     <>
       <Space style={{marginLeft: 10}}>
-        <label>Exit trade if profitable and duration greater than </label>
+        <label>Exit if</label>
         <InputNumber
-          defaultValue={value}
+          defaultValue={value.profitPercent * 100}
+          addonAfter={'%'}
+          min={0}
+          max={100}
+          style={{width: '100px'}}
+          onChange={(profitPercent: number) => onChange({...value, profitPercent: profitPercent / 100})}
+        />
+        <label>of profit and duration over</label>
+        <InputNumber
+          defaultValue={value.minutes}
           addonAfter={'minutes.'}
           min={0}
           max={60}
           style={{width: '150px'}}
-          onChange={onChange}/>
+          onChange={(minutes: number) => onChange({...value, minutes})}
+        />
       </Space>
     </>
   );
 }
 
-export default Rule1;
+export {Rule1 as default, IRule1Value};
