@@ -11,6 +11,7 @@ import weekday from 'dayjs/plugin/weekday';
 import locale from 'dayjs/plugin/localeData';
 import {Checkbox, DatePicker, Divider, Space} from 'antd';
 import {CheckboxChangeEvent} from 'antd/lib/checkbox';
+import {CalculateLimitsAndFees} from '../../Utils';
 
 dayjs.extend(customParseFormat);
 dayjs.extend(weekday);
@@ -53,6 +54,8 @@ function TradeResultsView() {
     }
     const opts = {sort: sortFunction};
     const records: ITradeSettings[] = Trades.find(query, opts).fetch();
+    // Recalculate the limits since we've changed that approach several times.
+    records.forEach(CalculateLimitsAndFees);
     setFilteredRecords([...records]);
   }, [Trades, isRealTradesOnly, startDate, endDate]);
 

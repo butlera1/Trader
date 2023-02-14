@@ -25,7 +25,7 @@ import _ from 'lodash';
 import {LogData} from './collections/Logs';
 import {SendTextToAdmin} from './SendOutInfo';
 import mutexify from 'mutexify/promise';
-import {CalculateGain} from '../imports/Utils';
+import {CalculateGain, CalculateLimitsAndFees} from '../imports/Utils';
 
 const lock = mutexify();
 
@@ -218,7 +218,9 @@ function checkRule1Exit(liveTrade: ITradeSettings, currentSample: IPrice) {
  * @param liveTrade
  * @param currentSample
  */
-function checkRule2Exit(liveTrade: ITradeSettings, currentSample: IPrice){ return false;}
+function checkRule2Exit(liveTrade: ITradeSettings, currentSample: IPrice) {
+  return false;
+}
 
 function MonitorTradeToCloseItOut(liveTrade: ITradeSettings) {
   const localEarlyExitTime = GetNewYorkTimeAt(liveTrade.exitHour, liveTrade.exitMinute);
@@ -381,33 +383,6 @@ async function WaitForOrderCompleted(userId, accountNumber, orderId) {
   });
 }
 
-function calculateLimitsAndFees(tradeSettings: ITradeSettings) {
-  const {
-    percentGain,
-    percentLoss,
-  } = tradeSettings;
-  let {openingPrice} = tradeSettings;
-  tradeSettings.totalFees = (tradeSettings.commissionPerContract ?? 0) * tradeSettings.legs.length * tradeSettings.quantity * 2;
-  // Calculate the fees for a single trade in option cents
-  const feesPerTrade = tradeSettings.totalFees / tradeSettings.quantity / 100;
-
-  if (tradeSettings.useShortOnlyForLimits) {
-    if (openingPrice > 0) {
-      openingPrice = Math.abs(tradeSettings.openingShortOnlyPrice);
-    } else {
-      openingPrice = -Math.abs(tradeSettings.openingShortOnlyPrice);
-    }
-  }
-  // If long entry, the openingPrice is positive (debit) and negative if short (credit).
-  if (openingPrice > 0) {
-    tradeSettings.gainLimit = Math.abs(tradeSettings.openingPrice + openingPrice * percentGain + feesPerTrade);
-    tradeSettings.lossLimit = Math.abs(tradeSettings.openingPrice - openingPrice * percentLoss - feesPerTrade);
-  } else {
-    tradeSettings.gainLimit = Math.abs(tradeSettings.openingPrice - openingPrice * percentGain - feesPerTrade);
-    tradeSettings.lossLimit = Math.abs(tradeSettings.openingPrice + openingPrice * percentLoss + feesPerTrade);
-  }
-}
-
 async function PlaceOpeningOrderAndMonitorToClose(tradeSettings: ITradeSettings) {
   if (tradeSettings.isMocked) {
     tradeSettings.openingOrderId = Random.id() + '_MOCKED';
@@ -416,7 +391,9 @@ async function PlaceOpeningOrderAndMonitorToClose(tradeSettings: ITradeSettings)
   } else {
     tradeSettings.openingOrderId = await PlaceOrder(tradeSettings.userId, tradeSettings.accountNumber, tradeSettings.openingOrder);
     const priceResults = await WaitForOrderCompleted(tradeSettings.userId, tradeSettings.accountNumber, tradeSettings.openingOrderId)
-      .catch(() => {return {orderPrice:0, shortOnlyPrice:0}});
+      .catch(() => {
+        return {orderPrice: 0, shortOnlyPrice: 0};
+      });
     // @ts-ignore
     if (priceResults?.orderPrice) {
       // @ts-ignore
@@ -429,7 +406,7 @@ async function PlaceOpeningOrderAndMonitorToClose(tradeSettings: ITradeSettings)
   delete tradeSettings._id; // Remove the old _id for so when storing into Trades collection, a new _id is created.
   tradeSettings.whenOpened = new Date();
   tradeSettings.monitoredPrices = [];
-  calculateLimitsAndFees(tradeSettings);
+  CalculateLimitsAndFees(tradeSettings);
   // Record this opening order data as a new active trade.
   tradeSettings._id = Trades.insert({...tradeSettings});
   if (_.isFinite(tradeSettings.openingPrice)) {
