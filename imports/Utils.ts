@@ -5,7 +5,7 @@ function CalculateGain(tradeSettings, currentPrice) {
     // We are in a long position.
     possibleGain = (Math.abs(currentPrice) - openingPrice) * 100.0 * quantity;
   }
-  return possibleGain - totalFees;
+  return possibleGain - (totalFees ?? 0);
 }
 
 export {CalculateGain};
