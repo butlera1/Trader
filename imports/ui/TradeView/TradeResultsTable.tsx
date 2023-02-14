@@ -91,10 +91,10 @@ const columns: ColumnsType<ITradeSettings> = [
   {
     title: 'Why',
     key: 'whyClosed',
-    width: 100,
+    width: 150,
     align: 'center',
     dataIndex: 'whyClosed',
-    render: why => whyClosedEnum[why]?.slice(0, 4),
+    render: why => why?.slice(0, 10),
   },
   {
     title: 'Fees',

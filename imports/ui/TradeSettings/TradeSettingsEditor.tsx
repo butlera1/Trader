@@ -14,6 +14,7 @@ import {QuestionCircleOutlined} from '@ant-design/icons';
 import _ from 'lodash';
 import {diff} from 'deep-object-diff';
 import {CheckboxChangeEvent} from 'antd/lib/checkbox';
+import Rule1 from './Rules/Rule1';
 
 const CheckboxGroup = Checkbox.Group;
 const generalMargins = 30;
@@ -44,6 +45,11 @@ export const TradeSettingsEditor = ({tradeSettings, changeCallback}: Props) => {
   const [errorText, setErrorText] = React.useState(null);
   const [tradeType, setTradeType] = React.useState(tradeSettings.tradeType ?? false);
   const [isRepeat, setIsRepeat] = React.useState(tradeSettings.isRepeat ?? false);
+  const [useShortOnlyForLimits, setUseShortOnlyForLimits] = React.useState(tradeSettings.useShortOnlyForLimits ?? false);
+  const [isRule1, setIsRule1] = React.useState(tradeSettings.isRule1 ?? true);
+  const [isRule2, setIsRule2] = React.useState(tradeSettings.isRule2 ?? true);
+  const [rule1Value, setRule1Value] = React.useState(tradeSettings.rule1Value ?? 0.0);
+  const [rule2Value, setRule2Value] = React.useState(tradeSettings.rule2Value ?? 0.0);
 
   const setMap = {
     isActive: setIsActive,
@@ -63,6 +69,11 @@ export const TradeSettingsEditor = ({tradeSettings, changeCallback}: Props) => {
     legs: setLegs,
     tradeType: setTradeType,
     isRepeat: setIsRepeat,
+    useShortOnlyForLimits: setUseShortOnlyForLimits,
+    isRule1: setIsRule1,
+    isRule2: setIsRule2,
+    rule1Value: setRule1Value,
+    rule2Value: setRule2Value,
   };
 
   useEffect(() => {
@@ -90,6 +101,11 @@ export const TradeSettingsEditor = ({tradeSettings, changeCallback}: Props) => {
         legs,
         tradeType,
         isRepeat,
+        useShortOnlyForLimits,
+        isRule1,
+        isRule2,
+        rule1Value,
+        rule2Value,
       };
       strategy.description = GetDescription(strategy);
       const thereAreChanges = !_.isEmpty(diff(strategy, tradeSettings));
@@ -105,7 +121,9 @@ export const TradeSettingsEditor = ({tradeSettings, changeCallback}: Props) => {
         });
       }
     }, 1000);
-  }, [isActive, isMocked, symbol, days, entryHour, entryMinute, exitHour, exitMinute, percentGain, percentLoss, quantity, commissionPerContract, legs, tradeType, isRepeat]);
+  }, [isActive, isMocked, symbol, days, entryHour, entryMinute, exitHour, exitMinute, percentGain,
+    percentLoss, quantity, commissionPerContract, legs, tradeType, isRepeat, useShortOnlyForLimits,
+    isRule1, isRule2, rule1Value, rule2Value]);
 
   const RunNow = () => {
     return (
@@ -284,19 +302,40 @@ export const TradeSettingsEditor = ({tradeSettings, changeCallback}: Props) => {
       </Row>
 
       <Row style={{margin: generalMargins}}>
-        <Col>
-          <Space>
-            <span>Fee Per Contract:</span>
-            <InputNumber
-              min={0}
-              step="0.01"
-              max={1}
-              defaultValue={commissionPerContract }
-              addonAfter={'$'}
-              style={{width: '100px'}}
-              onChange={(value) => onChange('commissionPerContract', value)}
-            />
-          </Space>
+        <Space>
+          <Col>
+            <Space>
+              <span>Fee Per Contract:</span>
+              <InputNumber
+                min={0}
+                step="0.01"
+                max={1}
+                defaultValue={commissionPerContract}
+                addonAfter={'$'}
+                style={{width: '100px'}}
+                onChange={(value) => onChange('commissionPerContract', value)}
+              />
+            </Space>
+          </Col>
+          <Col span={24}>
+            <Checkbox
+              style={{marginLeft: 50}}
+              onChange={(e: CheckboxChangeEvent) => onChange('useShortOnlyForLimits', e.target.checked)}
+              checked={useShortOnlyForLimits}
+            >
+              ShortsOnly for Gain Limit Calcs
+            </Checkbox>
+          </Col>
+        </Space>
+      </Row>
+      <Row style={{margin: generalMargins}}>
+        <Col span={24}>
+          <Checkbox
+            onChange={(e: CheckboxChangeEvent) => onChange('isRule1', e.target.checked)}
+            checked={isRule1}
+          >
+          </Checkbox>
+          <Rule1 value={rule1Value} onChange={(value) => onChange('rule1Value', value)}/>
         </Col>
       </Row>
 

@@ -422,6 +422,7 @@ function getOptionChainsAtOrNearDTE(chains, dte) {
 export function CreateOpenAndCloseOrders(chains, tradeSettings) {
   let csvSymbols = ``;
   let openingPrice = 0.0;
+  let shortOnlyPrice = 0.0;
   // For each leg, find the closest option based on Delta
   tradeSettings.legs.forEach((leg) => {
     const {putsChain, callsChain, dteValue} = getOptionChainsAtOrNearDTE(chains, leg.dte);
@@ -438,10 +439,12 @@ export function CreateOpenAndCloseOrders(chains, tradeSettings) {
       openingPrice = openingPrice + leg.option.mark;
     } else {
       openingPrice = openingPrice - leg.option.mark;
+      shortOnlyPrice = shortOnlyPrice + leg.option.mark;
     }
   });
   tradeSettings.csvSymbols = csvSymbols.slice(1); // remove leading comma
   tradeSettings.openingPrice = openingPrice; // Expected openingPrice. Will be used if isMocked. Order filled replaces.
+  tradeSettings.openingShortOnlyPrice = shortOnlyPrice;
   if (tradeSettings.tradeType?.length > 0) {
     if (tradeSettings.tradeType[0] === 'IC') {
       // Create Iron Condor orders to open and to close.

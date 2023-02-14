@@ -5,6 +5,8 @@ enum whyClosedEnum {
   gainLimit = 'gainLimit',
   lossLimit = 'lossLimit',
   timedExit = 'timedExit',
+  rule1Exit = 'r1Exit',
+  rule2Exit = 'r2Exit',
 }
 
 interface IPrice {
@@ -62,6 +64,7 @@ interface ITradeSettings {
   openingOrderId?: string,
   closingOrderId?: string,
   openingPrice?: number,
+  openingShortOnlyPrice?: number,
   closingPrice?: number,
   csvSymbols?: string,
   underlyingPrice?: number,
@@ -70,6 +73,11 @@ interface ITradeSettings {
   lossLimit?: number,
   isRepeat?: boolean,
   originalTradeSettingsId?: string,
+  useShortOnlyForLimits?: boolean,
+  isRule1?: boolean,
+  isRule2?: boolean,
+  rule1Value?: any,
+  rule2Value?: any,
 }
 
 const DefaultIronCondorLegsSettings = [
@@ -142,7 +150,8 @@ const DefaultTradeSettings: ITradeSettings = {
   tradeType: ['IC'],
   legs: [...DefaultIronCondorLegsSettings],
   emailAddress: 'none',
-  phone: 'none'
+  phone: 'none',
+  useShortOnlyForLimits: true,
 };
 
 function getTwoDTEValues(legs) {
