@@ -11,6 +11,7 @@ import timezone from 'dayjs/plugin/timezone';
 import {DeleteOutlined} from '@ant-design/icons';
 import ITradeSettings, {GetDescription, whyClosedEnum} from '../../Interfaces/ITradeSettings';
 import GraphTrade from './GraphTrade';
+import {CalculateTotalFees} from '../../Utils';
 
 dayjs.extend(utc);
 dayjs.extend(timezone);
@@ -82,7 +83,7 @@ const columns: ColumnsType<ITradeSettings> = [
       // Show the closing price, the difference from open to close, the closing underlying price, and its difference.
       const initialUnder = record.monitoredPrices.length > 0 ? record.monitoredPrices[0]?.underlyingPrice ?? 0 : 0;
       const under = record.monitoredPrices.length > 0 ? record.monitoredPrices[record.monitoredPrices.length - 1]?.underlyingPrice ?? 0 : 0;
-      const priceDiff = record.openingPrice < 0 ? Math.abs(record.openingPrice) - record.closingPrice  : record.openingPrice - record.closingPrice;
+      const priceDiff = record.openingPrice > 0 ? record.closingPrice - record.openingPrice  : record.closingPrice - Math.abs(record.openingPrice);
       const priceDiffAll = `${record.closingPrice.toFixed(2)} (${(priceDiff).toFixed(3)})`;
       const underDiff = `${under.toFixed(2)} (${(initialUnder - under).toFixed(3)})`;
       return RenderOpenOrClosedData(GetNewYorkTimeAsText(when), priceDiffAll, underDiff);
@@ -101,7 +102,7 @@ const columns: ColumnsType<ITradeSettings> = [
     key: 'Fees',
     dataIndex: 'totalFees',
     align: 'center',
-    render: (totalFees) => (totalFees ?? 0).toFixed(2),
+    render: (totalFees) => <span key={1} style={{color: 'red'}}>{`${(totalFees ?? 0).toFixed(2)}`}</span>,
   },
   {
     title: '$ G/L',
@@ -110,7 +111,9 @@ const columns: ColumnsType<ITradeSettings> = [
     align: 'center',
     dataIndex: 'gainLoss',
     sorter: (a, b) => a.gainLoss - b.gainLoss,
-    render: (gainLoss) => {
+    render: (gainLoss, record) => {
+      const totalFees = CalculateTotalFees(record);
+      gainLoss = gainLoss - totalFees;
       let color = (gainLoss < 0) ? 'red' : 'green';
       return (
         <span style={{color: color}} key={gainLoss}>{gainLoss.toFixed(2)}</span>

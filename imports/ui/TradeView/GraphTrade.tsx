@@ -8,7 +8,6 @@ import {CalculateGain} from '../../Utils';
 
 function calculateGainGraphLine(tradeSettings, price) {
   let gainOrLoss = CalculateGain(tradeSettings, price);
-  gainOrLoss = gainOrLoss + (tradeSettings.totalFees ?? 0);
   return Math.round(gainOrLoss * 100) / 100;
 }
 

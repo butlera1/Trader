@@ -394,15 +394,12 @@ function getOptionChainsAtOrNearDTE(chains, dte) {
   const putNames = Object.getOwnPropertyNames(chains.putExpDateMap);
   let chainName = null;
   // The goal here is to get the exact DTE. If not then try
-  // one less, then two less. If not either of those then
+  // one less. If not then
   // try DTE+1 all the way up to DTE+5.
   // First match wins.
   chainName = putNames.find((name) => name.endsWith(`:${dte}`));
   if (!chainName) {
     chainName = putNames.find((name) => name.endsWith(`:${dte - 1}`));
-  }
-  if (!chainName) {
-    chainName = putNames.find((name) => name.endsWith(`:${dte - 2}`));
   }
   let count = 1;
   while (!chainName && count < 5) {

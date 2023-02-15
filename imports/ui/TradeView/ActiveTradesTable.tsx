@@ -16,6 +16,17 @@ import duration from 'dayjs/plugin/duration';
 
 dayjs.extend(duration);
 
+function calculateGainLossAndPriceDiff(record: ITradeSettings) {
+  let gainLoss = 0;
+  const monitoredPrices = record.monitoredPrices;
+  let priceDiff = '0';
+  if (monitoredPrices?.length > 0) {
+    gainLoss = (monitoredPrices[monitoredPrices.length - 1].gain);
+    priceDiff = (monitoredPrices[monitoredPrices.length - 1].price - record.openingPrice).toFixed(3);
+  }
+  return {gainLoss, priceDiff};
+}
+
 const columns: ColumnsType<ITradeSettings> = [
   {
     title: 'Description',
@@ -51,18 +62,31 @@ const columns: ColumnsType<ITradeSettings> = [
     }
   },
   {
-    title: 'UOpen',
+    title: 'UOpen $',
     dataIndex: 'monitoredPrices',
     key: 'UOpen',
     align: 'right',
     render: monitoredPrices => monitoredPrices.length > 0 ? monitoredPrices[0]?.underlyingPrice.toFixed(2) ?? 0 : 0,
   },
   {
-    title: 'UPrice',
+    title: 'UPrice $',
     dataIndex: 'monitoredPrices',
     key: 'UPrice',
     align: 'right',
-    render: monitoredPrices => monitoredPrices.length > 0 ? monitoredPrices[monitoredPrices.length - 1]?.underlyingPrice.toFixed(2) ?? 0 : 0,
+    render: (monitoredPrices, record) => {
+      let openUnderyingPrice = 0;
+      let priceDiff = '0';
+      if (monitoredPrices?.length > 0) {
+        openUnderyingPrice = (monitoredPrices[monitoredPrices.length - 1].underlyingPrice);
+        priceDiff = (monitoredPrices[0].underlyingPrice - openUnderyingPrice).toFixed(3);
+      }
+      return (
+        <Space direction={'vertical'}>
+          <span key={1}>{openUnderyingPrice.toFixed(2)}</span>
+          <span key={2}>{`(${priceDiff})`}</span>
+        </Space>
+      );
+    },
   },
   {
     title: 'G/L $',
@@ -70,19 +94,13 @@ const columns: ColumnsType<ITradeSettings> = [
     dataIndex: 'gainLoss',
     align: 'right',
     render: (_, record) => {
-      let gainLoss = 0;
-      const monitoredPrices = record.monitoredPrices;
-      let priceDiff = '0';
-      if (monitoredPrices?.length > 0) {
-        gainLoss = (monitoredPrices[monitoredPrices.length - 1].gain);
-        priceDiff = (monitoredPrices[monitoredPrices.length - 1].price - record.openingPrice).toFixed(3);
-      }
+      const {gainLoss, priceDiff} = calculateGainLossAndPriceDiff(record);
       let color = (gainLoss < 0) ? 'red' : 'green';
       const gainLossStr = gainLoss.toFixed(2);
       return (
         <Space direction={'vertical'}>
-          <span key={1} style={{color: color}} >{`${gainLossStr}`}</span>
-          <span key={2} style={{color: color}} >{`(${priceDiff})`}</span>
+          <span key={1} style={{color: color}}>{`${gainLossStr}`}</span>
+          <span key={2} style={{color: color}}>{`(${priceDiff})`}</span>
         </Space>
       );
     },
@@ -112,11 +130,38 @@ const columns: ColumnsType<ITradeSettings> = [
     },
   },
   {
-    title: 'Fees',
+    title: 'Fees $',
     key: 'Fees',
     dataIndex: 'totalFees',
     align: 'center',
-    render: (totalFees) => (totalFees ?? 0).toFixed(2),
+    render: (totalFees) => <span key={1} style={{color: 'red'}}>{`${(totalFees ?? 0).toFixed(2)}`}</span>,
+  },
+  {
+    title: 'G/L-Fees $',
+    key: 'gainLimitMinusFees',
+    dataIndex: 'gainLimit',
+    align: 'center',
+    render: (_, record) => {
+      let {gainLoss, priceDiff} = calculateGainLossAndPriceDiff(record);
+      gainLoss = gainLoss - (record.totalFees ?? 0);
+      let color = (gainLoss < 0) ? 'red' : 'green';
+      const gainLossStr = gainLoss.toFixed(2);
+      return (<span key={1} style={{color: color}}>{`${gainLossStr}`}</span>);
+    },
+  },
+  {
+    title: 'GainLimit $',
+    key: 'gainLimit',
+    dataIndex: 'gainLimit',
+    align: 'center',
+    render: (gainLimit) => gainLimit.toFixed(2),
+  },
+  {
+    title: 'LossLimit $',
+    key: 'lossLimit',
+    dataIndex: 'lossLimit',
+    align: 'center',
+    render: (limit) => limit.toFixed(2),
   },
   {
     title: 'Gain/time',

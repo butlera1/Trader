@@ -3,18 +3,18 @@ import ITradeSettings from './Interfaces/ITradeSettings';
 function CalculateTotalFees(tradeSettings) {
   if (tradeSettings.totalFees) return tradeSettings.totalFees;
   const {quantity, commissionPerContract = 0, legs} = tradeSettings;
-  return quantity * commissionPerContract * 2 * legs.length;
+  tradeSettings.totalFees = quantity * commissionPerContract * 2 * legs.length;
+  return tradeSettings.totalFees;
 }
 
 function CalculateGain(tradeSettings, currentPrice) {
   const {openingPrice, quantity} = tradeSettings;
-  const totalFees = CalculateTotalFees(tradeSettings);
   let possibleGain = (Math.abs(openingPrice) - currentPrice) * 100.0 * quantity;
   if (openingPrice > 0) {
     // We are in a long position.
     possibleGain = (Math.abs(currentPrice) - openingPrice) * 100.0 * quantity;
   }
-  return possibleGain - (totalFees ?? 0);
+  return possibleGain;
 }
 
 function CalculateLimitsAndFees(tradeSettings: ITradeSettings) {

@@ -75,9 +75,9 @@ interface ITradeSettings {
   isRepeat?: boolean,
   originalTradeSettingsId?: string,
   useShortOnlyForLimits?: boolean,
-  isRule1?: IRule1Value,
+  isRule1?: boolean,
   isRule2?: boolean,
-  rule1Value?: any,
+  rule1Value?: IRule1Value,
   rule2Value?: any,
   totalFees?: number,
 }

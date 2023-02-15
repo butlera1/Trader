@@ -206,8 +206,7 @@ function checkRule1Exit(liveTrade: ITradeSettings, currentSample: IPrice) {
     const initialTime = liveTrade.monitoredPrices[0] ? dayjs(liveTrade.monitoredPrices[0].whenNY) : dayjs();
     const latestTime = liveTrade.monitoredPrices[liveTrade.monitoredPrices.length - 1] ? dayjs(liveTrade.monitoredPrices[liveTrade.monitoredPrices.length - 1].whenNY) : dayjs();
     const duration = latestTime.diff(initialTime, 'minute', true);
-    const absCurrentPrice = Math.abs(currentSample.price);
-    let isGainLimit = (absCurrentPrice <= (liveTrade.gainLimit * liveTrade.rule1Value.profitPercentage));
+    let isGainLimit = (currentSample.price > (liveTrade.gainLimit * liveTrade.rule1Value.profitPercent));
     return (duration > liveTrade.rule1Value.minutes) && (isGainLimit);
   }
   return false;
