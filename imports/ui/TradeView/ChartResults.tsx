@@ -5,6 +5,7 @@ import {useTracker} from 'meteor/react-meteor-data';
 import {Space} from 'antd';
 import ITradeSettings from '../../Interfaces/ITradeSettings';
 import dayjs from 'dayjs';
+import {CalculateTotalFees} from '../../Utils';
 
 interface ISumResults {
   description: string,
@@ -39,24 +40,25 @@ function ChartResults({records}: { records: ITradeSettings[] }) {
 
   records.reduce((sum, record) => {
     const description = getDescription(record);
-    sum = sum + record.gainLoss;
+    const actualGainLoss = record.gainLoss - CalculateTotalFees(record);
+    sum = sum + actualGainLoss;
     sumResults.push({
       description,
       whenClosed: record.whenClosed,
       sum,
-      gainLoss: record.gainLoss,
+      gainLoss: actualGainLoss,
     });
-    if (record.gainLoss >= 0.0) {
+    if (actualGainLoss >= 0.0) {
       wins++;
-      avgWinTmp += record.gainLoss;
-      if (record.gainLoss > maxWin) {
-        maxWin = record.gainLoss;
+      avgWinTmp += actualGainLoss;
+      if (actualGainLoss > maxWin) {
+        maxWin = actualGainLoss;
       }
     } else {
       losses++;
-      avgLossTmp += record.gainLoss;
-      if (record.gainLoss < maxLoss) {
-        maxLoss = record.gainLoss;
+      avgLossTmp += actualGainLoss;
+      if (actualGainLoss < maxLoss) {
+        maxLoss = actualGainLoss;
       }
     }
     avgDuration += getTradeDurationMinutes(record);
