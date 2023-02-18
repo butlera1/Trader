@@ -4,7 +4,7 @@ import './collections/straddleData';
 import {
   DeleteUserTradeSettingsRecord,
   GetAllUserTradeSettings,
-  GetNewUserTradeSettingsRecord,
+  GetNewUserTradeSettingsRecord, GetTradeSettingNames,
   GetUserTradeSettings,
   SetUserTradeSettings,
   TradeSettings
@@ -69,6 +69,7 @@ Meteor.methods({
   SaveUserSettings,
   SetUserTradeSettings,
   GetUserTradeSettings,
+  GetTradeSettingNames,
   GetAllUserTradeSettings,
   GetNewUserTradeSettingsRecord,
   DeleteUserTradeSettingsRecord,

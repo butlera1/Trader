@@ -50,6 +50,9 @@ export const TradeSettingsEditor = ({tradeSettings, changeCallback}: Props) => {
   const [isRule2, setIsRule2] = React.useState(tradeSettings.isRule2 ?? true);
   const [rule1Value, setRule1Value] = React.useState(tradeSettings.rule1Value ?? 0.0);
   const [rule2Value, setRule2Value] = React.useState(tradeSettings.rule2Value ?? 0.0);
+  const [name, setName] = React.useState(tradeSettings.name ?? '');
+  const [slope1Samples, setSlope1Samples] = React.useState(tradeSettings.slope1Samples ?? 0);
+  const [slope2Samples, setSlope2Samples] = React.useState(tradeSettings.slope2Samples ?? 0);
 
   const setMap = {
     isActive: setIsActive,
@@ -74,6 +77,9 @@ export const TradeSettingsEditor = ({tradeSettings, changeCallback}: Props) => {
     isRule2: setIsRule2,
     rule1Value: setRule1Value,
     rule2Value: setRule2Value,
+    name: setName,
+    slope1Samples: setSlope1Samples,
+    slope2Samples: setSlope2Samples,
   };
 
   useEffect(() => {
@@ -106,6 +112,9 @@ export const TradeSettingsEditor = ({tradeSettings, changeCallback}: Props) => {
         isRule2,
         rule1Value,
         rule2Value,
+        name,
+        slope1Samples: slope1Samples,
+        slope2Samples: slope2Samples,
       };
       strategy.description = GetDescription(strategy);
       const thereAreChanges = !_.isEmpty(diff(strategy, tradeSettings));
@@ -123,7 +132,7 @@ export const TradeSettingsEditor = ({tradeSettings, changeCallback}: Props) => {
     }, 1000);
   }, [isActive, isMocked, symbol, days, entryHour, entryMinute, exitHour, exitMinute, percentGain,
     percentLoss, quantity, commissionPerContract, legs, tradeType, isRepeat, useShortOnlyForLimits,
-    isRule1, isRule2, rule1Value, rule2Value]);
+    isRule1, isRule2, rule1Value, rule2Value, name, slope1Samples, slope2Samples]);
 
   const RunNow = () => {
     return (
@@ -192,6 +201,19 @@ export const TradeSettingsEditor = ({tradeSettings, changeCallback}: Props) => {
           />
           : null
         }
+      </Row>
+      <Row style={{margin: generalMargins}}>
+        <Col>
+          <label htmlFor="name">Name:</label>
+          <input
+            type="text"
+            defaultValue={name}
+            placeholder="None"
+            name="name"
+            style={{marginLeft: 10}}
+            onChange={(e) => onChange('name', e.target.value)}
+          />
+        </Col>
       </Row>
       <Row style={{margin: generalMargins, marginTop: 20}}>
         <Col span={6}>
@@ -269,6 +291,30 @@ export const TradeSettingsEditor = ({tradeSettings, changeCallback}: Props) => {
                 onChange('exitAmPm', value.hour() < 11 ? 'am' : 'pm');
               }
               }
+            />
+          </Space>
+        </Col>
+      </Row>
+      <Row style={{margin: generalMargins}}>
+        <Col>
+          <Space>
+            <span>Slope1 Samples:</span>
+            <InputNumber
+              min={0}
+              step="1"
+              defaultValue={slope1Samples}
+              max={100}
+              style={{width: '80px'}}
+              onChange={(value) => onChange('slope1Samples', value}
+            />
+            <span style={{marginLeft: 50}}>Slope2 Samples:</span>
+            <InputNumber
+              min={0}
+              step="1"
+              defaultValue={slope2Samples}
+              max={100}
+              style={{width: '80px'}}
+              onChange={(value) => onChange('slope2Samples', value)}
             />
           </Space>
         </Col>

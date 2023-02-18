@@ -4,7 +4,7 @@ import {Meteor} from 'meteor/meteor';
 // @ts-ignore
 import {useTracker} from 'meteor/react-meteor-data';
 import Trades from '../../Collections/Trades';
-import ITradeSettings, {GetDescription} from '../../Interfaces/ITradeSettings';
+import ITradeSettings, {GetDescription, IPrice} from '../../Interfaces/ITradeSettings';
 import {ColumnsType} from 'antd/lib/table';
 import {Space, Table} from 'antd';
 import EmergencyCloseActiveTrades from '../EmergencyCloseActiveTrades';
@@ -15,6 +15,21 @@ import dayjs from 'dayjs';
 import duration from 'dayjs/plugin/duration';
 
 dayjs.extend(duration);
+
+function calculateUnderlyingPriceAverageSlope(samples: number, monitoredPrices: IPrice[]) {
+  let underlyingSlope = 0;
+  if (monitoredPrices?.length > samples * 2) {
+    const average = (array: IPrice[]) => array.reduce((a, b) => a + b.underlyingPrice, 0) / array.length;
+    let start = monitoredPrices.length - (samples * 2) - 1;
+    let end = monitoredPrices.length - samples - 1;
+    const average1 = average(monitoredPrices.slice(start, end));
+    start = monitoredPrices.length - samples - 1;
+    end = monitoredPrices.length - 1;
+    const average2 = average(monitoredPrices.slice(start, end));
+    underlyingSlope = (average2 - average1); // (y2-y1/x2-x1)
+  }
+  return underlyingSlope;
+}
 
 function calculateGainLossAndPriceDiff(record: ITradeSettings) {
   let gainLoss = 0;
@@ -46,6 +61,7 @@ const columns: ColumnsType<ITradeSettings> = [
     dataIndex: 'openingPrice',
     key: 'openingPrice',
     align: 'right',
+    width: 70,
     render: (_, record) => record.openingPrice.toFixed(2)
   },
   {
@@ -53,6 +69,7 @@ const columns: ColumnsType<ITradeSettings> = [
     dataIndex: 'currentPrice',
     key: 'currentPrice',
     align: 'right',
+    width: 70,
     render: (_, {monitoredPrices}) => {
       if (monitoredPrices?.length > 0) {
         return monitoredPrices[monitoredPrices.length - 1].price.toFixed(2);
@@ -66,6 +83,7 @@ const columns: ColumnsType<ITradeSettings> = [
     dataIndex: 'monitoredPrices',
     key: 'UOpen',
     align: 'right',
+    width: 80,
     render: monitoredPrices => monitoredPrices.length > 0 ? monitoredPrices[0]?.underlyingPrice.toFixed(2) ?? 0 : 0,
   },
   {
@@ -73,6 +91,7 @@ const columns: ColumnsType<ITradeSettings> = [
     dataIndex: 'monitoredPrices',
     key: 'UPrice',
     align: 'right',
+    width: 80,
     render: (monitoredPrices, record) => {
       let openUnderyingPrice = 0;
       let priceDiff = '0';
@@ -89,18 +108,18 @@ const columns: ColumnsType<ITradeSettings> = [
     },
   },
   {
-    title: 'G/L $',
-    key: 'gainLoss',
-    dataIndex: 'gainLoss',
-    align: 'right',
-    render: (_, record) => {
-      const {gainLoss, priceDiff} = calculateGainLossAndPriceDiff(record);
-      let color = (gainLoss < 0) ? 'red' : 'green';
-      const gainLossStr = gainLoss.toFixed(2);
+    title: 'USlope1',
+    dataIndex: 'monitoredPrices',
+    key: 'USlope1',
+    align: 'center',
+    width: 100,
+    render: (monitoredPrices: IPrice[], record) => {
+        const underlyingSlope1 = calculateUnderlyingPriceAverageSlope(record.slope1Samples, monitoredPrices);
+        const underlyingSlope2 = calculateUnderlyingPriceAverageSlope(record.slope2Samples, monitoredPrices);
       return (
         <Space direction={'vertical'}>
-          <span key={1} style={{color: color}}>{`${gainLossStr}`}</span>
-          <span key={2} style={{color: color}}>{`(${priceDiff})`}</span>
+          <span key={'slope1'}>S1: {underlyingSlope1.toFixed(2)}</span>
+          <span key={'slope1'}>S2: {underlyingSlope2.toFixed(2)}</span>
         </Space>
       );
     },
@@ -110,6 +129,7 @@ const columns: ColumnsType<ITradeSettings> = [
     key: 'SStrad $',
     dataIndex: 'monitoredPrices',
     align: 'center',
+    width: 80,
     render: (_, {monitoredPrices}) => {
       if (monitoredPrices?.length > 0) {
         return monitoredPrices[monitoredPrices.length - 1].shortStraddlePrice?.toFixed(2);
@@ -122,6 +142,7 @@ const columns: ColumnsType<ITradeSettings> = [
     key: 'LStrad $',
     dataIndex: 'monitoredPrices',
     align: 'center',
+    width: 80,
     render: (_, {monitoredPrices}) => {
       if (monitoredPrices?.length > 0) {
         return monitoredPrices[monitoredPrices.length - 1].longStraddlePrice?.toFixed(2);
@@ -130,44 +151,29 @@ const columns: ColumnsType<ITradeSettings> = [
     },
   },
   {
-    title: 'Fees $',
-    key: 'Fees',
-    dataIndex: 'totalFees',
-    align: 'center',
-    render: (totalFees) => <span key={1} style={{color: 'red'}}>{`${(totalFees ?? 0).toFixed(2)}`}</span>,
-  },
-  {
     title: 'G/L-Fees $',
     key: 'gainLimitMinusFees',
     dataIndex: 'gainLimit',
     align: 'center',
+    width: 170,
     render: (_, record) => {
       let {gainLoss, priceDiff} = calculateGainLossAndPriceDiff(record);
-      gainLoss = gainLoss - (record.totalFees ?? 0);
-      let color = (gainLoss < 0) ? 'red' : 'green';
-      const gainLossStr = gainLoss.toFixed(2);
-      return (<span key={1} style={{color: color}}>{`${gainLossStr}`}</span>);
+      const resultGainLoss = gainLoss - (record.totalFees ?? 0);
+      let color = (resultGainLoss < 0) ? 'red' : 'green';
+      const gainLossStr = `${gainLoss.toFixed(2)} - ${record.totalFees.toFixed(0)} = ${resultGainLoss.toFixed(2)}`;
+      return (
+        <Space direction={'vertical'}>
+          <span key={1} style={{color: color}}>{`${gainLossStr}`}</span>
+          <span key={2} style={{color: color}}>{`(${priceDiff})`}</span>
+        </Space>
+      );
     },
-  },
-  {
-    title: 'GainLimit $',
-    key: 'gainLimit',
-    dataIndex: 'gainLimit',
-    align: 'center',
-    render: (gainLimit) => gainLimit.toFixed(2),
-  },
-  {
-    title: 'LossLimit $',
-    key: 'lossLimit',
-    dataIndex: 'lossLimit',
-    align: 'center',
-    render: (limit) => limit.toFixed(2),
   },
   {
     title: 'Gain/time',
     key: 'Gain/time',
     dataIndex: 'monitoredPrices',
-    align: 'center',
+    align: 'left',
     render: (monitoredPrices, record) => <GraphTrade liveTrade={record}/>,
   },
 ];

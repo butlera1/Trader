@@ -36,6 +36,7 @@ const BadDefaultIPrice = {
 
 interface ITradeSettings {
   _id?: string,
+  name?: string,
   userId?: string;
   accountNumber?: string;
   userName?: string;
@@ -80,6 +81,8 @@ interface ITradeSettings {
   rule1Value?: IRule1Value,
   rule2Value?: any,
   totalFees?: number,
+  slope1Samples?: number,
+  slope2Samples?: number,
 }
 
 const DefaultIronCondorLegsSettings = [
@@ -168,6 +171,7 @@ function GetDescription(tradeSettings: ITradeSettings) {
   if (type === 'CS') {
     type = `${type}(${getTwoDTEValues(tradeSettings.legs)})`;
   }
+  const part0 = tradeSettings.name ? `${tradeSettings.name}: \n` : '';
   const part1 = `${tradeSettings.symbol}(${tradeSettings.quantity}) ${type}`;
   const part2 = `${tradeSettings.entryHour}:${tradeSettings.entryMinute}-${tradeSettings.exitHour}:${tradeSettings.exitMinute}`;
   const part3 = `${(tradeSettings.percentGain * 100).toFixed(1)}/${(tradeSettings.percentLoss * 100).toFixed(1)} %`;
@@ -176,7 +180,7 @@ function GetDescription(tradeSettings: ITradeSettings) {
     const regex = new RegExp(`${tradeSettings.symbol}_......`, 'g');
     part4 = `\n${tradeSettings.csvSymbols.replace(regex, '').replace('VIX', '')}`;
   }
-  return `${part1}\n${part2}\n${part3}${part4}`;
+  return `${part0}${part1}\n${part2}\n${part3}${part4}`;
 }
 
 

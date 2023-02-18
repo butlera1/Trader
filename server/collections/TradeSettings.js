@@ -27,6 +27,13 @@ function GetUserTradeSettings(tradeSettingId) {
   throw new Meteor.Error('Must have valid user for GetUserTradeSettings.');
 }
 
+function GetTradeSettingNames() {
+  if (Meteor.userId()) {
+    return TradeSettings.find({userId: Meteor.userId()}, {fields: {name: 1}}).fetch().map(record => record.name);
+  }
+  throw new Meteor.Error('Must have valid user for GetTradeSettingNames.');
+}
+
 function GetNewUserTradeSettingsRecord() {
   if (!Meteor.userId()) {
     throw new Meteor.Error('Must have valid user for this GetNewUserTradeSettingsRecord.');
@@ -68,5 +75,6 @@ export {
   SetUserTradeSettings,
   GetNewUserTradeSettingsRecord,
   GetUserTradeSettings,
-  DeleteUserTradeSettingsRecord
+  DeleteUserTradeSettingsRecord,
+  GetTradeSettingNames,
 };
