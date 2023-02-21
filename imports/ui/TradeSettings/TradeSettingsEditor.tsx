@@ -53,6 +53,8 @@ export const TradeSettingsEditor = ({tradeSettings, changeCallback}: Props) => {
   const [name, setName] = React.useState(tradeSettings.name ?? '');
   const [slope1Samples, setSlope1Samples] = React.useState(tradeSettings.slope1Samples ?? 0);
   const [slope2Samples, setSlope2Samples] = React.useState(tradeSettings.slope2Samples ?? 0);
+  const [percentGainIsDollar, setPercentGainIsDollar] = React.useState(tradeSettings.percentGainIsDollar ?? false);
+  const [percentLossIsDollar, setPercentLossIsDollar] = React.useState(tradeSettings.percentLossIsDollar ?? false);
 
   const setMap = {
     isActive: setIsActive,
@@ -80,6 +82,8 @@ export const TradeSettingsEditor = ({tradeSettings, changeCallback}: Props) => {
     name: setName,
     slope1Samples: setSlope1Samples,
     slope2Samples: setSlope2Samples,
+    percentGainIsDollar: setPercentGainIsDollar,
+    percentLossIsDollar: setPercentLossIsDollar,
   };
 
   useEffect(() => {
@@ -115,6 +119,8 @@ export const TradeSettingsEditor = ({tradeSettings, changeCallback}: Props) => {
         name,
         slope1Samples: slope1Samples,
         slope2Samples: slope2Samples,
+        percentGainIsDollar: percentGainIsDollar,
+        percentLossIsDollar: percentLossIsDollar,
       };
       strategy.description = GetDescription(strategy);
       const thereAreChanges = !_.isEmpty(diff(strategy, tradeSettings));
@@ -132,7 +138,7 @@ export const TradeSettingsEditor = ({tradeSettings, changeCallback}: Props) => {
     }, 1000);
   }, [isActive, isMocked, symbol, days, entryHour, entryMinute, exitHour, exitMinute, percentGain,
     percentLoss, quantity, commissionPerContract, legs, tradeType, isRepeat, useShortOnlyForLimits,
-    isRule1, isRule2, rule1Value, rule2Value, name, slope1Samples, slope2Samples]);
+    isRule1, isRule2, rule1Value, rule2Value, name, slope1Samples, slope2Samples, percentGainIsDollar, percentLossIsDollar]);
 
   const RunNow = () => {
     return (
@@ -323,26 +329,33 @@ export const TradeSettingsEditor = ({tradeSettings, changeCallback}: Props) => {
       <Row style={{margin: generalMargins}}>
         <Col>
           <Space>
-            <span>Percent Gain:</span>
+            <span>Gain:</span>
             <InputNumber
               min={0}
-              step="0.1"
+              step="0.01"
               defaultValue={Math.trunc(percentGain * 100)}
-              max={100}
-              addonAfter={'%'}
-              style={{width: '100px'}}
+              max={1000}
+              style={{width: '80px'}}
               onChange={(value) => onChange('percentGain', (value) / 100)}
             />
-            <span style={{marginLeft: 50}}>Percent Loss:</span>
+            <Select defaultValue={percentGainIsDollar} style={{width: 60}} onChange={(value) => onChange('percentGainIsDollar', value)}>
+              <Select.Option value={false}>%</Select.Option>
+              <Select.Option value={true}>$</Select.Option>
+            </Select>
+
+            <span style={{marginLeft: 50}}>Loss:</span>
             <InputNumber
               min={0}
-              step="0.1"
-              max={400}
+              step="0.01"
+              max={1000}
               defaultValue={Math.trunc(percentLoss * 100)}
-              addonAfter={'%'}
-              style={{width: '100px'}}
+              style={{width: '80px'}}
               onChange={(value) => onChange('percentLoss', (value) / 100)}
             />
+            <Select defaultValue={percentLossIsDollar} style={{width: 60}} onChange={(value) => onChange('percentLossIsDollar', value)}>
+              <Select.Option value={false}>%</Select.Option>
+              <Select.Option value={true}>$</Select.Option>
+            </Select>
           </Space>
         </Col>
       </Row>

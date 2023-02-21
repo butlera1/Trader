@@ -24,7 +24,7 @@ function GraphTrade({liveTrade}: { liveTrade: ITradeSettings }) {
 
   let gainLine = calculateGainGraphLine(liveTrade, liveTrade.gainLimit);
   let lossLine = calculateGainGraphLine(liveTrade, liveTrade.lossLimit);
-  const monitoredPrices = liveTrade.monitoredPrices;
+  const monitoredPrices = liveTrade.monitoredPrices || [];
   const initialUnderlyingPrice = monitoredPrices[0]?.underlyingPrice ?? 0;
   const initialLongStraddlePrice = Math.abs(monitoredPrices[0]?.longStraddlePrice ?? 0);
   let initialShortStraddlePrice = Math.abs(monitoredPrices[0]?.shortStraddlePrice ?? 0);
@@ -58,6 +58,10 @@ function GraphTrade({liveTrade}: { liveTrade: ITradeSettings }) {
       <Line type="monotone" dataKey={() => gainLine} name={'Max Gain'} stroke="cyan" dot={false}
             isAnimationActive={false}/>
       <Line type="monotone" dataKey={() => lossLine} name={'Max Loss'} stroke="cyan" dot={false}
+            isAnimationActive={false}/>
+      <Line type="monotone" dataKey={(price) => price.slope1 * 200 + gainLine} name={'slope1'} stroke="red" dot={false}
+            isAnimationActive={false}/>
+      <Line type="monotone" dataKey={(price) => price.slope2 * 200 + gainLine} name={'slope2'} stroke="grey" dot={false}
             isAnimationActive={false}/>
     </LineChart>
   );

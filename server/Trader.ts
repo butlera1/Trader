@@ -25,7 +25,7 @@ import _ from 'lodash';
 import {LogData} from './collections/Logs';
 import {SendTextToAdmin} from './SendOutInfo';
 import mutexify from 'mutexify/promise';
-import {CalculateGain, CalculateLimitsAndFees} from '../imports/Utils';
+import {CalculateGain, CalculateLimitsAndFees, CalculateUnderlyingPriceAverageSlope} from '../imports/Utils';
 
 const lock = mutexify();
 
@@ -241,6 +241,8 @@ function MonitorTradeToCloseItOut(liveTrade: ITradeSettings) {
         return; // Try again on next interval timeout.
       }
       currentSamplePrice.gain = CalculateGain(liveTrade, currentSamplePrice.price);
+      currentSamplePrice.slope1 = CalculateUnderlyingPriceAverageSlope(liveTrade.slope1Samples, liveTrade.monitoredPrices);
+      currentSamplePrice.slope2 = CalculateUnderlyingPriceAverageSlope(liveTrade.slope2Samples, liveTrade.monitoredPrices);
       // Record price value for historical reference and charting.
       Trades.update(liveTrade._id, {$addToSet: {monitoredPrices: currentSamplePrice}});
       liveTrade.monitoredPrices.push(currentSamplePrice); // Update the local copy.
@@ -394,11 +396,8 @@ async function PlaceOpeningOrderAndMonitorToClose(tradeSettings: ITradeSettings)
       .catch(() => {
         return {orderPrice: 0, shortOnlyPrice: 0};
       });
-    // @ts-ignore
     if (priceResults?.orderPrice) {
-      // @ts-ignore
       tradeSettings.openingPrice = priceResults.orderPrice;
-      // @ts-ignore
       tradeSettings.openingShortOnlyPrice = priceResults.shortOnlyPrice;
     }
   }

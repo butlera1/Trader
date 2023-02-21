@@ -20,6 +20,8 @@ interface IPrice {
   longStraddlePrice?: number,
   extrinsicShort?: number,
   extrinsicLong?: number,
+  slope1?: number,
+  slope2?: number,
 }
 
 const BadDefaultIPrice = {
@@ -44,6 +46,8 @@ interface ITradeSettings {
   isActive: boolean,
   isMocked: boolean,
   percentGain: number,
+  percentGainIsDollar?: boolean,
+  percentLossIsDollar?: boolean,
   percentLoss: number,
   entryHour: number,
   entryMinute: number,

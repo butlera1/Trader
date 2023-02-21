@@ -16,21 +16,6 @@ import duration from 'dayjs/plugin/duration';
 
 dayjs.extend(duration);
 
-function calculateUnderlyingPriceAverageSlope(samples: number, monitoredPrices: IPrice[]) {
-  let underlyingSlope = 0;
-  if (monitoredPrices?.length > samples * 2) {
-    const average = (array: IPrice[]) => array.reduce((a, b) => a + b.underlyingPrice, 0) / array.length;
-    let start = monitoredPrices.length - (samples * 2) - 1;
-    let end = monitoredPrices.length - samples - 1;
-    const average1 = average(monitoredPrices.slice(start, end));
-    start = monitoredPrices.length - samples - 1;
-    end = monitoredPrices.length - 1;
-    const average2 = average(monitoredPrices.slice(start, end));
-    underlyingSlope = (average2 - average1); // (y2-y1/x2-x1)
-  }
-  return underlyingSlope;
-}
-
 function calculateGainLossAndPriceDiff(record: ITradeSettings) {
   let gainLoss = 0;
   const monitoredPrices = record.monitoredPrices;
@@ -93,15 +78,15 @@ const columns: ColumnsType<ITradeSettings> = [
     align: 'right',
     width: 80,
     render: (monitoredPrices, record) => {
-      let openUnderyingPrice = 0;
+      let currentUnderlyingPrice = 0;
       let priceDiff = '0';
       if (monitoredPrices?.length > 0) {
-        openUnderyingPrice = (monitoredPrices[monitoredPrices.length - 1].underlyingPrice);
-        priceDiff = (monitoredPrices[0].underlyingPrice - openUnderyingPrice).toFixed(3);
+        currentUnderlyingPrice = (monitoredPrices[monitoredPrices.length - 1].underlyingPrice);
+        priceDiff = (monitoredPrices[0].underlyingPrice - currentUnderlyingPrice).toFixed(3);
       }
       return (
         <Space direction={'vertical'}>
-          <span key={1}>{openUnderyingPrice.toFixed(2)}</span>
+          <span key={1}>{currentUnderlyingPrice.toFixed(2)}</span>
           <span key={2}>{`(${priceDiff})`}</span>
         </Space>
       );
@@ -113,13 +98,11 @@ const columns: ColumnsType<ITradeSettings> = [
     key: 'USlope1',
     align: 'center',
     width: 100,
-    render: (monitoredPrices: IPrice[], record) => {
-        const underlyingSlope1 = calculateUnderlyingPriceAverageSlope(record.slope1Samples, monitoredPrices);
-        const underlyingSlope2 = calculateUnderlyingPriceAverageSlope(record.slope2Samples, monitoredPrices);
+    render: (monitoredPrices: IPrice[], record, index) => {
       return (
         <Space direction={'vertical'}>
-          <span key={'slope1'}>S1: {underlyingSlope1.toFixed(2)}</span>
-          <span key={'slope1'}>S2: {underlyingSlope2.toFixed(2)}</span>
+          <span key={'slope1'}>S1: {(monitoredPrices[index]?.slope1 ?? 0).toFixed(2)}</span>
+          <span key={'slope2'}>S2: {(monitoredPrices[index]?.slope2 ?? 0).toFixed(2)}</span>
         </Space>
       );
     },

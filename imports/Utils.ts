@@ -1,4 +1,4 @@
-import ITradeSettings from './Interfaces/ITradeSettings';
+import ITradeSettings, {IPrice} from './Interfaces/ITradeSettings';
 
 function CalculateTotalFees(tradeSettings) {
   if (tradeSettings.totalFees) return tradeSettings.totalFees;
@@ -33,14 +33,46 @@ function CalculateLimitsAndFees(tradeSettings: ITradeSettings) {
       openingPrice = -Math.abs(tradeSettings.openingShortOnlyPrice);
     }
   }
+
   // If long entry, the openingPrice is positive (debit) and negative if short (credit).
   if (openingPrice > 0) {
-    tradeSettings.gainLimit = Math.abs(tradeSettings.openingPrice + openingPrice * percentGain);
-    tradeSettings.lossLimit = Math.abs(tradeSettings.openingPrice - openingPrice * percentLoss);
+    if (tradeSettings.percentGainIsDollar) {
+      tradeSettings.gainLimit = Math.abs(tradeSettings.openingPrice + (percentGain * 100));
+    } else {
+      tradeSettings.gainLimit = Math.abs(tradeSettings.openingPrice + openingPrice * percentGain);
+    }
+    if (tradeSettings.percentLossIsDollar) {
+      tradeSettings.lossLimit = Math.abs(tradeSettings.openingPrice - (percentLoss * 100));
+    } else {
+      tradeSettings.lossLimit = Math.abs(tradeSettings.openingPrice - openingPrice * percentLoss);
+    }
   } else {
-    tradeSettings.gainLimit = Math.abs(tradeSettings.openingPrice - openingPrice * percentGain);
-    tradeSettings.lossLimit = Math.abs(tradeSettings.openingPrice + openingPrice * percentLoss);
+    if (tradeSettings.percentGainIsDollar) {
+      tradeSettings.gainLimit = Math.abs(tradeSettings.openingPrice - (percentGain * 100));
+    } else {
+      tradeSettings.gainLimit = Math.abs(tradeSettings.openingPrice - openingPrice * percentGain);
+    }
+    if (tradeSettings.percentLossIsDollar) {
+      tradeSettings.lossLimit = Math.abs(tradeSettings.openingPrice + (percentLoss * 100));
+    } else {
+      tradeSettings.lossLimit = Math.abs(tradeSettings.openingPrice + openingPrice * percentLoss);
+    }
   }
 }
 
-export {CalculateGain, CalculateTotalFees, CalculateLimitsAndFees};
+function CalculateUnderlyingPriceAverageSlope(samples: number, monitoredPrices: IPrice[]) {
+  let underlyingSlope = 0;
+  if (monitoredPrices?.length > samples * 2) {
+    const average = (array: IPrice[]) => array.reduce((a, b) => a + b.underlyingPrice, 0) / array.length;
+    let start = monitoredPrices.length - (samples * 2) - 1;
+    let end = monitoredPrices.length - samples - 1;
+    const average1 = average(monitoredPrices.slice(start, end));
+    start = monitoredPrices.length - samples - 1;
+    end = monitoredPrices.length - 1;
+    const average2 = average(monitoredPrices.slice(start, end));
+    underlyingSlope = (average2 - average1); // (y2-y1/x2-x1)
+  }
+  return underlyingSlope;
+}
+
+export {CalculateGain, CalculateTotalFees, CalculateLimitsAndFees, CalculateUnderlyingPriceAverageSlope};
