@@ -98,6 +98,42 @@ const columns: ColumnsType<ITradeSettings> = [
     render: why => why?.slice(0, 10),
   },
   {
+    title: 'SStrad $',
+    key: 'SStrad $',
+    dataIndex: 'monitoredPrices',
+    align: 'center',
+    width: 80,
+    render: (_, {monitoredPrices}) => {
+      if (monitoredPrices?.length > 0) {
+        return (
+          <Space direction={'vertical'}>
+            <span key={'up1'}>Open: {monitoredPrices[0].shortStraddlePrice?.toFixed(2)}</span>
+            <span key={'up2'}>Closed: {monitoredPrices[monitoredPrices.length - 1].shortStraddlePrice?.toFixed(2)}</span>
+          </Space>
+        );
+      }
+      return 0;
+    },
+  },
+  {
+    title: 'LStrad $',
+    key: 'LStrad $',
+    dataIndex: 'monitoredPrices',
+    align: 'center',
+    width: 80,
+    render: (_, {monitoredPrices}) => {
+      if (monitoredPrices?.length > 0) {
+        return (
+          <Space direction={'vertical'}>
+            <span key={'up1'}>Open: {monitoredPrices[0].longStraddlePrice?.toFixed(2)}</span>
+            <span key={'up2'}>Closed: {monitoredPrices[monitoredPrices.length - 1].longStraddlePrice?.toFixed(2)}</span>
+          </Space>
+        );
+      }
+      return 0;
+    },
+  },
+  {
     title: 'Fees',
     key: 'Fees',
     dataIndex: 'totalFees',
