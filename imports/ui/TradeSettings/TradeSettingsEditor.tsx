@@ -333,7 +333,7 @@ export const TradeSettingsEditor = ({tradeSettings, changeCallback}: Props) => {
             <InputNumber
               min={0}
               step="0.01"
-              defaultValue={Math.trunc(percentGain * 100)}
+              defaultValue={Math.round(percentGain * 100000)/1000}
               max={1000}
               style={{width: '80px'}}
               onChange={(value) => onChange('percentGain', (value) / 100)}
@@ -348,7 +348,7 @@ export const TradeSettingsEditor = ({tradeSettings, changeCallback}: Props) => {
               min={0}
               step="0.01"
               max={1000}
-              defaultValue={Math.trunc(percentLoss * 100)}
+              defaultValue={Math.round(percentLoss * 100000)/1000}
               style={{width: '80px'}}
               onChange={(value) => onChange('percentLoss', (value) / 100)}
             />
