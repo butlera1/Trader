@@ -26,6 +26,13 @@ import {LogData} from './collections/Logs';
 import {SendTextToAdmin} from './SendOutInfo';
 import mutexify from 'mutexify/promise';
 import {CalculateGain, CalculateLimitsAndFees, CalculateUnderlyingPriceAverageSlope} from '../imports/Utils';
+import {
+  AddEquitiesToStream,
+  AddOptionsToStream,
+  GetStreamingPrice,
+  IsStreamingQuotes,
+  PrepareStreaming
+} from './TDAApi/StreamEquities';
 
 const lock = mutexify();
 
@@ -79,6 +86,11 @@ async function GetOptionsPriceLoop(tradeSettings: ITradeSettings): Promise<IPric
       result = null;
       const release = await lock();
       result = await GetPriceForOptions(tradeSettings);
+      // if (IsStreamingQuotes()) {
+      //   result = GetStreamingPrice(tradeSettings);
+      // } else {
+      //   result = await GetPriceForOptions(tradeSettings);
+      // }
       setTimeout(() => {
         release();
       }, 1000);
@@ -441,6 +453,8 @@ async function ExecuteTrade(tradeSettings: ITradeSettings, forceTheTrade = false
       // The trade orders are assigned to the tradeSettings object.
       const ordersReady = CreateOpenAndCloseOrders(chains, tradeSettings);
       if (ordersReady) {
+        AddOptionsToStream(tradeSettings.csvSymbols);
+        AddEquitiesToStream(tradeSettings.symbol);
         await PlaceOpeningOrderAndMonitorToClose(tradeSettings);
       }
     } catch (ex) {
@@ -494,6 +508,8 @@ async function QueueUsersTradesForTheDay(user) {
     return;
   }
   LogData(null, `Market is open today so queueing ${user.username}'s trades.`);
+  await PrepareStreaming().then(r => {
+  });
   const accountNumber = UserSettings.findOne(user._id)?.accountNumber;
   if (!accountNumber || accountNumber === 'None') {
     LogData(null, `User ${user.username} has no account number so skipping this user.`, null);

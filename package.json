@@ -27,7 +27,8 @@
     "react-dom": "^17.0.2",
     "recharts": "^2.1.16",
     "sib-api-v3-sdk": "^8.4.2",
-    "twilio": "^3.83.1"
+    "twilio": "^3.83.1",
+    "ws": "^8.12.1"
   },
   "meteor": {
     "mainModule": {
@@ -35,5 +36,9 @@
       "server": "server/main.js"
     },
     "testModule": "tests/main.js"
+  },
+  "optionalDependencies": {
+    "bufferutil": "^4.0.7",
+    "utf-8-validate": "^6.0.2"
   }
 }

@@ -10,6 +10,7 @@ import {BuySell, OptionType} from '../../imports/Interfaces/ILegSettings';
 import {LogData} from '../collections/Logs';
 import {IronCondorMarketOrder} from './Templates/SellIronCondorOrder';
 import {BadDefaultIPrice} from '../../imports/Interfaces/ITradeSettings';
+import CalculateOptionsPricings from '../CalculateOptionsPricing';
 
 const clientId = '8MXX4ODNOEKHOU0COANPEZIETKPXJRQZ@AMER.OAUTHAP';
 const redirectUrl = 'https://localhost/traderOAuthCallback';
@@ -164,6 +165,29 @@ export async function GetAccessToken(userId) {
   return result;
 }
 
+export async function GetUserPrinciples(userId) {
+  try {
+    const token = await GetAccessToken(userId ?? Meteor.userId());
+    if (!token) return null;
+    const url = `https://api.tdameritrade.com/v1/userprincipals/?fields=streamerSubscriptionKeys,streamerConnectionInfo`;
+    const options = {
+      method: 'GET',
+      headers: {
+        Authorization: `Bearer ${token}`,
+      }
+    };
+    const response = await fetch(url, options);
+    if (response.status !== 200) {
+      LogData(null, `TDAApi.GetUserPrinciples fetch returned: userId:${userId}, ${response.status} ${response}.`);
+      return null;
+    }
+    const results = await response.json();
+    return results;
+  } catch (error) {
+    LogData(null, `TDAApi.GetUserPrinciples: userId:${userId}.`, error);
+  }
+}
+
 
 export async function GetOrders(userId, accountNumber = '755541528', orderId) {
   try {
@@ -230,7 +254,7 @@ export async function GetPriceForOptions(tradeSettings) {
       return {...BadDefaultIPrice};
     }
     // Now scan the quotes and add/subtract up the price.
-    const result = {...BadDefaultIPrice, price: 0, whenNY: new Date()};
+    let result = {...BadDefaultIPrice, price: 0, whenNY: new Date()};
     // The quotes include the underlying stock price, so we need to manage that.
     quotes.forEach((quote) => {
       const leg = tradeSettings.legs.find((leg) => leg.option.symbol === quote.symbol);
@@ -240,24 +264,7 @@ export async function GetPriceForOptions(tradeSettings) {
         LogData(tradeSettings, msg, new Error(msg));
         return;
       }
-      result.underlyingPrice = quote.underlyingPrice;
-      if (quote.contractType === 'C') {// CALL
-        quote.intrinsic = Math.max(0, quote.underlyingPrice - quote.strikePrice);
-      } else {
-        quote.intrinsic = Math.max(0, quote.strikePrice - quote.underlyingPrice);
-      }
-      // Below does the opposite math because we have already Opened these options, so we are looking at
-      // "TO_CLOSE" pricing where we buy back something we sold and sell something we previously purchased.
-      if (leg.buySell === BuySell.BUY) {
-        result.price = result.price - quote.mark;
-        result.longStraddlePrice = result.longStraddlePrice - quote.mark;
-        result.extrinsicLong += quote.mark - quote.intrinsic;
-      } else {
-        // Sold options
-        result.price = result.price + quote.mark;
-        result.shortStraddlePrice = result.shortStraddlePrice + quote.mark;
-        result.extrinsicShort += quote.mark - quote.intrinsic;
-      }
+      result = CalculateOptionsPricings(result, leg, quote.mark);
     });
     return result;
   } catch (error) {

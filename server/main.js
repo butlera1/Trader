@@ -4,7 +4,8 @@ import './collections/straddleData';
 import {
   DeleteUserTradeSettingsRecord,
   GetAllUserTradeSettings,
-  GetNewUserTradeSettingsRecord, GetTradeSettingNames,
+  GetNewUserTradeSettingsRecord,
+  GetTradeSettingNames,
   GetUserTradeSettings,
   SetUserTradeSettings,
   TradeSettings
@@ -24,13 +25,18 @@ import {EmergencyCloseAllTrades, ExecuteTrade, MonitorTradeToCloseItOut, Perform
 import {WebApp} from 'meteor/webapp';
 import {Trades} from './collections/Trades';
 import {LogData} from './collections/Logs';
-import SchedulePerformTrades from './SchedulePerformTrades';
+import ScheduleStartOfDayWork from './ScheduleStartOfDayWork';
 import {AppSettings} from './collections/AppSettings';
 import Constants from '../imports/Constants';
 
 import dayjs from 'dayjs';
 import utc from 'dayjs/plugin/utc';
 import timezone from 'dayjs/plugin/timezone';
+
+import './TDAApi/StreamEquities';
+import {PrepareStreaming} from './TDAApi/StreamEquities';
+import ScheduleEndOfDayWork from './ScheduleEndOfDayWork';
+
 dayjs.extend(utc);
 dayjs.extend(timezone);
 
@@ -84,15 +90,21 @@ Meteor.methods({
 console.log(`Current local time is ${new Date()}.`);
 
 // Define the AppSettings record if not there already.
-const settings = AppSettings.findOne(Constants.appSettingsId);
-if (!settings) {
-  AppSettings.insert({
-    _id: 'AppSettings',
-    startHourNY: 9,
-    startMinuteNY: 20,
-  });
-}
+const settings = {
+  ...AppSettings.findOne(Constants.appSettingsId),
+  startHourNY: 9,
+  startMinuteNY: 25,
+  endOfDayHourNY: 16,
+  endOfDayMinuteNY: 15,
+};
+delete settings._id;
+AppSettings.upsert(Constants.appSettingsId, settings);
 
-SchedulePerformTrades();
+PrepareStreaming()
+  .then(r => console.log(`PrepareStreaming returned ${r}`))
+  .catch(e => console.log(`PrepareStreaming ERROR returned ${e}`));
+
+ScheduleStartOfDayWork();
+ScheduleEndOfDayWork();
 
 CheckForAnyExistingTradesAndMonitorThem();

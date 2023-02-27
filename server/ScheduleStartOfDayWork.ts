@@ -5,8 +5,9 @@ import {Meteor} from 'meteor/meteor';
 import {GetNewYorkTimeAt, PerformTradeForAllUsers} from './Trader';
 import {AppSettings} from './collections/AppSettings';
 import Constants from '../imports/Constants';
+import {PrepareStreaming} from './TDAApi/StreamEquities';
 
-function SchedulePerformTrades() {
+function ScheduleStartOfDayWork() {
   try {
     const settings = AppSettings.findOne(Constants.appSettingsId);
     let desiredTradeTime = GetNewYorkTimeAt(settings.startHourNY, settings.startMinuteNY);
@@ -22,8 +23,9 @@ function SchedulePerformTrades() {
     const timerHandle = Meteor.setTimeout(() => {
       try {
         Meteor.clearTimeout(timerHandle);
+        PrepareStreaming().catch((ex) => {});
         PerformTradeForAllUsers();
-        SchedulePerformTrades();
+        ScheduleStartOfDayWork();
       } catch (ex) {
         LogData(null, `Failed inside timeOut loop for 'Perform Trades For All Users' and 'SchedulePerformTrades'.`, ex);
       }
@@ -33,4 +35,4 @@ function SchedulePerformTrades() {
   }
 }
 
-export default SchedulePerformTrades;
+export default ScheduleStartOfDayWork;
