@@ -38,8 +38,8 @@ function GraphTrade({liveTrade}: { liveTrade: ITradeSettings }) {
 
   return (
     <LineChart
-      width={400}
-      height={300}
+      width={600}
+      height={400}
       data={monitoredPrices}
     >
       <CartesianGrid strokeDasharray="3 3"/>

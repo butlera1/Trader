@@ -8,7 +8,8 @@ import {
   GetOrders,
   GetPriceForOptions,
   IsOptionMarketOpenToday,
-  PlaceOrder
+  PlaceOrder,
+  WaitMs,
 } from './TDAApi/TDAApi.js';
 import {Users} from './collections/users';
 import dayjs, {Dayjs} from 'dayjs';
@@ -79,18 +80,17 @@ function GetNewYorkTimeNowAsText() {
 }
 
 async function GetOptionsPriceLoop(tradeSettings: ITradeSettings): Promise<IPrice> {
-  let result = {...BadDefaultIPrice};
+  let result: IPrice = {...BadDefaultIPrice};
   let count = 0;
   while (count < 3) {
     try {
       result = null;
       const release = await lock();
-      result = await GetPriceForOptions(tradeSettings);
-      // if (IsStreamingQuotes()) {
-      //   result = GetStreamingPrice(tradeSettings);
-      // } else {
-      //   result = await GetPriceForOptions(tradeSettings);
-      // }
+      if (IsStreamingQuotes()) {
+        result = GetStreamingPrice(tradeSettings);
+      } else {
+        result = await GetPriceForOptions(tradeSettings);
+      }
       setTimeout(() => {
         release();
       }, 1000);
@@ -253,11 +253,11 @@ function MonitorTradeToCloseItOut(liveTrade: ITradeSettings) {
         return; // Try again on next interval timeout.
       }
       currentSamplePrice.gain = CalculateGain(liveTrade, currentSamplePrice.price);
+      liveTrade.monitoredPrices.push(currentSamplePrice); // Update the local copy.
       currentSamplePrice.slope1 = CalculateUnderlyingPriceAverageSlope(liveTrade.slope1Samples, liveTrade.monitoredPrices);
       currentSamplePrice.slope2 = CalculateUnderlyingPriceAverageSlope(liveTrade.slope2Samples, liveTrade.monitoredPrices);
       // Record price value for historical reference and charting.
       Trades.update(liveTrade._id, {$addToSet: {monitoredPrices: currentSamplePrice}});
-      liveTrade.monitoredPrices.push(currentSamplePrice); // Update the local copy.
       const localNow = dayjs();
       const isEndOfDay = localEarlyExitTime.isBefore(localNow);
       const absCurrentPrice = Math.abs(currentSamplePrice.price);
@@ -402,6 +402,9 @@ async function PlaceOpeningOrderAndMonitorToClose(tradeSettings: ITradeSettings)
     tradeSettings.openingOrderId = Random.id() + '_MOCKED';
     // tradeSettings.openingPrice has already been estimated when orders were created.
     // tradeSettings.openingShortOnlyPrice has already been estimated when orders were created.
+
+    // Cause a delay to allow the streaming samples to come in before we start monitoring the trade.
+    await WaitMs(2000);
   } else {
     tradeSettings.openingOrderId = await PlaceOrder(tradeSettings.userId, tradeSettings.accountNumber, tradeSettings.openingOrder);
     const priceResults = await WaitForOrderCompleted(tradeSettings.userId, tradeSettings.accountNumber, tradeSettings.openingOrderId)

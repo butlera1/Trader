@@ -1,6 +1,7 @@
 import {Meteor} from 'meteor/meteor';
 import './collections/stockData';
 import './collections/straddleData';
+import './collections/StreamedData';
 import {
   DeleteUserTradeSettingsRecord,
   GetAllUserTradeSettings,
@@ -36,6 +37,7 @@ import timezone from 'dayjs/plugin/timezone';
 import './TDAApi/StreamEquities';
 import {PrepareStreaming} from './TDAApi/StreamEquities';
 import ScheduleEndOfDayWork from './ScheduleEndOfDayWork';
+import {StreamDataUpsert} from './collections/StreamedData';
 
 dayjs.extend(utc);
 dayjs.extend(timezone);
@@ -68,24 +70,26 @@ function CheckForAnyExistingTradesAndMonitorThem() {
 }
 
 Meteor.methods({
-  SetUserAccessInfo,
-  GetAccessToken,
-  GetOrders,
-  GetUserSettings,
-  SaveUserSettings,
-  SetUserTradeSettings,
-  GetUserTradeSettings,
-  GetTradeSettingNames,
-  GetAllUserTradeSettings,
-  GetNewUserTradeSettingsRecord,
-  DeleteUserTradeSettingsRecord,
-  BuyStock,
-  SellStraddle,
-  GetATMOptionChains,
-  PerformTradeForAllUsers,
-  TestStrategy,
-  EmergencyCloseAllTrades,
-});
+    SetUserAccessInfo,
+    GetAccessToken,
+    GetOrders,
+    GetUserSettings,
+    SaveUserSettings,
+    SetUserTradeSettings,
+    GetUserTradeSettings,
+    GetTradeSettingNames,
+    GetAllUserTradeSettings,
+    GetNewUserTradeSettingsRecord,
+    DeleteUserTradeSettingsRecord,
+    BuyStock,
+    SellStraddle,
+    GetATMOptionChains,
+    PerformTradeForAllUsers,
+    TestStrategy,
+    EmergencyCloseAllTrades,
+    StreamDataUpsert,
+  }
+);
 
 console.log(`Current local time is ${new Date()}.`);
 

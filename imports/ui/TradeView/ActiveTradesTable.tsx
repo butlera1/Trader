@@ -4,7 +4,7 @@ import {Meteor} from 'meteor/meteor';
 // @ts-ignore
 import {useTracker} from 'meteor/react-meteor-data';
 import Trades from '../../Collections/Trades';
-import ITradeSettings, {GetDescription, IPrice} from '../../Interfaces/ITradeSettings';
+import ITradeSettings, {BadDefaultIPrice, GetDescription, IPrice} from '../../Interfaces/ITradeSettings';
 import {ColumnsType} from 'antd/lib/table';
 import {Space, Table} from 'antd';
 import EmergencyCloseActiveTrades from '../EmergencyCloseActiveTrades';
@@ -98,11 +98,12 @@ const columns: ColumnsType<ITradeSettings> = [
     key: 'USlope1',
     align: 'center',
     width: 100,
-    render: (monitoredPrices: IPrice[], record, index) => {
+    render: (monitoredPrices: IPrice[], record) => {
+      const monitoredPrice = monitoredPrices[monitoredPrices.length - 1] ?? {...BadDefaultIPrice};
       return (
         <Space direction={'vertical'}>
-          <span key={'slope1'}>S1: {(monitoredPrices[index]?.slope1 ?? 0).toFixed(2)}</span>
-          <span key={'slope2'}>S2: {(monitoredPrices[index]?.slope2 ?? 0).toFixed(2)}</span>
+          <span key={'slope1'}>S1: {(monitoredPrice.slope1 ?? 0).toFixed(2)}</span>
+          <span key={'slope2'}>S2: {(monitoredPrice.slope2 ?? 0).toFixed(2)}</span>
         </Space>
       );
     },

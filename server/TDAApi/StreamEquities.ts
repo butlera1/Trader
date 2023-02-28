@@ -4,8 +4,10 @@ import {Meteor} from 'meteor/meteor';
 import {GetUserPrinciples} from './TDAApi';
 import _ from 'lodash';
 import ITradeSettings, {BadDefaultIPrice, IPrice} from '../../imports/Interfaces/ITradeSettings';
-import ILegSettings, {BuySell, OptionType} from '../../imports/Interfaces/ILegSettings';
 import CalculateOptionsPricings from '../CalculateOptionsPricing';
+import {StreamedData} from '../collections/StreamedData';
+import Constants from '../../imports/Constants';
+import IStreamerData from '../../imports/Interfaces/IStreamData';
 
 let isWsOpen = false;
 const streamedData = {};
@@ -16,13 +18,6 @@ function jsonToQueryString(json) {
     return encodeURIComponent(key) + '=' +
       encodeURIComponent(json[key]);
   }).join('&');
-}
-
-interface IStreamerData {
-  symbol?: string;
-  mark?: number;
-  volume?: number;
-  volatility?: number;
 }
 
 let mySock = null;
@@ -43,6 +38,8 @@ function CloseWebSocket() {
   }
 }
 
+const valuesToBePersisted = {};
+
 function recordQuoteData(item) {
   if (item.service === 'QUOTE' || item.service === 'OPTION') {
     item.content.forEach((quote) => {
@@ -52,15 +49,25 @@ function recordQuoteData(item) {
       } else {
         streamedData[quote.key] = [];
       }
-      const value = {
+      const value: IStreamerData = {
         symbol: quote.key,
         mark: quote[49] ?? quote[41] ?? lastQuote.mark,
         volume: quote[8] ?? lastQuote.volume ?? 0,
         volatility: quote[24] ?? lastQuote.volatility ?? 0,
+        underlyingPrice: quote[39] ?? 0,
         when: new Date(item.timestamp),
       };
       streamedData[value.symbol].push(value);
-      console.log(`WS: ${value.symbol}: mark: ${value.mark}, volatility: ${value.volatility}, volume: ${value.volume}, count: ${streamedData[value.symbol].length}`);
+      if (currentlyStreamedEquityNames.includes(value.symbol)) {
+        if (!valuesToBePersisted[value.symbol]) {
+          valuesToBePersisted[value.symbol] = [];
+        }
+        valuesToBePersisted[value.symbol].push(value);
+        if (valuesToBePersisted[value.symbol].length > 4) {
+          StreamedData.upsert(Constants.streamedDataId, {$addToSet: {[value.symbol]: {$each: valuesToBePersisted[value.symbol]}}});
+          valuesToBePersisted[value.symbol] = [];
+        }
+      }
     });
   }
 }
@@ -107,7 +114,7 @@ async function PrepareStreaming() {
 
     mySock = new WebSocket("wss://" + userPrincipalsResponse.streamerInfo.streamerSocketUrl + "/ws");
 
-    mySock.onmessage = function (evt) {
+    mySock.onmessage = Meteor.bindEnvironment(function (evt) {
       const data = JSON.parse(evt.data);
       if (data?.response && data.response[0]?.content?.code === 0 && data.response[0]?.command === "LOGIN") {
         isWsOpen = true;
@@ -119,7 +126,7 @@ async function PrepareStreaming() {
           recordQuoteData(item);
         });
       }
-    };
+    });
 
     mySock.onclose = function (evt) {
       mySock = null;
@@ -140,16 +147,17 @@ async function PrepareStreaming() {
   return false;
 }
 
-const currentSymbols = [];
+const currentlyStreamedOptionsNames: string[] = [];
+const currentlyStreamedEquityNames: string[] = [];
 
-function buildOptionNames(names:string): string {
+function buildNames(names: string, list: string[]): string {
   const symbols = names.split(',');
   symbols.forEach((symbol) => {
-    if (!currentSymbols.includes(symbol)) {
-      currentSymbols.push(symbol);
+    if (!list.includes(symbol)) {
+      list.push(symbol);
     }
-    });
-  return currentSymbols.join(',');
+  });
+  return list.join(',');
 }
 
 function AddEquitiesToStream(equityNames: string) {
@@ -163,7 +171,7 @@ function AddEquitiesToStream(equityNames: string) {
           account: userPrincipalsResponse.accounts[0].accountId,
           source: userPrincipalsResponse.streamerInfo.appId,
           parameters: {
-            keys: equityNames,
+            keys: buildNames(equityNames, currentlyStreamedEquityNames),
             // 0: Symbol
             // 8: Cumulative daily volume
             // 24: Volatility
@@ -188,11 +196,12 @@ function AddOptionsToStream(optionNames: string) {
           account: userPrincipalsResponse.accounts[0].accountId,
           source: userPrincipalsResponse.streamerInfo.appId,
           parameters: {
-            keys: buildOptionNames(optionNames),
+            keys: buildNames(optionNames, currentlyStreamedOptionsNames),
             // 0: Symbol
             // 8: Cumulative daily volume
+            // 39: Underlying price
             // 41: Mark Price
-            fields: '0,8,41',
+            fields: '0,8,39,41',
           },
         },
       ]
@@ -205,7 +214,7 @@ function LatestQuote(symbol: string): IStreamerData {
   if (streamedData[symbol]) {
     return streamedData[symbol][streamedData[symbol].length - 1];
   }
-  return null;
+  return {mark: 0, symbol: symbol};
 }
 
 function IsStreamingQuotes() {
@@ -213,16 +222,24 @@ function IsStreamingQuotes() {
 }
 
 function GetStreamingPrice(tradeSettings: ITradeSettings) {
-  const result = {...BadDefaultIPrice, price: 0, whenNY: new Date()};
+  let result: IPrice = {...BadDefaultIPrice, price: 0, whenNY: new Date()};
   if (!IsStreamingQuotes()) {
     return result;
   }
   result.underlyingPrice = LatestQuote(tradeSettings.symbol).mark;
   tradeSettings.legs.forEach((leg) => {
     const quote = LatestQuote(leg.option.symbol);
-    CalculateOptionsPricings(result, leg, quote.mark);
+    result = CalculateOptionsPricings(result, leg, quote.mark);
   });
   return result;
 }
 
-export {PrepareStreaming, CloseWebSocket, LatestQuote, AddOptionsToStream, IsStreamingQuotes, GetStreamingPrice, AddEquitiesToStream};
+export {
+  PrepareStreaming,
+  CloseWebSocket,
+  LatestQuote,
+  AddOptionsToStream,
+  IsStreamingQuotes,
+  GetStreamingPrice,
+  AddEquitiesToStream,
+};

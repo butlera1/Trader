@@ -15,7 +15,6 @@ interface IPrice {
   whenNY?: Date,
   gain?: number,
   underlyingPrice?: number,
-  vix?: number,
   shortStraddlePrice?: number,
   longStraddlePrice?: number,
   extrinsicShort?: number,
@@ -29,11 +28,12 @@ const BadDefaultIPrice = {
   whenNY: undefined,
   gain: 0,
   underlyingPrice: 0,
-  vix: 0,
   shortStraddlePrice: 0,
   longStraddlePrice: 0,
   extrinsicShort: 0,
   extrinsicLong: 0,
+  slope1: 0,
+  slope2: 0,
 };
 
 interface ITradeSettings {
