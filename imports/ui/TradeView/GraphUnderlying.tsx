@@ -22,12 +22,14 @@ function GraphUnderlying({symbol}: { symbol: string }) {
   const min = Math.min(...data.map(o => o.mark));
 
   const getMark = (sample: IStreamData) => {
-    return sample.mark;
+    return Math.round(sample.mark * 100)/100;
   };
 
   const getWhen = (sample: IStreamData) => {
     return dayjs(sample.when).format('HH:mm:ss');
   };
+
+  const DataFormatter = (value: number) => Math.round(value);
 
   return (
     <>
@@ -43,7 +45,7 @@ function GraphUnderlying({symbol}: { symbol: string }) {
         data={data}
       >
         <CartesianGrid strokeDasharray="3 3"/>
-        <YAxis domain={[min, max]}/>
+        <YAxis domain={[min, max]} tickFormatter={DataFormatter}/>
         <XAxis dataKey={getWhen}/>
         <Tooltip/>
         <Legend/>

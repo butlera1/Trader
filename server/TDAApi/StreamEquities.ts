@@ -8,9 +8,10 @@ import CalculateOptionsPricings from '../CalculateOptionsPricing';
 import {StreamedData} from '../collections/StreamedData';
 import Constants from '../../imports/Constants';
 import IStreamerData from '../../imports/Interfaces/IStreamData';
+import {AppSettings} from '../collections/AppSettings';
 
 let isWsOpen = false;
-const streamedData = {};
+let streamedData = {};
 
 // Utility
 function jsonToQueryString(json) {
@@ -38,7 +39,13 @@ function CloseWebSocket() {
   }
 }
 
-const valuesToBePersisted = {};
+let valuesToBePersisted = {};
+
+function eraseAllData() {
+  streamedData = {}; // Clear out old data.
+  valuesToBePersisted = {};
+  StreamedData.remove(Constants.streamedDataId);
+}
 
 function recordQuoteData(item) {
   if (item.service === 'QUOTE' || item.service === 'OPTION') {
@@ -63,8 +70,10 @@ function recordQuoteData(item) {
           valuesToBePersisted[value.symbol] = [];
         }
         valuesToBePersisted[value.symbol].push(value);
-        if (valuesToBePersisted[value.symbol].length > 4) {
-          StreamedData.upsert(Constants.streamedDataId, {$addToSet: {[value.symbol]: {$each: valuesToBePersisted[value.symbol]}}});
+        if (valuesToBePersisted[value.symbol].length > 10) {
+          // Only persist every few values and the mark is the average value of those items.
+          value.mark = valuesToBePersisted[value.symbol].reduce((a, b) => a + b.mark, 0) / valuesToBePersisted[value.symbol].length;
+          StreamedData.upsert(Constants.streamedDataId, {$addToSet: {[value.symbol]: value}});
           valuesToBePersisted[value.symbol] = [];
         }
       }
@@ -72,8 +81,18 @@ function recordQuoteData(item) {
   }
 }
 
+function afterHours() {
+  const now = new Date();
+  const settings = AppSettings.findOne(Constants.appSettingsId);
+  return (
+    (now.getHours() > settings.endOfDayHourNY) ||
+    (now.getHours() === settings.endOfDayHourNY && now.getMinutes() > settings.endOfDayMinuteNY)
+  );
+}
+
 async function PrepareStreaming() {
   CloseWebSocket();
+  eraseAllData();
   const userId = Meteor.users.findOne({username: 'Arch'})?._id;
   if (userId) {
     userPrincipalsResponse = await GetUserPrinciples(userId);
@@ -115,6 +134,10 @@ async function PrepareStreaming() {
     mySock = new WebSocket("wss://" + userPrincipalsResponse.streamerInfo.streamerSocketUrl + "/ws");
 
     mySock.onmessage = Meteor.bindEnvironment(function (evt) {
+      if (afterHours()) {
+        CloseWebSocket();
+        return;
+      }
       const data = JSON.parse(evt.data);
       if (data?.response && data.response[0]?.content?.code === 0 && data.response[0]?.command === "LOGIN") {
         isWsOpen = true;
