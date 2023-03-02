@@ -83,14 +83,31 @@ function recordQuoteData(item) {
   }
 }
 
+function getHourAndMinute(dateTimeText: string){
+  const parts = dateTimeText.split(' ');
+  let hoursAdded = 0;
+  if (parts[parts.length - 1] === 'PM') {
+    hoursAdded = 12
+  }
+  const timeOnlyText = parts.find((part) => part.includes(':'));
+  const timeParts = timeOnlyText.split(':');
+  return {
+    hour: parseInt(timeParts[0]) + hoursAdded,
+    minute: parseInt(timeParts[1]),
+  };
+}
+
 function afterHours() {
   const nyTimeText = GetNewYorkTimeNowAsText();
-  const now = new Date(nyTimeText);
+  const parts = getHourAndMinute(nyTimeText);
+  const nowHour = parts.hour;
+  const nowMinute = parts.minute;
   const settings = AppSettings.findOne(Constants.appSettingsId);
-  const endTime = GetNewYorkTimeAt(settings.endOfDayHourNY, settings.endOfDayMinuteNY);
+  const endHour = settings.endOfDayHourNY;
+  const endMinute = settings.endOfDayMinuteNY;
   return (
-    (now.getHours() > endTime.hour()) ||
-    (now.getHours() === endTime.hour() && now.getMinutes() > endTime.minute())
+    (nowHour > endHour) ||
+    (nowHour === endHour && nowMinute > endMinute)
   );
 }
 
