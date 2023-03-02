@@ -172,11 +172,11 @@ async function PrepareStreaming() {
     mySock = new WebSocket("wss://" + userPrincipalsResponse.streamerInfo.streamerSocketUrl + "/ws");
 
     mySock.onmessage = Meteor.bindEnvironment(function (evt) {
-      if (afterHours()) {
-        console.log("After Hours so closing websocket.");
-        CloseWebSocket();
-        return;
-      }
+      // if (afterHours()) {
+      //   console.log("After Hours so closing websocket.");
+      //   CloseWebSocket();
+      //   return;
+      // }
       const data = JSON.parse(evt.data);
       if (data?.response && data.response[0]?.content?.code === 0 && data.response[0]?.command === "LOGIN") {
         console.log("Streaming Logged In");
