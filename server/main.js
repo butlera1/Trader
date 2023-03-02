@@ -21,7 +21,7 @@ import {
   SellStraddle,
   SetUserAccessInfo
 } from './TDAApi/TDAApi';
-import {EmergencyCloseAllTrades, ExecuteTrade, MonitorTradeToCloseItOut, PerformTradeForAllUsers} from './Trader';
+import {EmergencyCloseAllTrades, ExecuteTrade, MonitorTradeToCloseItOut} from './Trader';
 import {WebApp} from 'meteor/webapp';
 import {Trades} from './collections/Trades';
 import {LogData} from './collections/Logs';
@@ -62,7 +62,7 @@ function CheckForAnyExistingTradesAndMonitorThem() {
   // Find all live trades for this user.
   const liveTrades = Trades.find({whyClosed: {$exists: false}}).fetch();
   console.log(`Found ${liveTrades.length} existing trades. Monitoring each...`);
-  liveTrades.forEach(async (tradeSettings) => {
+  liveTrades.forEach((tradeSettings) => {
     LogData(tradeSettings, `BootTime: Start monitoring existing trade ${tradeSettings._id} for ${tradeSettings.userName}.`);
     MonitorTradeToCloseItOut(tradeSettings);
   });
@@ -83,7 +83,6 @@ Meteor.methods({
     BuyStock,
     SellStraddle,
     GetATMOptionChains,
-    PerformTradeForAllUsers,
     TestStrategy,
     EmergencyCloseAllTrades,
     StreamDataUpsert,
@@ -103,11 +102,15 @@ const settings = {
 delete settings._id;
 AppSettings.upsert(Constants.appSettingsId, settings);
 
-PrepareStreaming()
-  .then(r => console.log(`PrepareStreaming returned ${r}`))
-  .catch(e => console.log(`PrepareStreaming ERROR returned ${e}`));
-
 ScheduleStartOfDayWork();
 ScheduleEndOfDayWork();
 
-CheckForAnyExistingTradesAndMonitorThem();
+PrepareStreaming()
+  .then(() => {
+    console.log(`Streaming is ready so checking on existing trades to monitor.`);
+    CheckForAnyExistingTradesAndMonitorThem();
+  })
+  .catch((err) => {
+    console.error(`Error preparing streaming: ${err}`);
+  });
+

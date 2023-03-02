@@ -30,7 +30,7 @@ import {CalculateGain, CalculateLimitsAndFees, CalculateUnderlyingPriceAverageSl
 import {
   AddEquitiesToStream,
   AddOptionsToStream,
-  GetStreamingPrice,
+  GetStreamingOptionsPrice,
   IsStreamingQuotes,
   PrepareStreaming
 } from './TDAApi/StreamEquities';
@@ -87,7 +87,7 @@ async function GetOptionsPriceLoop(tradeSettings: ITradeSettings): Promise<IPric
       result = null;
       const release = await lock();
       if (IsStreamingQuotes()) {
-        result = GetStreamingPrice(tradeSettings);
+        result = GetStreamingOptionsPrice(tradeSettings);
       } else {
         result = await GetPriceForOptions(tradeSettings);
       }
@@ -102,7 +102,7 @@ async function GetOptionsPriceLoop(tradeSettings: ITradeSettings): Promise<IPric
       console.error(`GetOptionsPriceLoop: Failed GetPriceForOptions.`, ex);
     }
   }
-  const message = `GetOptionsPriceLoop: Failed to get currentPrice (probably too fast). User: ${tradeSettings.userName}`;
+  const message = `GetOptionsPriceLoop: Failed to get currentPrice (probably too fast). User: ${tradeSettings.userName}, ${tradeSettings.csvSymbols}`;
   console.error(message);
   return result;
 }
@@ -236,6 +236,8 @@ function checkRule2Exit(liveTrade: ITradeSettings, currentSample: IPrice) {
 
 function MonitorTradeToCloseItOut(liveTrade: ITradeSettings) {
   const localEarlyExitTime = GetNewYorkTimeAt(liveTrade.exitHour, liveTrade.exitMinute);
+  AddOptionsToStream(liveTrade.csvSymbols);
+  AddEquitiesToStream(liveTrade.symbol);
   const monitorMethod = async () => {
     try {
       // The latestActiveTradeRecord can be updated via an 'Emergency Exit' call so check it along with the liveTrade.
@@ -456,8 +458,6 @@ async function ExecuteTrade(tradeSettings: ITradeSettings, forceTheTrade = false
       // The trade orders are assigned to the tradeSettings object.
       const ordersReady = CreateOpenAndCloseOrders(chains, tradeSettings);
       if (ordersReady) {
-        AddOptionsToStream(tradeSettings.csvSymbols);
-        AddEquitiesToStream(tradeSettings.symbol);
         await PlaceOpeningOrderAndMonitorToClose(tradeSettings);
       }
     } catch (ex) {
@@ -511,8 +511,6 @@ async function QueueUsersTradesForTheDay(user) {
     return;
   }
   LogData(null, `Market is open today so queueing ${user.username}'s trades.`);
-  await PrepareStreaming().then(r => {
-  });
   const accountNumber = UserSettings.findOne(user._id)?.accountNumber;
   if (!accountNumber || accountNumber === 'None') {
     LogData(null, `User ${user.username} has no account number so skipping this user.`, null);

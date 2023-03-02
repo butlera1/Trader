@@ -36,6 +36,8 @@ function CloseWebSocket() {
   if (mySock) {
     mySock.close();
   }
+  isWsOpen = false;
+  mySock = null;
 }
 
 let valuesToBePersisted = {};
@@ -89,6 +91,23 @@ function afterHours() {
   );
 }
 
+async function waitForLogin() {
+  return new Promise((resolve, reject) => {
+    let count = 0;
+    const interval = Meteor.setInterval(() => {
+      count++;
+      if (isWsOpen) {
+        Meteor.clearInterval(interval);
+        resolve(true);
+      }
+      if (count > 30) { // Wait 3 seconds max.
+        Meteor.clearInterval(interval);
+        reject(false);
+      }
+    }, 100);
+  });
+}
+
 async function PrepareStreaming() {
   CloseWebSocket();
   eraseAllData();
@@ -139,8 +158,8 @@ async function PrepareStreaming() {
       }
       const data = JSON.parse(evt.data);
       if (data?.response && data.response[0]?.content?.code === 0 && data.response[0]?.command === "LOGIN") {
-        isWsOpen = true;
         console.log("Streaming Logged In");
+        isWsOpen = true;
         AddEquitiesToStream('QQQ');
       }
       if (data && _.isArray(data.data)) {
@@ -157,14 +176,12 @@ async function PrepareStreaming() {
     };
 
     mySock.onopen = function (evt) {
-      isWsOpen = true;
-      console.log("WebSocket OPENED.");
       mySock.send(JSON.stringify(loginRequest));
     };
 
     mySock.on('error', (reason) => console.error(`WebSocket Error of: ${reason}`));
 
-    return true;
+    return await waitForLogin();
   }
   return false;
 }
@@ -184,6 +201,7 @@ function buildNames(names: string, list: string[]): string {
 
 function AddEquitiesToStream(equityNames: string) {
   if (isWsOpen) {
+    const keys = buildNames(equityNames, currentlyStreamedEquityNames);
     const requestQuotes = {
       requests: [
         {
@@ -193,7 +211,7 @@ function AddEquitiesToStream(equityNames: string) {
           account: userPrincipalsResponse.accounts[0].accountId,
           source: userPrincipalsResponse.streamerInfo.appId,
           parameters: {
-            keys: buildNames(equityNames, currentlyStreamedEquityNames),
+            keys,
             // 0: Symbol
             // 8: Cumulative daily volume
             // 24: Volatility
@@ -204,11 +222,13 @@ function AddEquitiesToStream(equityNames: string) {
       ]
     };
     mySock.send(JSON.stringify(requestQuotes));
+    console.log("Streaming Equities: " + keys);
   }
 }
 
 function AddOptionsToStream(optionNames: string) {
   if (isWsOpen) {
+    const keys = buildNames(optionNames, currentlyStreamedOptionsNames);
     const requestOptionQuotes = {
       requests: [
         {
@@ -218,7 +238,7 @@ function AddOptionsToStream(optionNames: string) {
           account: userPrincipalsResponse.accounts[0].accountId,
           source: userPrincipalsResponse.streamerInfo.appId,
           parameters: {
-            keys: buildNames(optionNames, currentlyStreamedOptionsNames),
+            keys,
             // 0: Symbol
             // 8: Cumulative daily volume
             // 39: Underlying price
@@ -229,6 +249,7 @@ function AddOptionsToStream(optionNames: string) {
       ]
     };
     mySock.send(JSON.stringify(requestOptionQuotes));
+    console.log("Streaming Options: " + keys);
   }
 }
 
@@ -243,12 +264,12 @@ function IsStreamingQuotes() {
   return isWsOpen;
 }
 
-function GetStreamingPrice(tradeSettings: ITradeSettings) {
+function GetStreamingOptionsPrice(tradeSettings: ITradeSettings) {
   let result: IPrice = {...BadDefaultIPrice, price: 0, whenNY: new Date()};
   if (!IsStreamingQuotes()) {
     return result;
   }
-  result.underlyingPrice = LatestQuote(tradeSettings.symbol).mark;
+  result.underlyingPrice = LatestQuote(tradeSettings.symbol).mark || tradeSettings.underlyingPrice;
   tradeSettings.legs.forEach((leg) => {
     const quote = LatestQuote(leg.option.symbol);
     result = CalculateOptionsPricings(result, leg, quote.mark);
@@ -262,6 +283,6 @@ export {
   LatestQuote,
   AddOptionsToStream,
   IsStreamingQuotes,
-  GetStreamingPrice,
+  GetStreamingOptionsPrice,
   AddEquitiesToStream,
 };

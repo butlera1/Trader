@@ -20,11 +20,17 @@ function ScheduleStartOfDayWork() {
     const localTimeCheck = desiredTradeTime.format('MMM DD YYYY hh:mm a');
     const NYTimeCheck = desiredTradeTime.toDate().toLocaleString('en-US', {timeZone: 'America/New_York'});
     LogData(null, `Scheduling: 'Perform Trades For All Users' for ${localTimeCheck} local time or ${NYTimeCheck} NY time.`);
-    const timerHandle = Meteor.setTimeout(() => {
+    const timerHandle = Meteor.setTimeout(async () => {
       try {
         Meteor.clearTimeout(timerHandle);
-        PrepareStreaming().catch((ex) => {});
-        PerformTradeForAllUsers();
+        const isStreaming = await PrepareStreaming()
+          .catch((ex) => {
+          LogData(null, `Failed to start streaming within ScheduleStartOfDayWork. Trying again tomorrow.`, ex);
+          return false;
+        });
+        if (isStreaming) {
+          PerformTradeForAllUsers();
+        }
         ScheduleStartOfDayWork();
       } catch (ex) {
         LogData(null, `Failed inside timeOut loop for 'Perform Trades For All Users' and 'SchedulePerformTrades'.`, ex);
