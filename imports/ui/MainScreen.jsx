@@ -23,7 +23,6 @@ export const MainScreen = () => {
   return (<>
     <UserSettings userSettings={userSettings}/>
     <Tools/>
-    <GraphUnderlying symbol={'QQQ'}/>
     <ActiveTradesTable/>
     <TabTradeSettings/>
     <TradeResultsView/>

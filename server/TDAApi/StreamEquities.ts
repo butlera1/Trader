@@ -5,7 +5,6 @@ import {GetUserPrinciples} from './TDAApi';
 import _ from 'lodash';
 import ITradeSettings, {BadDefaultIPrice, IPrice} from '../../imports/Interfaces/ITradeSettings';
 import CalculateOptionsPricings from '../CalculateOptionsPricing';
-import {StreamedData} from '../collections/StreamedData';
 import Constants from '../../imports/Constants';
 import IStreamerData from '../../imports/Interfaces/IStreamData';
 import {AppSettings} from '../collections/AppSettings';
@@ -44,7 +43,7 @@ let valuesToBePersisted = {};
 function eraseAllData() {
   streamedData = {}; // Clear out old data.
   valuesToBePersisted = {};
-  StreamedData.remove(Constants.streamedDataId);
+  // StreamedData.remove(Constants.streamedDataId);
 }
 
 function recordQuoteData(item) {
@@ -65,18 +64,18 @@ function recordQuoteData(item) {
         when: new Date(item.timestamp),
       };
       streamedData[value.symbol].push(value);
-      if (currentlyStreamedEquityNames.includes(value.symbol)) {
-        if (!valuesToBePersisted[value.symbol]) {
-          valuesToBePersisted[value.symbol] = [];
-        }
-        valuesToBePersisted[value.symbol].push(value);
-        if (valuesToBePersisted[value.symbol].length > 10) {
-          // Only persist every few values and the mark is the average value of those items.
-          value.mark = valuesToBePersisted[value.symbol].reduce((a, b) => a + b.mark, 0) / valuesToBePersisted[value.symbol].length;
-          StreamedData.upsert(Constants.streamedDataId, {$addToSet: {[value.symbol]: value}});
-          valuesToBePersisted[value.symbol] = [];
-        }
-      }
+      // if (currentlyStreamedEquityNames.includes(value.symbol)) {
+      //   if (!valuesToBePersisted[value.symbol]) {
+      //     valuesToBePersisted[value.symbol] = [];
+      //   }
+      //   valuesToBePersisted[value.symbol].push(value);
+      //   if (valuesToBePersisted[value.symbol].length > 10) {
+      //     // Only persist every few values and the mark is the average value of those items.
+      //     value.mark = valuesToBePersisted[value.symbol].reduce((a, b) => a + b.mark, 0) / valuesToBePersisted[value.symbol].length;
+      //     // StreamedData.upsert(Constants.streamedDataId, {$addToSet: {[value.symbol]: value}});
+      //     valuesToBePersisted[value.symbol] = [];
+      //   }
+      // }
     });
   }
 }

@@ -1,7 +1,6 @@
 import {Meteor} from 'meteor/meteor';
 import './collections/stockData';
 import './collections/straddleData';
-import './collections/StreamedData';
 import {
   DeleteUserTradeSettingsRecord,
   GetAllUserTradeSettings,
