@@ -8,6 +8,7 @@ import CalculateOptionsPricings from '../CalculateOptionsPricing';
 import Constants from '../../imports/Constants';
 import IStreamerData from '../../imports/Interfaces/IStreamData';
 import {AppSettings} from '../collections/AppSettings';
+import {GetNewYorkTimeAt, GetNewYorkTimeNowAsText} from '../Trader';
 
 let isWsOpen = false;
 let streamedData = {};
@@ -83,11 +84,13 @@ function recordQuoteData(item) {
 }
 
 function afterHours() {
-  const now = new Date();
+  const nyTimeText = GetNewYorkTimeNowAsText();
+  const now = new Date(nyTimeText);
   const settings = AppSettings.findOne(Constants.appSettingsId);
+  const endTime = GetNewYorkTimeAt(settings.endOfDayHourNY, settings.endOfDayMinuteNY);
   return (
-    (now.getHours() > settings.endOfDayHourNY) ||
-    (now.getHours() === settings.endOfDayHourNY && now.getMinutes() > settings.endOfDayMinuteNY)
+    (now.getHours() > endTime.hour()) ||
+    (now.getHours() === endTime.hour() && now.getMinutes() > endTime.minute())
   );
 }
 
@@ -153,6 +156,7 @@ async function PrepareStreaming() {
 
     mySock.onmessage = Meteor.bindEnvironment(function (evt) {
       if (afterHours()) {
+        console.log("After Hours so closing websocket.");
         CloseWebSocket();
         return;
       }
