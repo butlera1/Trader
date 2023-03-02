@@ -182,6 +182,8 @@ async function PrepareStreaming() {
     mySock.on('error', (reason) => console.error(`WebSocket Error of: ${reason}`));
 
     return await waitForLogin();
+  } else {
+    console.error('PrepareStreaming: No user found.');
   }
   return false;
 }
