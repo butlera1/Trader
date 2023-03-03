@@ -94,7 +94,7 @@ async function GetOptionsPriceLoop(tradeSettings: ITradeSettings): Promise<IPric
       setTimeout(() => {
         release();
       }, 1000);
-      if (_.isFinite(result?.price)) {
+      if (_.isFinite(result?.price) && result?.price !== 0) {
         return result;
       }
       count++;

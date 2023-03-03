@@ -36,7 +36,6 @@ import timezone from 'dayjs/plugin/timezone';
 import './TDAApi/StreamEquities';
 import {PrepareStreaming} from './TDAApi/StreamEquities';
 import ScheduleEndOfDayWork from './ScheduleEndOfDayWork';
-import {StreamDataUpsert} from './collections/StreamedData';
 
 dayjs.extend(utc);
 dayjs.extend(timezone);
@@ -85,7 +84,6 @@ Meteor.methods({
     GetATMOptionChains,
     TestStrategy,
     EmergencyCloseAllTrades,
-    StreamDataUpsert,
   }
 );
 
