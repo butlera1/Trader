@@ -34,7 +34,6 @@ import utc from 'dayjs/plugin/utc';
 import timezone from 'dayjs/plugin/timezone';
 
 import './TDAApi/StreamEquities';
-import {PrepareStreaming} from './TDAApi/StreamEquities';
 import ScheduleEndOfDayWork from './ScheduleEndOfDayWork';
 
 dayjs.extend(utc);
@@ -103,12 +102,17 @@ AppSettings.upsert(Constants.appSettingsId, settings);
 ScheduleStartOfDayWork();
 ScheduleEndOfDayWork();
 
-PrepareStreaming()
-  .then(() => {
-    console.log(`Streaming is ready so checking on existing trades to monitor.`);
-    CheckForAnyExistingTradesAndMonitorThem();
-  })
-  .catch((err) => {
-    console.error(`Error preparing streaming: ${err}`);
-  });
+CheckForAnyExistingTradesAndMonitorThem();
+
+//
+// Streaming logic removed.
+
+// PrepareStreaming()
+//   .then(() => {
+//     console.log(`Streaming is ready so checking on existing trades to monitor.`);
+//     CheckForAnyExistingTradesAndMonitorThem();
+//   })
+//   .catch((err) => {
+//     console.error(`Error preparing streaming: ${err}`);
+//   });
 

@@ -32,7 +32,6 @@ import {
   AddOptionsToStream,
   GetStreamingOptionsPrice,
   IsStreamingQuotes,
-  PrepareStreaming
 } from './TDAApi/StreamEquities';
 
 const lock = mutexify();
@@ -236,8 +235,10 @@ function checkRule2Exit(liveTrade: ITradeSettings, currentSample: IPrice) {
 
 function MonitorTradeToCloseItOut(liveTrade: ITradeSettings) {
   const localEarlyExitTime = GetNewYorkTimeAt(liveTrade.exitHour, liveTrade.exitMinute);
-  AddOptionsToStream(liveTrade.csvSymbols);
-  AddEquitiesToStream(liveTrade.symbol);
+  if (IsStreamingQuotes()) {
+    AddOptionsToStream(liveTrade.csvSymbols);
+    AddEquitiesToStream(liveTrade.symbol);
+  }
   const monitorMethod = async () => {
     try {
       // The latestActiveTradeRecord can be updated via an 'Emergency Exit' call so check it along with the liveTrade.

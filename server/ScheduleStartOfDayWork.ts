@@ -5,7 +5,6 @@ import {Meteor} from 'meteor/meteor';
 import {GetNewYorkTimeAt, PerformTradeForAllUsers} from './Trader';
 import {AppSettings} from './collections/AppSettings';
 import Constants from '../imports/Constants';
-import {PrepareStreaming} from './TDAApi/StreamEquities';
 
 function ScheduleStartOfDayWork() {
   try {
@@ -23,14 +22,18 @@ function ScheduleStartOfDayWork() {
     const timerHandle = Meteor.setTimeout(async () => {
       try {
         Meteor.clearTimeout(timerHandle);
-        const isStreaming = await PrepareStreaming()
-          .catch((ex) => {
-          LogData(null, `Failed to start streaming within ScheduleStartOfDayWork. Trying again tomorrow.`, ex);
-          return false;
-        });
-        if (isStreaming) {
-          PerformTradeForAllUsers();
-        }
+        //
+        // Streaming logic removed.
+        //
+        // const isStreaming = await PrepareStreaming()
+        //   .catch((ex) => {
+        //   LogData(null, `Failed to start streaming within ScheduleStartOfDayWork. Trying again tomorrow.`, ex);
+        //   return false;
+        // });
+        // if (isStreaming) {
+        //   PerformTradeForAllUsers();
+        // }
+        PerformTradeForAllUsers();
         ScheduleStartOfDayWork();
       } catch (ex) {
         LogData(null, `Failed inside timeOut loop for 'Perform Trades For All Users' and 'SchedulePerformTrades'.`, ex);
