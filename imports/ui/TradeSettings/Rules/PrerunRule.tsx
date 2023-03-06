@@ -12,7 +12,7 @@ function PrerunRule({value, onChange}: { value: IPrerunValue, onChange: (value: 
           min={0}
           max={60}
           step={1}
-          style={{width: '70px'}}
+          style={{width: '60px'}}
           onChange={(ticks: number) => onChange({...value, ticks})}
         />
         <label>ticks with</label>
@@ -22,7 +22,7 @@ function PrerunRule({value, onChange}: { value: IPrerunValue, onChange: (value: 
           min={0}
           max={100}
           step={0.1}
-          style={{width: '120px'}}
+          style={{width: '100px'}}
           onChange={(cents: number) => onChange({...value, cents})}
         />
         <label>+separation and +gain.</label>
