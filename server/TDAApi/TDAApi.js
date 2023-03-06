@@ -255,7 +255,6 @@ export async function GetPriceForOptions(tradeSettings) {
     }
     // Now scan the quotes and add/subtract up the price.
     let result = {...BadDefaultIPrice, price: 0, whenNY: new Date()};
-    // The quotes include the underlying stock price, so we need to manage that.
     quotes.forEach((quote) => {
       const leg = tradeSettings.legs.find((leg) => leg.option.symbol === quote.symbol);
       // if leg not found, then something is wrong.
@@ -264,6 +263,8 @@ export async function GetPriceForOptions(tradeSettings) {
         LogData(tradeSettings, msg, new Error(msg));
         return;
       }
+      // The quotes include the underlying stock price.
+      result.underlyingPrice = quote.underlyingPrice;
       result = CalculateOptionsPricings(result, leg, quote.mark);
     });
     return result;

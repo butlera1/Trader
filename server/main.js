@@ -52,7 +52,7 @@ function TestStrategy(tradeSettingsId) {
   }
   const forceTheTrade = true;
   const tradeSettings = TradeSettings.findOne(tradeSettingsId);
-  ExecuteTrade(tradeSettings, forceTheTrade).then();
+  ExecuteTrade(tradeSettings, forceTheTrade, tradeSettings.isPrerun).then();
 }
 
 function CheckForAnyExistingTradesAndMonitorThem() {

@@ -12,7 +12,7 @@ function Rule1({value, onChange}: { value: IRule1Value, onChange: (value: IRule1
       <Space style={{marginLeft: 10}}>
         <label>Exit if</label>
         <InputNumber
-          defaultValue={value.profitPercent * 100}
+          defaultValue={(value.profitPercent ?? 0) * 100}
           addonAfter={'%'}
           min={0}
           max={100}
@@ -21,7 +21,7 @@ function Rule1({value, onChange}: { value: IRule1Value, onChange: (value: IRule1
         />
         <label>of profit and duration over</label>
         <InputNumber
-          defaultValue={value.minutes}
+          defaultValue={value.minutes ?? 0}
           addonAfter={'minutes.'}
           min={0}
           max={60}

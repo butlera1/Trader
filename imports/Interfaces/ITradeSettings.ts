@@ -1,5 +1,6 @@
 import ILegSettings, {BuySell, OptionType} from './ILegSettings';
 import {IRule1Value} from '../ui/TradeSettings/Rules/Rule1';
+import {IPrerunValue} from '../ui/TradeSettings/Rules/PrerunRule';
 
 enum whyClosedEnum {
   emergencyExit = 'emergencyExit',
@@ -8,6 +9,7 @@ enum whyClosedEnum {
   timedExit = 'timedExit',
   rule1Exit = 'r1Exit',
   rule2Exit = 'r2Exit',
+  prerunExit = 'prerunExit',
 }
 
 interface IPrice {
@@ -82,6 +84,9 @@ interface ITradeSettings {
   useShortOnlyForLimits?: boolean,
   isRule1?: boolean,
   isRule2?: boolean,
+  isPrerun?: boolean,
+  isPrerunning?: boolean,
+  prerunValue?: IPrerunValue,
   rule1Value?: IRule1Value,
   rule2Value?: any,
   totalFees?: number,
@@ -161,6 +166,9 @@ const DefaultTradeSettings: ITradeSettings = {
   emailAddress: 'none',
   phone: 'none',
   useShortOnlyForLimits: true,
+  isPrerunning: false,
+  prerunValue: {ticks: 0, cents: 0},
+
 };
 
 function getTwoDTEValues(legs) {
@@ -184,7 +192,12 @@ function GetDescription(tradeSettings: ITradeSettings) {
     const regex = new RegExp(`${tradeSettings.symbol}_......`, 'g');
     part4 = `\n${tradeSettings.csvSymbols.replace(regex, '').replace('VIX', '')}`;
   }
-  return `${part0}${part1}\n${part2}\n${part3}${part4}`;
+  let part5 = '';
+  if (tradeSettings.isMocked) {
+    const prerun = tradeSettings.isPrerunning ? ' (Prerun)' : '';
+    part5 = `\nMocked${prerun}`;
+  }
+  return `${part0}${part1}\n${part2}\n${part3}${part4}${part5}`;
 }
 
 

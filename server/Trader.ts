@@ -151,6 +151,8 @@ async function CloseTrade(tradeSettings: ITradeSettings, currentPrice: number) {
   }
   tradeSettings.whenClosed = new Date();
   tradeSettings.gainLoss = CalculateGain(tradeSettings, tradeSettings.closingPrice);
+  const wasPrerunning = tradeSettings.isPrerunning;
+  // Don't update the Trades if it was a prerun.
   Trades.update(tradeSettings._id, {
     $set: {
       closingOrderId: tradeSettings.closingOrderId,
@@ -160,20 +162,22 @@ async function CloseTrade(tradeSettings: ITradeSettings, currentPrice: number) {
       gainLoss: tradeSettings.gainLoss,
     }
   });
-  const message = `${tradeSettings.userName}: Trade closed (${tradeSettings.whyClosed}): Entry: $${openingPrice.toFixed(2)}, ` +
+  const preRunText = wasPrerunning ? 'PRERUN: ' : '';
+  const message = `${tradeSettings.userName}: ${preRunText}Trade closed (${tradeSettings.whyClosed}): Entry: $${openingPrice.toFixed(2)}, ` +
     `Exit: $${tradeSettings.closingPrice?.toFixed(2)}, ` +
     `G/L $${tradeSettings.gainLoss?.toFixed(2)} at ${tradeSettings.whenClosed} NY, TS_ID: ${tradeSettings._id}`;
   LogData(tradeSettings, message);
   // See if we should repeat the trade now that it is closed.
   const okToRepeat = tradeSettings.whyClosed !== whyClosedEnum.emergencyExit && tradeSettings.whyClosed !== whyClosedEnum.timedExit;
-  if (tradeSettings.isRepeat && okToRepeat) {
+  if ((tradeSettings.isRepeat || wasPrerunning) && okToRepeat) {
     // Get fresh copy of the settings without values for whyClosed, openingPrice, closingPrice, gainLoss, etc.
     const settings = TradeSettings.findOne(tradeSettings.originalTradeSettingsId);
     if (!settings) {
       const msg = `Failed to get originalTradeSettingsId: ${tradeSettings.originalTradeSettingsId} after closing a trade.`;
       LogData(tradeSettings, msg, new Error(msg));
     } else {
-      ExecuteTrade(settings)
+      const nowPrerunning = wasPrerunning ? false : settings.isPrerun;
+      ExecuteTrade(settings, false, nowPrerunning)
         .then()
         .catch((reason) => LogData(tradeSettings, `Failed doing a repeat ExecuteTrade ${reason}`, new Error(reason)));
     }
@@ -207,6 +211,12 @@ function EmergencyCloseAllTrades() {
   }
 }
 
+function getTradeDurationInMinutes(tradeSettings: ITradeSettings) {
+  const initialTime = tradeSettings.monitoredPrices[0] ? dayjs(tradeSettings.monitoredPrices[0].whenNY) : dayjs();
+  const latestTime = tradeSettings.monitoredPrices[tradeSettings.monitoredPrices.length - 1] ? dayjs(tradeSettings.monitoredPrices[tradeSettings.monitoredPrices.length - 1].whenNY) : dayjs();
+  return latestTime.diff(initialTime, 'minute', true);
+}
+
 /**
  * Return true if profitable after a set number of minutes.
  * @param tradeSettings
@@ -214,9 +224,7 @@ function EmergencyCloseAllTrades() {
  */
 function checkRule1Exit(liveTrade: ITradeSettings, currentSample: IPrice) {
   if (liveTrade.isRule1) {
-    const initialTime = liveTrade.monitoredPrices[0] ? dayjs(liveTrade.monitoredPrices[0].whenNY) : dayjs();
-    const latestTime = liveTrade.monitoredPrices[liveTrade.monitoredPrices.length - 1] ? dayjs(liveTrade.monitoredPrices[liveTrade.monitoredPrices.length - 1].whenNY) : dayjs();
-    const duration = latestTime.diff(initialTime, 'minute', true);
+    const duration = getTradeDurationInMinutes(liveTrade);
     const desiredGain = CalculateGain(liveTrade, liveTrade.gainLimit) * liveTrade.rule1Value.profitPercent;
     let isGainLimit = (currentSample.gain > desiredGain);
     return (duration > liveTrade.rule1Value.minutes) && (isGainLimit);
@@ -230,6 +238,27 @@ function checkRule1Exit(liveTrade: ITradeSettings, currentSample: IPrice) {
  * @param currentSample
  */
 function checkRule2Exit(liveTrade: ITradeSettings, currentSample: IPrice) {
+  return false;
+}
+
+function checkPrerunExit(liveTrade: ITradeSettings, currentSample: IPrice) {
+  if (liveTrade.isPrerun) {
+    const ticks = liveTrade.prerunValue?.ticks ?? 0;
+    const desiredSeparation = liveTrade.prerunValue?.cents ?? 0;
+    const length = liveTrade.monitoredPrices.length;
+    const initialSample = liveTrade.monitoredPrices[0];
+    if (ticks < length) {
+      let isGainMet = true;
+      const samples = liveTrade.monitoredPrices.slice(length - ticks);
+      for (let i = 0; i < ticks; i++) {
+        const longDelta = samples[i].longStraddlePrice - initialSample.longStraddlePrice;
+        const shortDelta = samples[i].shortStraddlePrice - initialSample.shortStraddlePrice;
+        const haveSeparation = (longDelta - shortDelta) > desiredSeparation;
+        isGainMet = isGainMet && haveSeparation && samples[i].gain > 0;
+      }
+      return isGainMet;
+    }
+  }
   return false;
 }
 
@@ -272,13 +301,17 @@ function MonitorTradeToCloseItOut(liveTrade: ITradeSettings) {
       }
       const isRule1Exit = checkRule1Exit(liveTrade, currentSamplePrice);
       const isRule2Exit = checkRule2Exit(liveTrade, currentSamplePrice);
-      if (isGainLimit || isLossLimit || isEndOfDay || isRule1Exit || isRule2Exit) {
+      const isPrerunExit = checkPrerunExit(liveTrade, currentSamplePrice);
+      if (isGainLimit || isLossLimit || isEndOfDay || isRule1Exit || isRule2Exit || isPrerunExit) {
         liveTrade.whyClosed = whyClosedEnum.gainLimit;
         if (isRule1Exit) {
           liveTrade.whyClosed = whyClosedEnum.rule1Exit;
         }
         if (isRule2Exit) {
           liveTrade.whyClosed = whyClosedEnum.rule2Exit;
+        }
+        if (isPrerunExit) {
+          liveTrade.whyClosed = whyClosedEnum.prerunExit;
         }
         if (isLossLimit) {
           liveTrade.whyClosed = whyClosedEnum.lossLimit;
@@ -432,7 +465,7 @@ async function PlaceOpeningOrderAndMonitorToClose(tradeSettings: ITradeSettings)
   return;
 }
 
-async function ExecuteTrade(tradeSettings: ITradeSettings, forceTheTrade = false) {
+async function ExecuteTrade(tradeSettings: ITradeSettings, forceTheTrade = false, isPrerun = false) {
   if (!tradeSettings) {
     const msg = `ExecuteTrade called without 'tradeSettings'.`;
     LogData(null, msg, new Error(msg));
@@ -453,6 +486,8 @@ async function ExecuteTrade(tradeSettings: ITradeSettings, forceTheTrade = false
       tradeSettings.accountNumber = userSettings.accountNumber;
       tradeSettings.phone = userSettings.phone;
       tradeSettings.emailAddress = userSettings.email;
+      tradeSettings.isPrerunning = isPrerun;
+      tradeSettings.isMocked = tradeSettings.isMocked || isPrerun;
       LogData(tradeSettings, `Trading for ${tradeSettings.userName} @ ${nowNYText} (NY) with ${JSON.stringify(tradeSettings)}`);
       // Place the opening trade and monitor it to later close it out.
       const chains = await GetATMOptionChains(tradeSettings);
@@ -492,7 +527,7 @@ function scheduleUsersTrade(tradeSettings, user) {
       LogData(tradeSettings, `Scheduling opening trade for ${user.username} at ${desiredTradeTime.format('hh:mm a')}.`);
       const timeoutHandle = Meteor.setTimeout(async function timerMethodToOpenTrade() {
         Meteor.clearTimeout(timeoutHandle);
-        await ExecuteTrade(tradeSettings)
+        await ExecuteTrade(tradeSettings, false, tradeSettings.isPrerun)
           .catch((reason) => {
             LogData(tradeSettings, `Failed to ExecuteTrade ${user.username}. Reason: ${reason}`);
           });

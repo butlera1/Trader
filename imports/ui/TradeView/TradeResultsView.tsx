@@ -12,6 +12,7 @@ import locale from 'dayjs/plugin/localeData';
 import {Checkbox, DatePicker, Divider, Select, Space} from 'antd';
 import {CheckboxChangeEvent} from 'antd/lib/checkbox';
 import {CalculateLimitsAndFees} from '../../Utils';
+// @ts-ignore
 import {Meteor} from 'meteor/meteor';
 
 dayjs.extend(customParseFormat);
@@ -53,7 +54,7 @@ function TradeResultsView() {
 
   useTracker(() => {
     console.log(`Reloading the result trades records list due to a change in the DB.`);
-    const query = {whyClosed: {$exists: true}};
+    const query = {whyClosed: {$exists: true}, isPrerunning: false, closingPrice: {$exists: true}};
     if (isRealTradesOnly) {
       query['isMocked'] = false;
     } else {
@@ -87,7 +88,7 @@ function TradeResultsView() {
     setEndDate(result);
   };
 
-  const NamesSelector =({names}: {names: string[]}) => {
+  const NamesSelector = ({names}: { names: string[] }) => {
     // @ts-ignore
     const options = names.map((name) => <Select.Option key={name} value={name}>{name}</Select.Option>);
     return (

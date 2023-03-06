@@ -1,18 +1,16 @@
 import React from 'react';
 // @ts-ignore
-import {Meteor} from 'meteor/meteor';
-// @ts-ignore
 import {useTracker} from 'meteor/react-meteor-data';
 import Trades from '../../Collections/Trades';
 import ITradeSettings, {BadDefaultIPrice, GetDescription, IPrice} from '../../Interfaces/ITradeSettings';
 import {ColumnsType} from 'antd/lib/table';
 import {Space, Table} from 'antd';
 import EmergencyCloseActiveTrades from '../EmergencyCloseActiveTrades';
-// @ts-ignore
-import GraphTrade from './GraphTrade.tsx';
+import GraphTrade from './GraphTrade';
 import './graphTrade.css';
 import dayjs from 'dayjs';
 import duration from 'dayjs/plugin/duration';
+import './CssActiveTradesTable';
 
 dayjs.extend(duration);
 
@@ -184,6 +182,7 @@ function ActiveTradesTable() {
       columns={columns}
       rowKey="_id"
       dataSource={liveTrades}
+      rowClassName={(record, index) => record.isPrerunning ? 'table-row-prerunning' : 'table-row-normal'}
     >
     </Table>
   );

@@ -10,7 +10,8 @@ import timezone from 'dayjs/plugin/timezone';
 
 import {DeleteOutlined} from '@ant-design/icons';
 import ITradeSettings, {GetDescription, whyClosedEnum} from '../../Interfaces/ITradeSettings';
-import GraphTrade from './GraphTrade';
+// @ts-ignore
+import GraphTrade from './GraphTrade.tsx';
 import {CalculateTotalFees} from '../../Utils';
 
 dayjs.extend(utc);
@@ -84,7 +85,7 @@ const columns: ColumnsType<ITradeSettings> = [
       const initialUnder = record.monitoredPrices.length > 0 ? record.monitoredPrices[0]?.underlyingPrice ?? 0 : 0;
       const under = record.monitoredPrices.length > 0 ? record.monitoredPrices[record.monitoredPrices.length - 1]?.underlyingPrice ?? 0 : 0;
       const priceDiff = record.openingPrice > 0 ? record.closingPrice - record.openingPrice  : record.closingPrice - Math.abs(record.openingPrice);
-      const priceDiffAll = `${record.closingPrice.toFixed(2)} (${(priceDiff).toFixed(3)})`;
+      const priceDiffAll = `${record.closingPrice?.toFixed(2)} (${(priceDiff).toFixed(3)})`;
       const underDiff = `${under.toFixed(2)} (${(initialUnder - under).toFixed(3)})`;
       return RenderOpenOrClosedData(GetNewYorkTimeAsText(when), priceDiffAll, underDiff);
     },

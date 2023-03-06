@@ -15,6 +15,7 @@ import _ from 'lodash';
 import {diff} from 'deep-object-diff';
 import {CheckboxChangeEvent} from 'antd/lib/checkbox';
 import Rule1 from './Rules/Rule1';
+import PrerunRule from './Rules/PrerunRule';
 
 const CheckboxGroup = Checkbox.Group;
 const generalMargins = 30;
@@ -48,13 +49,15 @@ export const TradeSettingsEditor = ({tradeSettings, changeCallback}: Props) => {
   const [useShortOnlyForLimits, setUseShortOnlyForLimits] = React.useState(tradeSettings.useShortOnlyForLimits ?? false);
   const [isRule1, setIsRule1] = React.useState(tradeSettings.isRule1 ?? true);
   const [isRule2, setIsRule2] = React.useState(tradeSettings.isRule2 ?? true);
-  const [rule1Value, setRule1Value] = React.useState(tradeSettings.rule1Value ?? 0.0);
-  const [rule2Value, setRule2Value] = React.useState(tradeSettings.rule2Value ?? 0.0);
+  const [rule1Value, setRule1Value] = React.useState(tradeSettings.rule1Value ?? {});
+  const [rule2Value, setRule2Value] = React.useState(tradeSettings.rule2Value ?? {});
   const [name, setName] = React.useState(tradeSettings.name ?? '');
   const [slope1Samples, setSlope1Samples] = React.useState(tradeSettings.slope1Samples ?? 0);
   const [slope2Samples, setSlope2Samples] = React.useState(tradeSettings.slope2Samples ?? 0);
   const [percentGainIsDollar, setPercentGainIsDollar] = React.useState(tradeSettings.percentGainIsDollar ?? false);
   const [percentLossIsDollar, setPercentLossIsDollar] = React.useState(tradeSettings.percentLossIsDollar ?? false);
+  const [isPrerun, setIsPrerun] = React.useState(tradeSettings.isPrerun ?? true);
+  const [prerunValue, setPrerunValue] = React.useState(tradeSettings.prerunValue ?? {});
 
   const setMap = {
     isActive: setIsActive,
@@ -77,6 +80,8 @@ export const TradeSettingsEditor = ({tradeSettings, changeCallback}: Props) => {
     useShortOnlyForLimits: setUseShortOnlyForLimits,
     isRule1: setIsRule1,
     isRule2: setIsRule2,
+    isPrerun: setIsPrerun,
+    prerunValue: setPrerunValue,
     rule1Value: setRule1Value,
     rule2Value: setRule2Value,
     name: setName,
@@ -114,6 +119,8 @@ export const TradeSettingsEditor = ({tradeSettings, changeCallback}: Props) => {
         useShortOnlyForLimits,
         isRule1,
         isRule2,
+        isPrerun,
+        prerunValue,
         rule1Value,
         rule2Value,
         name,
@@ -138,7 +145,8 @@ export const TradeSettingsEditor = ({tradeSettings, changeCallback}: Props) => {
     }, 1000);
   }, [isActive, isMocked, symbol, days, entryHour, entryMinute, exitHour, exitMinute, percentGain,
     percentLoss, quantity, commissionPerContract, legs, tradeType, isRepeat, useShortOnlyForLimits,
-    isRule1, isRule2, rule1Value, rule2Value, name, slope1Samples, slope2Samples, percentGainIsDollar, percentLossIsDollar]);
+    isRule1, isRule2, isPrerun, prerunValue, rule2Value, name, slope1Samples, slope2Samples, percentGainIsDollar,
+    percentLossIsDollar]);
 
   const RunNow = () => {
     return (
@@ -311,7 +319,7 @@ export const TradeSettingsEditor = ({tradeSettings, changeCallback}: Props) => {
               defaultValue={slope1Samples}
               max={100}
               style={{width: '80px'}}
-              onChange={(value) => onChange('slope1Samples', value}
+              onChange={(value) => onChange('slope1Samples', value)}
             />
             <span style={{marginLeft: 50}}>Slope2 Samples:</span>
             <InputNumber
@@ -386,6 +394,16 @@ export const TradeSettingsEditor = ({tradeSettings, changeCallback}: Props) => {
             </Checkbox>
           </Col>
         </Space>
+      </Row>
+      <Row style={{margin: generalMargins}}>
+        <Col span={24}>
+          <Checkbox
+            onChange={(e: CheckboxChangeEvent) => onChange('isPrerun', e.target.checked)}
+            checked={isPrerun}
+          >
+          </Checkbox>
+          <PrerunRule value={prerunValue} onChange={(value) => onChange('prerunValue', value)}/>
+        </Col>
       </Row>
       <Row style={{margin: generalMargins}}>
         <Col span={24}>
