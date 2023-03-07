@@ -252,7 +252,7 @@ function checkRule2Exit(liveTrade: ITradeSettings, currentSample: IPrice) {
     const ticks = liveTrade.rule2Value?.ticks ?? 0;
     const amount = liveTrade.rule2Value?.amount ?? 0;
     const length = liveTrade.monitoredPrices.length;
-    if (ticks < length) {
+    if (ticks <= length) {
       const initialSample = liveTrade.monitoredPrices[0];
       const samples = liveTrade.monitoredPrices.slice(length - ticks);
       for (let i = 0; i < ticks; i++) {
@@ -274,7 +274,7 @@ function checkPrerunExit(liveTrade: ITradeSettings) {
     const desiredSeparation = liveTrade.prerunValue?.amount ?? 0;
     const length = liveTrade.monitoredPrices.length;
     const initialSample = liveTrade.monitoredPrices[0];
-    if (ticks < length) {
+    if (ticks <= length) {
       let isGainMet = true;
       const samples = liveTrade.monitoredPrices.slice(length - ticks);
       for (let i = 0; i < ticks; i++) {

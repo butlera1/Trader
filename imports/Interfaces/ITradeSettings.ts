@@ -195,7 +195,8 @@ function GetDescription(tradeSettings: ITradeSettings) {
   }
   let part5 = '';
   if (tradeSettings.isMocked) {
-    const prerun = tradeSettings.isPrerunning ? ' (Prerun)' : '';
+    const pVal = tradeSettings.prerunValue;
+    const prerun = tradeSettings.isPrerunning ? ` (Prerun ${pVal.amount.toFixed(2)}/${pVal.ticks})` : '';
     part5 = `\nMocked${prerun}`;
   }
   return `${part0}${part1}\n${part2}\n${part3}${part4}${part5}`;
