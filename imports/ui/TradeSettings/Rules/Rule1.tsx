@@ -22,10 +22,10 @@ function Rule1({value, onChange}: { value: IRule1Value, onChange: (value: IRule1
         <label>of profit and duration over</label>
         <InputNumber
           defaultValue={value.minutes ?? 0}
-          addonAfter={'minutes.'}
+          addonAfter={'min.'}
           min={0}
           max={60}
-          style={{width: '150px'}}
+          style={{width: '140px'}}
           onChange={(minutes: number) => onChange({...value, minutes})}
         />
       </Space>
