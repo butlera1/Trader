@@ -50,7 +50,7 @@ export const TradeSettingsEditor = ({tradeSettings, changeCallback}: Props) => {
   const [isRepeat, setIsRepeat] = React.useState(tradeSettings.isRepeat ?? false);
   const [useShortOnlyForLimits, setUseShortOnlyForLimits] = React.useState(tradeSettings.useShortOnlyForLimits ?? false);
   const [isRule1, setIsRule1] = React.useState(tradeSettings.isRule1 ?? true);
-  const [isRule2, setIsRule2] = React.useState(tradeSettings.isRule2 ?? true);
+  const [isRule2, setIsRule2] = React.useState(tradeSettings.isRule2 ?? false);
   const [rule1Value, setRule1Value] = React.useState(tradeSettings.rule1Value ?? {});
   const [rule2Value, setRule2Value] = React.useState(tradeSettings.rule2Value ?? {...DefaultRule2Value});
   const [name, setName] = React.useState(tradeSettings.name ?? '');
