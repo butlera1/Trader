@@ -10,7 +10,7 @@ function Rule1({value, onChange}: { value: IRule1Value, onChange: (value: IRule1
   return (
     <>
       <Space style={{marginLeft: 10}}>
-        <label>Exit if</label>
+        <label>R1: Exit if</label>
         <InputNumber
           defaultValue={(value.profitPercent ?? 0) * 100}
           addonAfter={'%'}

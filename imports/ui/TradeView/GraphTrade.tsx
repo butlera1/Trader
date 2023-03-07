@@ -59,10 +59,6 @@ function GraphTrade({liveTrade}: { liveTrade: ITradeSettings }) {
             isAnimationActive={false}/>
       <Line type="monotone" dataKey={() => lossLine} name={'Max Loss'} stroke="cyan" dot={false}
             isAnimationActive={false}/>
-      <Line type="monotone" dataKey={(price) => price.slope1 * 200 + gainLine} name={'slope1'} stroke="red" dot={false}
-            isAnimationActive={false}/>
-      <Line type="monotone" dataKey={(price) => price.slope2 * 200 + gainLine} name={'slope2'} stroke="grey" dot={false}
-            isAnimationActive={false}/>
     </LineChart>
   );
 }

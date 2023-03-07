@@ -16,6 +16,8 @@ import {diff} from 'deep-object-diff';
 import {CheckboxChangeEvent} from 'antd/lib/checkbox';
 import Rule1 from './Rules/Rule1';
 import PrerunRule from './Rules/PrerunRule';
+import Rule2 from './Rules/Rule2';
+import {DefaultRule2Value} from '../../Interfaces/IRule2Value';
 
 const CheckboxGroup = Checkbox.Group;
 const generalMargins = 30;
@@ -50,7 +52,7 @@ export const TradeSettingsEditor = ({tradeSettings, changeCallback}: Props) => {
   const [isRule1, setIsRule1] = React.useState(tradeSettings.isRule1 ?? true);
   const [isRule2, setIsRule2] = React.useState(tradeSettings.isRule2 ?? true);
   const [rule1Value, setRule1Value] = React.useState(tradeSettings.rule1Value ?? {});
-  const [rule2Value, setRule2Value] = React.useState(tradeSettings.rule2Value ?? {});
+  const [rule2Value, setRule2Value] = React.useState(tradeSettings.rule2Value ?? {...DefaultRule2Value});
   const [name, setName] = React.useState(tradeSettings.name ?? '');
   const [slope1Samples, setSlope1Samples] = React.useState(tradeSettings.slope1Samples ?? 0);
   const [slope2Samples, setSlope2Samples] = React.useState(tradeSettings.slope2Samples ?? 0);
@@ -413,6 +415,16 @@ export const TradeSettingsEditor = ({tradeSettings, changeCallback}: Props) => {
           >
           </Checkbox>
           <Rule1 value={rule1Value} onChange={(value) => onChange('rule1Value', value)}/>
+        </Col>
+      </Row>
+      <Row style={{margin: generalMargins}}>
+        <Col span={24}>
+          <Checkbox
+            onChange={(e: CheckboxChangeEvent) => onChange('isRule2', e.target.checked)}
+            checked={isRule2}
+          >
+          </Checkbox>
+          <Rule2 value={rule2Value} onChange={(value) => onChange('rule2Value', value)}/>
         </Col>
       </Row>
 

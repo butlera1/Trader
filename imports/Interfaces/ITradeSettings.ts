@@ -1,6 +1,7 @@
 import ILegSettings, {BuySell, OptionType} from './ILegSettings';
 import {IRule1Value} from '../ui/TradeSettings/Rules/Rule1';
 import {IPrerunValue} from '../ui/TradeSettings/Rules/PrerunRule';
+import IRule2Value from './IRule2Value';
 
 enum whyClosedEnum {
   emergencyExit = 'emergencyExit',
@@ -88,7 +89,7 @@ interface ITradeSettings {
   isPrerunning?: boolean,
   prerunValue?: IPrerunValue,
   rule1Value?: IRule1Value,
-  rule2Value?: any,
+  rule2Value?: IRule2Value,
   totalFees?: number,
   slope1Samples?: number,
   slope2Samples?: number,
@@ -167,7 +168,7 @@ const DefaultTradeSettings: ITradeSettings = {
   phone: 'none',
   useShortOnlyForLimits: true,
   isPrerunning: false,
-  prerunValue: {ticks: 0, cents: 0},
+  prerunValue: {ticks: 0, amount: 0},
 
 };
 

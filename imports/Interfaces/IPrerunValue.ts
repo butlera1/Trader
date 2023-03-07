@@ -1,5 +1,5 @@
 interface IPrerunValue {
-  cents: number;
+  amount: number;
   ticks: number;
 }
 

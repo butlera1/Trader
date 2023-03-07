@@ -176,7 +176,11 @@ async function CloseTrade(tradeSettings: ITradeSettings, currentPrice: number) {
       const msg = `Failed to get originalTradeSettingsId: ${tradeSettings.originalTradeSettingsId} after closing a trade.`;
       LogData(tradeSettings, msg, new Error(msg));
     } else {
-      const nowPrerunning = wasPrerunning ? false : settings.isPrerun;
+      let nowPrerunning = wasPrerunning ? false : settings.isPrerun;
+      // If wasPrerunning, and we exited for something other than (gainLimit or prerunExit), restart a prerun.
+      if (wasPrerunning && tradeSettings.whyClosed !== whyClosedEnum.gainLimit && tradeSettings.whyClosed !== whyClosedEnum.prerunExit) {
+        nowPrerunning = true; // Do another prerun because we exited for loss limit or similar.
+      }
       ExecuteTrade(settings, false, nowPrerunning)
         .then()
         .catch((reason) => LogData(tradeSettings, `Failed doing a repeat ExecuteTrade ${reason}`, new Error(reason)));
@@ -232,29 +236,52 @@ function checkRule1Exit(liveTrade: ITradeSettings, currentSample: IPrice) {
   return false;
 }
 
+function getLongShortSeparation(initialSample, sample){
+  const longDelta = Math.abs(sample.longStraddlePrice) - Math.abs(initialSample.longStraddlePrice);
+  const shortDelta = Math.abs(initialSample.shortStraddlePrice) - Math.abs(sample.shortStraddlePrice);
+  return (longDelta + shortDelta);
+}
+
 /**
- * This rule is not implemented yet.
+ * Exit if the long and short straddles separation is inverted to too long.
  * @param liveTrade
  * @param currentSample
  */
 function checkRule2Exit(liveTrade: ITradeSettings, currentSample: IPrice) {
+  if (liveTrade.isRule2) {
+    const ticks = liveTrade.rule2Value?.ticks ?? 0;
+    const amount = liveTrade.rule2Value?.amount ?? 0;
+    const length = liveTrade.monitoredPrices.length;
+    if (ticks < length) {
+      const initialSample = liveTrade.monitoredPrices[0];
+      const samples = liveTrade.monitoredPrices.slice(length - ticks);
+      for (let i = 0; i < ticks; i++) {
+        const delta = getLongShortSeparation(initialSample, samples[i]);
+        const inverted = delta < -amount;
+        if (!inverted) {
+          return false;
+        }
+      }
+      return true;
+    }
+  }
   return false;
 }
 
-function checkPrerunExit(liveTrade: ITradeSettings, currentSample: IPrice) {
-  if (liveTrade.isPrerun) {
+function checkPrerunExit(liveTrade: ITradeSettings) {
+  if (liveTrade.isPrerunning) {
     const ticks = liveTrade.prerunValue?.ticks ?? 0;
-    const desiredSeparation = liveTrade.prerunValue?.cents ?? 0;
+    const desiredSeparation = liveTrade.prerunValue?.amount ?? 0;
     const length = liveTrade.monitoredPrices.length;
     const initialSample = liveTrade.monitoredPrices[0];
     if (ticks < length) {
       let isGainMet = true;
       const samples = liveTrade.monitoredPrices.slice(length - ticks);
       for (let i = 0; i < ticks; i++) {
-        const longDelta = samples[i].longStraddlePrice - initialSample.longStraddlePrice;
-        const shortDelta = samples[i].shortStraddlePrice - initialSample.shortStraddlePrice;
-        const haveSeparation = (longDelta - shortDelta) > desiredSeparation;
-        isGainMet = isGainMet && haveSeparation && samples[i].gain > 0;
+        const delta = getLongShortSeparation(initialSample, samples[i]);
+        const haveSeparation = delta > desiredSeparation;
+        isGainMet = isGainMet && haveSeparation && (samples[i].gain > 0);
+        if(!isGainMet) break;
       }
       return isGainMet;
     }
@@ -301,7 +328,7 @@ function MonitorTradeToCloseItOut(liveTrade: ITradeSettings) {
       }
       const isRule1Exit = checkRule1Exit(liveTrade, currentSamplePrice);
       const isRule2Exit = checkRule2Exit(liveTrade, currentSamplePrice);
-      const isPrerunExit = checkPrerunExit(liveTrade, currentSamplePrice);
+      const isPrerunExit = checkPrerunExit(liveTrade);
       if (isGainLimit || isLossLimit || isEndOfDay || isRule1Exit || isRule2Exit || isPrerunExit) {
         liveTrade.whyClosed = whyClosedEnum.gainLimit;
         if (isRule1Exit) {

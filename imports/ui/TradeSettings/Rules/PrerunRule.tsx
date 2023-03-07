@@ -6,7 +6,7 @@ function PrerunRule({value, onChange}: { value: IPrerunValue, onChange: (value: 
   return (
     <>
       <Space style={{marginLeft: 10}}>
-        <label>Prerun until</label>
+        <label>Prerun: Until</label>
         <InputNumber
           defaultValue={value.ticks ?? 0}
           min={0}
@@ -15,17 +15,17 @@ function PrerunRule({value, onChange}: { value: IPrerunValue, onChange: (value: 
           style={{width: '60px'}}
           onChange={(ticks: number) => onChange({...value, ticks})}
         />
-        <label>ticks with</label>
+        <label>ticks with +Separation {'>'}</label>
         <InputNumber
-          defaultValue={value.cents ?? 0}
-          addonAfter={'\u00A2'}
+          defaultValue={value.amount ?? 0}
+          addonAfter={'$'}
           min={0}
           max={100}
-          step={0.1}
+          step={0.01}
           style={{width: '100px'}}
-          onChange={(cents: number) => onChange({...value, cents})}
+          onChange={(amount: number) => onChange({...value, amount})}
         />
-        <label>+separation and +gain.</label>
+        <label>and +Gain.</label>
       </Space>
     </>
   );

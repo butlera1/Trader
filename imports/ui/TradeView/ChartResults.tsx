@@ -39,30 +39,32 @@ function ChartResults({records}: { records: ITradeSettings[] }) {
   let avgDuration = 0;
 
   records.reduce((sum, record) => {
-    const description = getDescription(record);
-    const actualGainLoss = record.gainLoss - CalculateTotalFees(record);
-    sum = sum + actualGainLoss;
-    sumResults.push({
-      description,
-      whenClosed: record.whenClosed,
-      sum,
-      gainLoss: actualGainLoss,
-    });
-    if (actualGainLoss >= 0.0) {
-      wins++;
-      avgWinTmp += actualGainLoss;
-      if (actualGainLoss > maxWin) {
-        maxWin = actualGainLoss;
+    if (!record.isPrerunning) {
+      const description = getDescription(record);
+      const actualGainLoss = record.gainLoss - CalculateTotalFees(record);
+      sum = sum + actualGainLoss;
+      sumResults.push({
+        description,
+        whenClosed: record.whenClosed,
+        sum,
+        gainLoss: actualGainLoss,
+      });
+      if (actualGainLoss >= 0.0) {
+        wins++;
+        avgWinTmp += actualGainLoss;
+        if (actualGainLoss > maxWin) {
+          maxWin = actualGainLoss;
+        }
+      } else {
+        losses++;
+        avgLossTmp += actualGainLoss;
+        if (actualGainLoss < maxLoss) {
+          maxLoss = actualGainLoss;
+        }
       }
-    } else {
-      losses++;
-      avgLossTmp += actualGainLoss;
-      if (actualGainLoss < maxLoss) {
-        maxLoss = actualGainLoss;
-      }
+      avgDuration += getTradeDurationMinutes(record);
+      return sum;
     }
-    avgDuration += getTradeDurationMinutes(record);
-    return sum;
   }, 0.0);
   const avgLossText = ((avgLossTmp / losses).toFixed(2));
   const avgWinText = ((avgWinTmp / wins).toFixed(2));
