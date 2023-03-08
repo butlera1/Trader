@@ -65,12 +65,13 @@ function ChartResults({records}: { records: ITradeSettings[] }) {
       avgDuration += getTradeDurationMinutes(record);
       return sum;
     }
+    return 0.0
   }, 0.0);
-  const avgLossText = ((avgLossTmp / losses).toFixed(2));
-  const avgWinText = ((avgWinTmp / wins).toFixed(2));
-  const winRate = (((wins / sumResults.length) * 100).toFixed(1));
-  const lossRate = (((losses / sumResults.length) * 100).toFixed(1));
-  avgDuration = avgDuration / records.length;
+  const avgLossText = losses ? ((avgLossTmp / losses).toFixed(2)) : '0.00';
+  const avgWinText = wins ? ((avgWinTmp / wins).toFixed(2)) : '0.00';
+  const winRate = sumResults.length ? (((wins / sumResults.length) * 100).toFixed(1)) : '0.0';
+  const lossRate = sumResults.length ? (((losses / sumResults.length) * 100).toFixed(1)) : '0.0';
+  avgDuration = records.length ? avgDuration / records.length : 0;
 
   return (
     <Space>

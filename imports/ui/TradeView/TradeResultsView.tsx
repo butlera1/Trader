@@ -53,7 +53,6 @@ function TradeResultsView() {
   }, []);
 
   useTracker(() => {
-    console.log(`Reloading the result trades records list due to a change in the DB.`);
     const query = {whyClosed: {$exists: true}, closingPrice: {$exists: true}};
     if (isRealTradesOnly) {
       query['isMocked'] = false;
