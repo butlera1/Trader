@@ -63,9 +63,8 @@ function ChartResults({records}: { records: ITradeSettings[] }) {
         }
       }
       avgDuration += getTradeDurationMinutes(record);
-      return sum;
     }
-    return 0.0
+    return sum;
   }, 0.0);
   const avgLossText = losses ? ((avgLossTmp / losses).toFixed(2)) : '0.00';
   const avgWinText = wins ? ((avgWinTmp / wins).toFixed(2)) : '0.00';
