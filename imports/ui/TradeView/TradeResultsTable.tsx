@@ -13,6 +13,7 @@ import ITradeSettings, {GetDescription, whyClosedEnum} from '../../Interfaces/IT
 // @ts-ignore
 import GraphTrade from './GraphTrade.tsx';
 import {CalculateTotalFees} from '../../Utils';
+import './CssActiveTradesTable';
 
 dayjs.extend(utc);
 dayjs.extend(timezone);
@@ -172,6 +173,7 @@ function TradeResultsTable({records}: { records: ITradeSettings[] }) {
       size="small" columns={columns}
       dataSource={records}
       rowKey="_id"
+      rowClassName={(record) => record.isPrerunning ? 'table-row-prerunning' : 'table-row-normal'}
     />
   );
 }
