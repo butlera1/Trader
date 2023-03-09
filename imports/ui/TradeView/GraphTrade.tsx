@@ -47,6 +47,8 @@ function GraphTrade({liveTrade}: { liveTrade: ITradeSettings }) {
       <XAxis dataKey={getTime} unit={'m'}/>
       <Tooltip/>
       <Legend/>
+      <Line type="monotone" dataKey={() => gainLine} name={'Max Gain'} stroke="cyan" dot={false}
+            isAnimationActive={false}/>
       <Line type="monotone" strokeWidth={2} dataKey={getGain} name={'G/L'} stroke="green" dot={false}
             isAnimationActive={false}/>
       <Line type="monotone" strokeWidth={2} dataKey={getUnderlying} name={'Underlying'} stroke="red" dot={false}
@@ -54,8 +56,6 @@ function GraphTrade({liveTrade}: { liveTrade: ITradeSettings }) {
       <Line type="monotone" dataKey={getLongStraddlePrice} name={'Long Straddle'} stroke="lightpink" dot={false}
             isAnimationActive={false}/>
       <Line type="monotone" dataKey={getShortStraddlePrice} name={'Short Straddle'} stroke="lightgreen" dot={false}
-            isAnimationActive={false}/>
-      <Line type="monotone" dataKey={() => gainLine} name={'Max Gain'} stroke="cyan" dot={false}
             isAnimationActive={false}/>
       <Line type="monotone" dataKey={() => lossLine} name={'Max Loss'} stroke="cyan" dot={false}
             isAnimationActive={false}/>

@@ -2,6 +2,7 @@ import ILegSettings, {BuySell, OptionType} from './ILegSettings';
 import {IRule1Value} from '../ui/TradeSettings/Rules/Rule1';
 import {IPrerunValue} from '../ui/TradeSettings/Rules/PrerunRule';
 import IRule2Value from './IRule2Value';
+import IRule3Value from './IRule3Value';
 
 enum whyClosedEnum {
   emergencyExit = 'emergencyExit',
@@ -10,6 +11,7 @@ enum whyClosedEnum {
   timedExit = 'timedExit',
   rule1Exit = 'r1Exit',
   rule2Exit = 'r2Exit',
+  rule3Exit = 'r3Exit',
   prerunExit = 'prerunExit',
 }
 
@@ -85,11 +87,13 @@ interface ITradeSettings {
   useShortOnlyForLimits?: boolean,
   isRule1?: boolean,
   isRule2?: boolean,
+  isRule3?: boolean,
   isPrerun?: boolean,
   isPrerunning?: boolean,
   prerunValue?: IPrerunValue,
   rule1Value?: IRule1Value,
   rule2Value?: IRule2Value,
+  rule3Value?: IRule3Value,
   totalFees?: number,
   slope1Samples?: number,
   slope2Samples?: number,

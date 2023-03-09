@@ -268,6 +268,29 @@ function checkRule2Exit(liveTrade: ITradeSettings, currentSample: IPrice) {
   return false;
 }
 
+function getMaximumPercentGainReached(liveTrade: ITradeSettings) {
+  if (liveTrade.monitoredPrices.length === 0) return 0;
+  const maxGain = liveTrade.monitoredPrices.reduce((max, sample) => sample.gain > max.gain ? sample : max, liveTrade.monitoredPrices[0]);
+ const maxGainDollar = CalculateGain(liveTrade, liveTrade.gainLimit);
+  return maxGain.gain / maxGainDollar;
+}
+
+function checkRule3Exit(liveTrade: ITradeSettings, currentSample: IPrice) {
+  if (liveTrade.isRule3) {
+    const desiredMinutes = liveTrade.rule3Value?.minutes ?? 0;
+    const desiredGainPercent = liveTrade.rule3Value?.gainPercent ?? 0;
+    const trailingStopPercent = liveTrade.rule3Value?.trailingStopPercent ?? 0;
+    const durationInMinutes = getTradeDurationInMinutes(liveTrade);
+    const maximumPercentGainReached = getMaximumPercentGainReached(liveTrade);
+    if (desiredMinutes <= durationInMinutes && maximumPercentGainReached > desiredGainPercent) {
+      const trailingStopGainPercent = maximumPercentGainReached - maximumPercentGainReached * trailingStopPercent;
+      const currentGainPercent = currentSample.gain / CalculateGain(liveTrade, liveTrade.gainLimit);
+      if (currentGainPercent < trailingStopGainPercent) return true;
+    }
+  }
+  return false;
+}
+
 function checkPrerunExit(liveTrade: ITradeSettings) {
   if (liveTrade.isPrerunning) {
     const ticks = liveTrade.prerunValue?.ticks ?? 0;
@@ -328,14 +351,18 @@ function MonitorTradeToCloseItOut(liveTrade: ITradeSettings) {
       }
       const isRule1Exit = checkRule1Exit(liveTrade, currentSamplePrice);
       const isRule2Exit = checkRule2Exit(liveTrade, currentSamplePrice);
+      const isRule3Exit = checkRule3Exit(liveTrade, currentSamplePrice);
       const isPrerunExit = checkPrerunExit(liveTrade);
-      if (isGainLimit || isLossLimit || isEndOfDay || isRule1Exit || isRule2Exit || isPrerunExit) {
+      if (isGainLimit || isLossLimit || isEndOfDay || isRule1Exit || isRule2Exit || isRule3Exit || isPrerunExit) {
         liveTrade.whyClosed = whyClosedEnum.gainLimit;
         if (isRule1Exit) {
           liveTrade.whyClosed = whyClosedEnum.rule1Exit;
         }
         if (isRule2Exit) {
           liveTrade.whyClosed = whyClosedEnum.rule2Exit;
+        }
+        if (isRule3Exit) {
+          liveTrade.whyClosed = whyClosedEnum.rule3Exit;
         }
         if (isPrerunExit) {
           liveTrade.whyClosed = whyClosedEnum.prerunExit;

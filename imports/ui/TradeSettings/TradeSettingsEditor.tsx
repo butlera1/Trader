@@ -18,6 +18,8 @@ import Rule1 from './Rules/Rule1';
 import PrerunRule from './Rules/PrerunRule';
 import Rule2 from './Rules/Rule2';
 import {DefaultRule2Value} from '../../Interfaces/IRule2Value';
+import {DefaultRule3Value} from '../../Interfaces/IRule3Value';
+import Rule3 from './Rules/Rule3';
 
 const CheckboxGroup = Checkbox.Group;
 const generalMargins = 30;
@@ -51,8 +53,10 @@ export const TradeSettingsEditor = ({tradeSettings, changeCallback}: Props) => {
   const [useShortOnlyForLimits, setUseShortOnlyForLimits] = React.useState(tradeSettings.useShortOnlyForLimits ?? false);
   const [isRule1, setIsRule1] = React.useState(tradeSettings.isRule1 ?? true);
   const [isRule2, setIsRule2] = React.useState(tradeSettings.isRule2 ?? false);
+  const [isRule3, setIsRule3] = React.useState(tradeSettings.isRule3 ?? false);
   const [rule1Value, setRule1Value] = React.useState(tradeSettings.rule1Value ?? {});
   const [rule2Value, setRule2Value] = React.useState(tradeSettings.rule2Value ?? {...DefaultRule2Value});
+  const [rule3Value, setRule3Value] = React.useState(tradeSettings.rule3Value ?? {...DefaultRule3Value});
   const [name, setName] = React.useState(tradeSettings.name ?? '');
   const [slope1Samples, setSlope1Samples] = React.useState(tradeSettings.slope1Samples ?? 0);
   const [slope2Samples, setSlope2Samples] = React.useState(tradeSettings.slope2Samples ?? 0);
@@ -82,10 +86,12 @@ export const TradeSettingsEditor = ({tradeSettings, changeCallback}: Props) => {
     useShortOnlyForLimits: setUseShortOnlyForLimits,
     isRule1: setIsRule1,
     isRule2: setIsRule2,
+    isRule3: setIsRule3,
     isPrerun: setIsPrerun,
     prerunValue: setPrerunValue,
     rule1Value: setRule1Value,
     rule2Value: setRule2Value,
+    rule3Value: setRule3Value,
     name: setName,
     slope1Samples: setSlope1Samples,
     slope2Samples: setSlope2Samples,
@@ -121,10 +127,12 @@ export const TradeSettingsEditor = ({tradeSettings, changeCallback}: Props) => {
         useShortOnlyForLimits,
         isRule1,
         isRule2,
+        isRule3,
         isPrerun,
         prerunValue,
         rule1Value,
         rule2Value,
+        rule3Value,
         name,
         slope1Samples: slope1Samples,
         slope2Samples: slope2Samples,
@@ -147,7 +155,8 @@ export const TradeSettingsEditor = ({tradeSettings, changeCallback}: Props) => {
     }, 1000);
   }, [isActive, isMocked, symbol, days, entryHour, entryMinute, exitHour, exitMinute, percentGain,
     percentLoss, quantity, commissionPerContract, legs, tradeType, isRepeat, useShortOnlyForLimits,
-    isRule1, isRule2, isPrerun, prerunValue, rule2Value, name, slope1Samples, slope2Samples, percentGainIsDollar,
+    isRule1, isRule2, isRule3, prerunValue, rule1Value, rule2Value, rule3Value, name, slope1Samples,
+    slope2Samples, percentGainIsDollar,
     percentLossIsDollar]);
 
   const RunNow = () => {
@@ -425,6 +434,16 @@ export const TradeSettingsEditor = ({tradeSettings, changeCallback}: Props) => {
           >
           </Checkbox>
           <Rule2 value={rule2Value} onChange={(value) => onChange('rule2Value', value)}/>
+        </Col>
+      </Row>
+      <Row style={{margin: generalMargins}}>
+        <Col span={24}>
+          <Checkbox
+            onChange={(e: CheckboxChangeEvent) => onChange('isRule3', e.target.checked)}
+            checked={isRule3}
+          >
+          </Checkbox>
+          <Rule3 value={rule3Value} onChange={(value) => onChange('rule3Value', value)}/>
         </Col>
       </Row>
 
