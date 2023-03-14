@@ -41,7 +41,7 @@ export const LegsEditor = ({
           <Space>
             <Select
               defaultValue={leg.buySell}
-              style={{width: 50}}
+              style={{width: 70}}
               onChange={(value) => onChange('buySell', index, value)}>
               <Select.Option value={BuySell.BUY}>Buy</Select.Option>
               <Select.Option value={BuySell.SELL}>Sell</Select.Option>

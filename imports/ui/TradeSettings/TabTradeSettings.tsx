@@ -91,7 +91,7 @@ function TabTradeSettings() {
         onEdit={onEdit}
         items={items}
         tabPosition={'left'}
-        style={{width: 800, border: '1px solid grey', marginTop: -15}}
+        style={{width: 900, border: '1px solid grey', marginTop: -15}}
       />
       {errorText ? <Alert
           message={errorText}

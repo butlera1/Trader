@@ -80,6 +80,7 @@ function GetNewYorkTimeNowAsText() {
 
 async function GetOptionsPriceLoop(tradeSettings: ITradeSettings): Promise<IPrice> {
   let result: IPrice = {...BadDefaultIPrice};
+  const doubleAbsOpenPrice = Math.abs(tradeSettings.openingPrice) * 2;
   let count = 0;
   while (count < 3) {
     try {
@@ -93,8 +94,12 @@ async function GetOptionsPriceLoop(tradeSettings: ITradeSettings): Promise<IPric
       setTimeout(() => {
         release();
       }, 1000);
-      if (_.isFinite(result?.price) && result?.price !== 0) {
-        return result;
+      if (_.isFinite(result.price)) {
+        if (Math.abs(result.price) < doubleAbsOpenPrice) {
+          return result;
+        } else {
+          console.error(`***************    GetOptionsPriceLoop: PRICE IS TOO FAR FROM OPENING PRICE.`, tradeSettings.openingPrice, result.price);
+        }
       }
       count++;
     } catch (ex) {
@@ -236,7 +241,7 @@ function checkRule1Exit(liveTrade: ITradeSettings, currentSample: IPrice) {
   return false;
 }
 
-function getLongShortSeparation(initialSample, sample){
+function getLongShortSeparation(initialSample, sample) {
   const longDelta = Math.abs(sample.longStraddlePrice) - Math.abs(initialSample.longStraddlePrice);
   const shortDelta = Math.abs(initialSample.shortStraddlePrice) - Math.abs(sample.shortStraddlePrice);
   return (longDelta + shortDelta);
@@ -271,12 +276,12 @@ function checkRule2Exit(liveTrade: ITradeSettings, currentSample: IPrice) {
 function getMaximumPercentGainReached(liveTrade: ITradeSettings) {
   if (liveTrade.monitoredPrices.length === 0) return 0;
   const maxGain = liveTrade.monitoredPrices.reduce((max, sample) => sample.gain > max.gain ? sample : max, liveTrade.monitoredPrices[0]);
- const maxGainDollar = CalculateGain(liveTrade, liveTrade.gainLimit);
+  const maxGainDollar = CalculateGain(liveTrade, liveTrade.gainLimit);
   return maxGain.gain / maxGainDollar;
 }
 
 function checkRule3Exit(liveTrade: ITradeSettings, currentSample: IPrice) {
-  if (liveTrade.isRule3) {
+  if (liveTrade.isRule3 && !liveTrade.isPrerunning) {
     const desiredMinutes = liveTrade.rule3Value?.minutes ?? 0;
     const desiredGainPercent = liveTrade.rule3Value?.gainPercent ?? 0;
     const trailingStopPercent = liveTrade.rule3Value?.trailingStopPercent ?? 0;
@@ -304,7 +309,7 @@ function checkPrerunExit(liveTrade: ITradeSettings) {
         const delta = getLongShortSeparation(initialSample, samples[i]);
         const haveSeparation = delta > desiredSeparation;
         isGainMet = isGainMet && haveSeparation && (samples[i].gain > 0);
-        if(!isGainMet) break;
+        if (!isGainMet) break;
       }
       return isGainMet;
     }

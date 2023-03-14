@@ -27,7 +27,7 @@ function Rule3({value, onChange}: { value: IRule3Value, onChange: (value: IRule3
           style={{width: '60px'}}
           onChange={(gainPercent: number) => onChange({...value, gainPercent: gainPercent / 100})}
         />
-        <label>% gain and</label>
+        <label>% of Gain Limit and</label>
         <InputNumber
           defaultValue={value.minutes ?? 0}
           step={1}
