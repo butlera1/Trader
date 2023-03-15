@@ -3,6 +3,7 @@ import {IRule1Value} from '../ui/TradeSettings/Rules/Rule1';
 import {IPrerunValue} from '../ui/TradeSettings/Rules/PrerunRule';
 import IRule2Value from './IRule2Value';
 import IRule3Value from './IRule3Value';
+import IRule4Value from './IRule4Value';
 
 enum whyClosedEnum {
   emergencyExit = 'emergencyExit',
@@ -12,6 +13,7 @@ enum whyClosedEnum {
   rule1Exit = 'r1Exit',
   rule2Exit = 'r2Exit',
   rule3Exit = 'r3Exit',
+  rule4Exit = 'r4Exit',
   prerunExit = 'prerunExit',
 }
 
@@ -88,12 +90,14 @@ interface ITradeSettings {
   isRule1?: boolean,
   isRule2?: boolean,
   isRule3?: boolean,
+  isRule4?: boolean,
   isPrerun?: boolean,
   isPrerunning?: boolean,
   prerunValue?: IPrerunValue,
   rule1Value?: IRule1Value,
   rule2Value?: IRule2Value,
   rule3Value?: IRule3Value,
+  rule4Value?: IRule4Value,
   totalFees?: number,
   slope1Samples?: number,
   slope2Samples?: number,
@@ -173,7 +177,6 @@ const DefaultTradeSettings: ITradeSettings = {
   useShortOnlyForLimits: true,
   isPrerunning: false,
   prerunValue: {ticks: 0, amount: 0},
-
 };
 
 function getTwoDTEValues(legs) {

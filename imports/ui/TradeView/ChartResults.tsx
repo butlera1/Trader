@@ -27,8 +27,19 @@ function getTradeDurationMinutes(trade: ITradeSettings) {
   return dayjs(trade.whenClosed).diff(initialTime, 'minute', true);
 }
 
-function ChartResults({records}: { records: ITradeSettings[] }) {
+interface ITotalsProps {
+  numberOfTrades: number,
+  winnings: number,
+  losses: number,
+  totalGains: number,
+}
+function Totals({numberOfTrades, winnings, losses, totalGains}: ITotalsProps){
+  const color = totalGains>0 ? 'green' : 'red';
+  const ColoredStuff = <span >Result: ${totalGains.toFixed(2)}</span>;
+  return <h2 style={{color}}>{numberOfTrades} trades, Wins: ${winnings.toFixed(2)} - Losses: ${Math.abs(losses).toFixed(2)} = {ColoredStuff}</h2>
+}
 
+function ChartResults({records}: { records: ITradeSettings[] }) {
   const sumResults: ISumResults[] = [];
   let wins = 0.0;
   let losses = 0.0;
@@ -37,8 +48,10 @@ function ChartResults({records}: { records: ITradeSettings[] }) {
   let maxWin = 0;
   let maxLoss = 0;
   let avgDuration = 0;
+  let sumWins = 0;
+  let sumLosses = 0;
 
-  records.reduce((sum, record) => {
+  const resultSum = records.reduce((sum, record) => {
     if (!record.isPrerunning) {
       const description = getDescription(record);
       const actualGainLoss = record.gainLoss - CalculateTotalFees(record);
@@ -51,12 +64,14 @@ function ChartResults({records}: { records: ITradeSettings[] }) {
       });
       if (actualGainLoss >= 0.0) {
         wins++;
+        sumWins += actualGainLoss;
         avgWinTmp += actualGainLoss;
         if (actualGainLoss > maxWin) {
           maxWin = actualGainLoss;
         }
       } else {
         losses++;
+        sumLosses += actualGainLoss;
         avgLossTmp += actualGainLoss;
         if (actualGainLoss < maxLoss) {
           maxLoss = actualGainLoss;
@@ -74,7 +89,7 @@ function ChartResults({records}: { records: ITradeSettings[] }) {
 
   return (
     <Space>
-      <LineChart width={400} height={200} data={sumResults ?? []} margin={{top: 5, right: 20, bottom: 5, left: 0}}>
+      <LineChart width={600} height={300} data={sumResults ?? []} margin={{top: 5, right: 20, bottom: 5, left: 0}}>
         <Line type="monotone" dataKey="sum" stroke="blue" dot={false}/>
         <Line type="monotone" dataKey="gainLoss" stroke="pink" dot={false}/>
         <CartesianGrid stroke="#ccc" strokeDasharray="5 5"/>
@@ -84,27 +99,29 @@ function ChartResults({records}: { records: ITradeSettings[] }) {
       </LineChart>
       <div>
         <Space>
-          <h2>WINS:</h2>
-          <h3>{winRate}%</h3>
-          <h3>Avg: ${avgWinText}</h3>
-          <h3>Max: ${maxWin.toFixed(2)}</h3>
+          <h1>WINS:</h1>
+          <h2>{wins}/{sumResults.length} for {winRate}% win rate.</h2>
+          <h2>Avg: ${avgWinText}</h2>
+          <h2>Max: ${maxWin.toFixed(2)}</h2>
+          <h2>Total: ${sumWins.toFixed(2)}</h2>
         </Space>
         <br/>
         <Space>
-          <h2>Losses:</h2>
-          <h3>{lossRate}%</h3>
-          <h3>Avg: ${avgLossText}</h3>
-          <h3>Max: ${maxLoss.toFixed(2)}</h3>
+          <h1>Losses:</h1>
+          <h2>{losses}/{sumResults.length} for {lossRate}% loss rate.</h2>
+          <h2>Avg: ${avgLossText}</h2>
+          <h2>Max: ${maxLoss.toFixed(2)}</h2>
+          <h2>Total: ${sumLosses.toFixed(2)}</h2>
         </Space>
         <br/>
         <Space>
-          <h2>Average Duration:</h2>
-          <h3>{avgDuration.toFixed(1)} min</h3>
+          <h1>Average Duration:</h1>
+          <h2>{avgDuration.toFixed(1)} min</h2>
         </Space>
         <br/>
         <Space>
-          <h2>Totals:</h2>
-          <h3>{sumResults.length}, Wins: {wins}, Losses: {losses}</h3>
+          <h1>Totals:</h1>
+          <Totals numberOfTrades={sumResults.length} winnings={sumWins} losses={sumLosses} totalGains={resultSum}/>
         </Space>
       </div>
     </Space>

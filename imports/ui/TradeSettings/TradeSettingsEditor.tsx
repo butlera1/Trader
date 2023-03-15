@@ -20,6 +20,8 @@ import Rule2 from './Rules/Rule2';
 import {DefaultRule2Value} from '../../Interfaces/IRule2Value';
 import {DefaultRule3Value} from '../../Interfaces/IRule3Value';
 import Rule3 from './Rules/Rule3';
+import {DefaultRule4Value} from '../../Interfaces/IRule4Value';
+import Rule4 from './Rules/Rule4';
 
 const CheckboxGroup = Checkbox.Group;
 const generalMargins = 30;
@@ -54,9 +56,11 @@ export const TradeSettingsEditor = ({tradeSettings, changeCallback}: Props) => {
   const [isRule1, setIsRule1] = React.useState(tradeSettings.isRule1 ?? true);
   const [isRule2, setIsRule2] = React.useState(tradeSettings.isRule2 ?? false);
   const [isRule3, setIsRule3] = React.useState(tradeSettings.isRule3 ?? false);
+  const [isRule4, setIsRule4] = React.useState(tradeSettings.isRule4 ?? false);
   const [rule1Value, setRule1Value] = React.useState(tradeSettings.rule1Value ?? {});
   const [rule2Value, setRule2Value] = React.useState(tradeSettings.rule2Value ?? {...DefaultRule2Value});
   const [rule3Value, setRule3Value] = React.useState(tradeSettings.rule3Value ?? {...DefaultRule3Value});
+  const [rule4Value, setRule4Value] = React.useState(tradeSettings.rule4Value ?? {...DefaultRule4Value});
   const [name, setName] = React.useState(tradeSettings.name ?? '');
   const [slope1Samples, setSlope1Samples] = React.useState(tradeSettings.slope1Samples ?? 0);
   const [slope2Samples, setSlope2Samples] = React.useState(tradeSettings.slope2Samples ?? 0);
@@ -87,11 +91,13 @@ export const TradeSettingsEditor = ({tradeSettings, changeCallback}: Props) => {
     isRule1: setIsRule1,
     isRule2: setIsRule2,
     isRule3: setIsRule3,
+    isRule4: setIsRule4,
     isPrerun: setIsPrerun,
     prerunValue: setPrerunValue,
     rule1Value: setRule1Value,
     rule2Value: setRule2Value,
     rule3Value: setRule3Value,
+    rule4Value: setRule4Value,
     name: setName,
     slope1Samples: setSlope1Samples,
     slope2Samples: setSlope2Samples,
@@ -128,11 +134,13 @@ export const TradeSettingsEditor = ({tradeSettings, changeCallback}: Props) => {
         isRule1,
         isRule2,
         isRule3,
+        isRule4,
         isPrerun,
         prerunValue,
         rule1Value,
         rule2Value,
         rule3Value,
+        rule4Value,
         name,
         slope1Samples: slope1Samples,
         slope2Samples: slope2Samples,
@@ -155,7 +163,7 @@ export const TradeSettingsEditor = ({tradeSettings, changeCallback}: Props) => {
     }, 1000);
   }, [isActive, isMocked, symbol, days, entryHour, entryMinute, exitHour, exitMinute, percentGain,
     percentLoss, quantity, commissionPerContract, legs, tradeType, isRepeat, useShortOnlyForLimits,
-    isRule1, isRule2, isRule3, prerunValue, rule1Value, rule2Value, rule3Value, name, slope1Samples,
+    isRule1, isRule2, isRule3, isRule4, isPrerun, prerunValue, rule1Value, rule2Value, rule3Value, rule4Value, name, slope1Samples,
     slope2Samples, percentGainIsDollar,
     percentLossIsDollar]);
 
@@ -444,6 +452,16 @@ export const TradeSettingsEditor = ({tradeSettings, changeCallback}: Props) => {
           >
           </Checkbox>
           <Rule3 value={rule3Value} onChange={(value) => onChange('rule3Value', value)}/>
+        </Col>
+      </Row>
+      <Row style={{margin: generalMargins}}>
+        <Col span={24}>
+          <Checkbox
+            onChange={(e: CheckboxChangeEvent) => onChange('isRule4', e.target.checked)}
+            checked={isRule4}
+          >
+          </Checkbox>
+          <Rule4 value={rule4Value} onChange={(value) => onChange('rule4Value', value)}/>
         </Col>
       </Row>
 

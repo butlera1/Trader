@@ -242,9 +242,16 @@ function checkRule1Exit(liveTrade: ITradeSettings, currentSample: IPrice) {
 }
 
 function getLongShortSeparation(initialSample, sample) {
+  if (!initialSample) return 0;
   const longDelta = Math.abs(sample.longStraddlePrice) - Math.abs(initialSample.longStraddlePrice);
   const shortDelta = Math.abs(initialSample.shortStraddlePrice) - Math.abs(sample.shortStraddlePrice);
   return (longDelta + shortDelta);
+}
+
+function getUnderlyingMovement(initialSample: IPrice, sample: IPrice) {
+  if (!initialSample) return 0;
+  const movement = Math.abs(sample.underlyingPrice) - Math.abs(initialSample.underlyingPrice);
+  return movement;
 }
 
 /**
@@ -292,6 +299,17 @@ function checkRule3Exit(liveTrade: ITradeSettings, currentSample: IPrice) {
       const currentGainPercent = currentSample.gain / CalculateGain(liveTrade, liveTrade.gainLimit);
       if (currentGainPercent < trailingStopGainPercent) return true;
     }
+  }
+  return false;
+}
+
+function checkRule4Exit(liveTrade: ITradeSettings, currentSample: IPrice) {
+  if (liveTrade.isRule4) {
+    const desiredMinutes = liveTrade.rule4Value?.minutes ?? 0;
+    const desiredMovement = liveTrade.rule4Value?.underlyingMovement ?? 0;
+    const durationInMinutes = getTradeDurationInMinutes(liveTrade);
+    const underlyingMovement = Math.abs(getUnderlyingMovement(liveTrade.monitoredPrices[0], currentSample));
+    return (desiredMinutes <= durationInMinutes && underlyingMovement >= desiredMovement);
   }
   return false;
 }
@@ -357,8 +375,9 @@ function MonitorTradeToCloseItOut(liveTrade: ITradeSettings) {
       const isRule1Exit = checkRule1Exit(liveTrade, currentSamplePrice);
       const isRule2Exit = checkRule2Exit(liveTrade, currentSamplePrice);
       const isRule3Exit = checkRule3Exit(liveTrade, currentSamplePrice);
+      const isRule4Exit = checkRule4Exit(liveTrade, currentSamplePrice);
       const isPrerunExit = checkPrerunExit(liveTrade);
-      if (isGainLimit || isLossLimit || isEndOfDay || isRule1Exit || isRule2Exit || isRule3Exit || isPrerunExit) {
+      if (isGainLimit || isLossLimit || isEndOfDay || isRule1Exit || isRule2Exit || isRule3Exit || isRule4Exit || isPrerunExit) {
         liveTrade.whyClosed = whyClosedEnum.gainLimit;
         if (isRule1Exit) {
           liveTrade.whyClosed = whyClosedEnum.rule1Exit;
@@ -368,6 +387,9 @@ function MonitorTradeToCloseItOut(liveTrade: ITradeSettings) {
         }
         if (isRule3Exit) {
           liveTrade.whyClosed = whyClosedEnum.rule3Exit;
+        }
+        if (isRule4Exit) {
+          liveTrade.whyClosed = whyClosedEnum.rule4Exit;
         }
         if (isPrerunExit) {
           liveTrade.whyClosed = whyClosedEnum.prerunExit;
