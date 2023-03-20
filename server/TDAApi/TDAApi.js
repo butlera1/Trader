@@ -253,6 +253,9 @@ export async function GetPriceForOptions(tradeSettings) {
       console.error(`GetPriceForOptions: Transactions for price check are too fast per second...`);
       return {...BadDefaultIPrice};
     }
+    if ( !quotes || quotes?.length === 0 ) {
+      return {...BadDefaultIPrice};
+    }
     // Now scan the quotes and add/subtract up the price.
     let result = {...BadDefaultIPrice, price: 0, whenNY: new Date()};
     quotes.forEach((quote) => {
