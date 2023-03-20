@@ -121,7 +121,7 @@ async function GetSmartOptionsPrice(tradeSettings: ITradeSettings): Promise<IPri
       prices.push(lastSample.price);
     }
   }
-  if (prices.length > 0) {
+  if (prices.length > 2) {
     if (prices.length > 3) {
       // Sort the array and remove the smallest and largest numbers (aberrations).
       prices = prices.sort().slice(1, prices.length - 1);
@@ -353,7 +353,7 @@ function MonitorTradeToCloseItOut(liveTrade: ITradeSettings) {
       }
       // Get the current price for the trade.
       const currentSamplePrice: IPrice = await GetSmartOptionsPrice(liveTrade);
-      if (currentSamplePrice.price === Number.NaN) {
+      if (currentSamplePrice.price === Number.NaN || currentSamplePrice.price === 0) {
         Meteor.setTimeout(monitorMethod, oneSeconds);
         return; // Try again on next interval timeout.
       }
