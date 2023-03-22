@@ -256,6 +256,7 @@ export async function GetPriceForOptions(tradeSettings) {
     if ( !quotes || quotes?.length === 0 ) {
       return {...BadDefaultIPrice};
     }
+    let countFoundQuotes = 0; // must end up equal to the legs.length.
     // Now scan the quotes and add/subtract up the price.
     let result = {...BadDefaultIPrice, price: 0, whenNY: new Date()};
     quotes.forEach((quote) => {
@@ -269,7 +270,13 @@ export async function GetPriceForOptions(tradeSettings) {
       // The quotes include the underlying stock price.
       result.underlyingPrice = quote.underlyingPrice;
       result = CalculateOptionsPricings(result, leg, quote.mark);
+      countFoundQuotes++;
     });
+    if (countFoundQuotes !== tradeSettings.legs.length) {
+      const msg = `GetPriceForOptions: countFoundQuotes: ${countFoundQuotes} !== tradeSettings.legs.length: ${tradeSettings.legs.length}`;
+      LogData(tradeSettings, msg, new Error(msg));
+      return {...BadDefaultIPrice};
+    }
     return result;
   } catch (error) {
     const msg = `TDAApi.GetPriceForOptions: failed with: ${error}`;
