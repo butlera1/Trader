@@ -520,8 +520,10 @@ async function PlaceOpeningOrderAndMonitorToClose(tradeSettings: ITradeSettings)
     // tradeSettings.openingPrice has already been estimated when orders were created.
     // tradeSettings.openingShortOnlyPrice has already been estimated when orders were created.
 
-    // Cause a delay to allow the streaming samples to come in before we start monitoring the trade.
-    await WaitMs(2000);
+    if (IsStreamingQuotes()) {
+      // Cause a delay to allow the streaming samples to come in before we start monitoring the trade.
+      await WaitMs(2000);
+    }
   } else {
     tradeSettings.openingOrderId = await PlaceOrder(tradeSettings.userId, tradeSettings.accountNumber, tradeSettings.openingOrder);
     const priceResults = await WaitForOrderCompleted(tradeSettings.userId, tradeSettings.accountNumber, tradeSettings.openingOrderId)

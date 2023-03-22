@@ -1,6 +1,7 @@
 import {GetDaysOptionValues, GetDaysStraddleValues} from "./DataAccess";
 import dayjs, {Dayjs} from "dayjs";
 import fs from 'fs';
+import ITradeSettings from '../../imports/Interfaces/ITradeSettings';
 
 const Saturday = 6;
 
@@ -180,4 +181,27 @@ export async function ExhaustiveStraddleExecution(ticker) {
     }
   }
   console.log(`Completed writing ${fileName}.`);
+}
+
+function isTradingToday(date: Dayjs) {
+  return true;
+}
+
+function simulateTrade(tradeSettings: ITradeSettings, tradeDate: Dayjs) {
+  // Check if settings is within time to run
+  // if it is a trading day.
+  // Get the open and close orders.
+  // Execute the open order
+  // Monitor for trade exit and execute the close trade.
+  // Return the results.
+  return {};
+}
+
+export async function BackTest(tradeSettings: ITradeSettings, startDate: Dayjs, endDate: Dayjs) {
+  let runDate = startDate.clone().set('hour', 9).set('minute', 31).set('second', 0);;
+  while (runDate.isBefore(endDate) && runDate.isBefore(dayjs()) && isTradingToday(runDate)) {
+    const result = simulateTrade(tradeSettings, runDate);
+    runDate = moveToNextTradeDay(runDate);
+  }
+
 }

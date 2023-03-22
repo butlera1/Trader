@@ -33,7 +33,7 @@ function incrementRequestId() {
   return `${requestId}`;
 }
 
-function CloseWebSocket() {
+function StopDataStreaming() {
   if (mySock) {
     mySock.close();
   }
@@ -129,7 +129,7 @@ async function waitForLogin() {
 }
 
 async function PrepareStreaming() {
-  CloseWebSocket();
+  StopDataStreaming();
   eraseAllData();
   const userId = Meteor.users.findOne({username: 'Arch'})?._id;
   if (userId) {
@@ -302,7 +302,7 @@ function GetStreamingOptionsPrice(tradeSettings: ITradeSettings) {
 
 export {
   PrepareStreaming,
-  CloseWebSocket,
+  StopDataStreaming,
   LatestQuote,
   AddOptionsToStream,
   IsStreamingQuotes,
