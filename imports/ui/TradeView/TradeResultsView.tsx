@@ -53,7 +53,7 @@ function TradeResultsView() {
   }, []);
 
   useTracker(() => {
-    const query = {whyClosed: {$exists: true}, closingPrice: {$exists: true}};
+    const query = {whyClosed: {$exists: true}};
     if (isRealTradesOnly) {
       query['isMocked'] = false;
     } else {

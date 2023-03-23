@@ -150,8 +150,9 @@ async function CloseTrade(tradeSettings: ITradeSettings, currentPrice: number) {
         LogData(tradeSettings, msg, new Meteor.Error('FailedOrderCompletion', msg));
         return 0;
       });
-      // @ts-ignore
-      tradeSettings.closingPrice = priceResults?.price;
+      // The following cast should not be needed but typescript is complaining.
+      const castPriceResults = priceResults as IOrderPriceResults;
+      tradeSettings.closingPrice = castPriceResults?.orderPrice ?? Number.NaN;
     }
   }
   tradeSettings.whenClosed = new Date();
@@ -448,7 +449,7 @@ function CalculateGrossOrderBuysAndSells(order) {
   return {buyPrice, sellPrice};
 }
 
-function CalculateFilledOrderPrice(order) {
+function CalculateFilledOrderPrice(order): IOrderPriceResults {
   const grossPrices = CalculateGrossOrderBuysAndSells(order);
   const orderPrice = grossPrices.buyPrice / order.quantity + grossPrices.sellPrice / order.quantity;
   return {orderPrice, shortOnlyPrice: grossPrices.sellPrice / order.quantity};

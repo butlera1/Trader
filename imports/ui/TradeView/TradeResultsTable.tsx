@@ -12,15 +12,11 @@ import {DeleteOutlined} from '@ant-design/icons';
 import ITradeSettings, {GetDescription, whyClosedEnum} from '../../Interfaces/ITradeSettings';
 // @ts-ignore
 import GraphTrade from './GraphTrade.tsx';
-import {CalculateTotalFees} from '../../Utils';
+import {CalculateTotalFees, GetNewYorkTimeAsText} from '../../Utils';
 import './CssActiveTradesTable';
 
 dayjs.extend(utc);
 dayjs.extend(timezone);
-
-function GetNewYorkTimeAsText(date: Date) {
-  return dayjs(date).tz('America/New_York').format('MM/DD/YY hh:mm A');
-}
 
 function deleteTradeResults(record: ITradeSettings) {
   Trades.remove(record._id);

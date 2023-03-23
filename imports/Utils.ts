@@ -1,4 +1,14 @@
 import ITradeSettings, {IPrice} from './Interfaces/ITradeSettings';
+import dayjs from 'dayjs';
+import utc from 'dayjs/plugin/utc';
+import timezone from 'dayjs/plugin/timezone';
+
+dayjs.extend(utc);
+dayjs.extend(timezone);
+
+function GetNewYorkTimeAsText(date: Date) {
+  return dayjs(date).tz('America/New_York').format('MM/DD/YY hh:mm A');
+}
 
 function CalculateTotalFees(tradeSettings) {
   if (tradeSettings.totalFees) return tradeSettings.totalFees;
@@ -75,4 +85,10 @@ function CalculateUnderlyingPriceAverageSlope(samples: number, monitoredPrices: 
   return underlyingSlope;
 }
 
-export {CalculateGain, CalculateTotalFees, CalculateLimitsAndFees, CalculateUnderlyingPriceAverageSlope};
+export {
+  CalculateGain,
+  CalculateTotalFees,
+  CalculateLimitsAndFees,
+  CalculateUnderlyingPriceAverageSlope,
+  GetNewYorkTimeAsText,
+};

@@ -11,6 +11,7 @@ import './graphTrade.css';
 import dayjs from 'dayjs';
 import duration from 'dayjs/plugin/duration';
 import './CssActiveTradesTable';
+import {GetNewYorkTimeAsText} from '../../Utils';
 
 dayjs.extend(duration);
 
@@ -45,7 +46,29 @@ const columns: ColumnsType<ITradeSettings> = [
     key: 'openingPrice',
     align: 'right',
     width: 70,
-    render: (_, record) => record.openingPrice.toFixed(2)
+    render: (_, record) => {
+      return (
+        <Space direction="vertical">
+        <span>{GetNewYorkTimeAsText(record.whenOpened)}</span>
+        <span>${record.openingPrice.toFixed(2)}</span>
+      </Space>
+      );
+    }
+  },
+  {
+    title: 'G/L Limits $',
+    dataIndex: 'limits',
+    key: 'gainLimit',
+    align: 'right',
+    width: 70,
+    render: (_, record) => {
+      return (
+        <Space direction="vertical">
+          <span>{record.gainLimit?.toFixed(2)}</span>
+          <span>{record.lossLimit?.toFixed(2)}</span>
+        </Space>
+      );
+    }
   },
   {
     title: 'Price $',
