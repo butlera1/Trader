@@ -253,7 +253,7 @@ export async function GetPriceForOptions(tradeSettings) {
       console.error(`GetPriceForOptions: Transactions for price check are too fast per second...`);
       return {...BadDefaultIPrice};
     }
-    if ( !quotes || quotes?.length === 0 ) {
+    if (!quotes || quotes?.length === 0) {
       return {...BadDefaultIPrice};
     }
     let countFoundQuotes = 0; // must end up equal to the legs.length.
@@ -415,8 +415,9 @@ function getOptionChainsAtOrNearDTE(chains, dte) {
   // one less. If not then
   // try DTE+1 all the way up to DTE+5.
   // First match wins.
+  // We are also avoiding 1 DTE because it is not reliable from OptionOmega studies.
   chainName = putNames.find((name) => name.endsWith(`:${dte}`));
-  if (!chainName) {
+  if (!chainName && (dte - 1) > 1) { // Avoiding 1 DTE.
     chainName = putNames.find((name) => name.endsWith(`:${dte - 1}`));
   }
   let count = 1;

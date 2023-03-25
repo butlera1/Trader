@@ -81,7 +81,7 @@ const columns: ColumnsType<ITradeSettings> = [
       // Show the closing price, the difference from open to close, the closing underlying price, and its difference.
       const initialUnder = record.monitoredPrices.length > 0 ? record.monitoredPrices[0]?.underlyingPrice ?? 0 : 0;
       const under = record.monitoredPrices.length > 0 ? record.monitoredPrices[record.monitoredPrices.length - 1]?.underlyingPrice ?? 0 : 0;
-      const priceDiff = record.openingPrice > 0 ? record.closingPrice - record.openingPrice  : record.closingPrice - Math.abs(record.openingPrice);
+      const priceDiff = record.openingPrice > 0 ? record.closingPrice + record.openingPrice  : record.closingPrice - record.openingPrice;
       const priceDiffAll = `${record.closingPrice?.toFixed(2)} (${(priceDiff).toFixed(3)})`;
       const underDiff = `${under.toFixed(2)} (${(initialUnder - under).toFixed(3)})`;
       return RenderOpenOrClosedData(GetNewYorkTimeAsText(when), priceDiffAll, underDiff);
