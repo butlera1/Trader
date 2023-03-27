@@ -269,7 +269,15 @@ export async function GetPriceForOptions(tradeSettings) {
       }
       // The quotes include the underlying stock price.
       result.underlyingPrice = quote.underlyingPrice;
-      result = CalculateOptionsPricings(result, leg, quote.mark);
+      // Base price on the lower value relative to the opposite desired entry buySell direction.
+      // This is because entry is simply a time point while exit is based on value and the legs
+      // define the buySell direction based on trade entry. So, do the opposite for exit.
+      let price = quote.bidPrice;
+      if (leg.buySell === BuySell.SELL) {
+        // Means we are buying this leg now to exit the trade.
+        price = quote.askPrice;
+      }
+      result = CalculateOptionsPricings(result, leg, price);
       countFoundQuotes++;
     });
     if (countFoundQuotes !== tradeSettings.legs.length) {
