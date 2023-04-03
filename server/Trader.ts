@@ -579,6 +579,9 @@ async function ExecuteTrade(tradeSettings: ITradeSettings, forceTheTrade = false
       const ordersReady = CreateOpenAndCloseOrders(chains, tradeSettings);
       if (ordersReady) {
         await PlaceOpeningOrderAndMonitorToClose(tradeSettings);
+      } else {
+        const msg = `Failed CreateOpenAndCloseOrders call. No orders were created for ${tradeSettings.userName} @ ${nowNYText} (NY) with ${JSON.stringify(tradeSettings)}`;
+        LogData(tradeSettings, msg);
       }
     } catch (ex) {
       const when = dayjs();
