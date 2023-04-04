@@ -157,8 +157,6 @@ async function CloseTrade(tradeSettings: ITradeSettings, currentPrice: number) {
   }
   tradeSettings.whenClosed = new Date();
   tradeSettings.gainLoss = CalculateGain(tradeSettings, tradeSettings.closingPrice);
-  const wasPrerunning = tradeSettings.isPrerunning;
-  // Don't update the Trades if it was a prerun.
   Trades.update(tradeSettings._id, {
     $set: {
       closingOrderId: tradeSettings.closingOrderId,
@@ -168,10 +166,11 @@ async function CloseTrade(tradeSettings: ITradeSettings, currentPrice: number) {
       gainLoss: tradeSettings.gainLoss,
     }
   });
+  const wasPrerunning = tradeSettings.isPrerunning;
   const preRunText = wasPrerunning ? 'PRERUN: ' : '';
   const message = `${tradeSettings.userName}: ${preRunText}Trade closed (${tradeSettings.whyClosed}): Entry: $${openingPrice.toFixed(2)}, ` +
     `Exit: $${tradeSettings.closingPrice?.toFixed(2)}, ` +
-    `G/L $${tradeSettings.gainLoss?.toFixed(2)} at ${tradeSettings.whenClosed} NY, TS_ID: ${tradeSettings._id}`;
+    `G/L $${tradeSettings.gainLoss?.toFixed(2)} at ${tradeSettings.whenClosed} NY, _ID: ${tradeSettings._id}`;
   LogData(tradeSettings, message);
   // See if we should repeat the trade now that it is closed.
   const okToRepeat = tradeSettings.whyClosed !== whyClosedEnum.emergencyExit && tradeSettings.whyClosed !== whyClosedEnum.timedExit;
@@ -543,8 +542,11 @@ async function PlaceOpeningOrderAndMonitorToClose(tradeSettings: ITradeSettings)
   CalculateLimitsAndFees(tradeSettings);
   // Record this opening order data as a new active trade.
   tradeSettings._id = Trades.insert({...tradeSettings});
+  LogData(tradeSettings, `DEBUG: Just inserted new Trades: ${tradeSettings._id} for ${tradeSettings.userName}`);
   if (_.isFinite(tradeSettings.openingPrice)) {
     MonitorTradeToCloseItOut(tradeSettings);
+  } else {
+    LogData(tradeSettings, `Error: Opening order for trade: ${tradeSettings._id}, ${tradeSettings.userName} has bad opening price.`, null);
   }
   return;
 }
