@@ -335,6 +335,15 @@ function checkPrerunExit(liveTrade: ITradeSettings) {
   return false;
 }
 
+function getAveragePrice(samples: IPrice[], desiredNumberOfSamples: number) {
+  const numberOfSamples = Math.min(desiredNumberOfSamples, samples.length);
+  if (numberOfSamples === 0) return 0;
+  // Get the last numberOfSamples samples.
+  const subSet = samples.slice(samples.length - numberOfSamples);
+  const sum = subSet.reduce((sum, sample) => sum + sample.price, 0);
+  return sum / numberOfSamples;
+}
+
 function MonitorTradeToCloseItOut(liveTrade: ITradeSettings) {
   const localEarlyExitTime = GetNewYorkTimeAt(liveTrade.exitHour, liveTrade.exitMinute);
   if (IsStreamingQuotes()) {
@@ -365,12 +374,12 @@ function MonitorTradeToCloseItOut(liveTrade: ITradeSettings) {
       Trades.update(liveTrade._id, {$addToSet: {monitoredPrices: currentSamplePrice}});
       const localNow = dayjs();
       const isEndOfDay = localEarlyExitTime.isBefore(localNow);
-      const absCurrentPrice = Math.abs(currentSamplePrice.price);
-      let isGainLimit = (absCurrentPrice <= liveTrade.gainLimit);
-      let isLossLimit = (absCurrentPrice >= liveTrade.lossLimit);
+      const absAveragePrice = Math.abs(getAveragePrice(liveTrade.monitoredPrices, 2));
+      let isGainLimit = (absAveragePrice <= liveTrade.gainLimit);
+      let isLossLimit = (absAveragePrice >= liveTrade.lossLimit);
       if (liveTrade.openingPrice > 0) { // Means we are long the trade (we want values to go up).
-        isGainLimit = (absCurrentPrice >= liveTrade.gainLimit);
-        isLossLimit = (absCurrentPrice <= liveTrade.lossLimit);
+        isGainLimit = (absAveragePrice >= liveTrade.gainLimit);
+        isLossLimit = (absAveragePrice <= liveTrade.lossLimit);
       }
       const isRule1Exit = checkRule1Exit(liveTrade, currentSamplePrice);
       const isRule2Exit = checkRule2Exit(liveTrade, currentSamplePrice);
