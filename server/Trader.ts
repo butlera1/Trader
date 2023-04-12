@@ -78,6 +78,14 @@ function GetNewYorkTimeNowAsText() {
   return currentLocalTime.toLocaleString('en-US', {timeZone: 'America/New_York'});
 }
 
+function GetNewYorkTimeHourNow() {
+  const text = GetNewYorkTimeNowAsText();
+  const parts = text.split(' ');
+  const hour = parseInt(parts[1].split(':')[0], 10);
+  const additionalHours = (parts[2] === 'PM' && hour != 12) ? 12 : 0;
+  return hour + additionalHours;
+}
+
 async function GetOptionsPriceLoop(tradeSettings: ITradeSettings): Promise<IPrice> {
   let result: IPrice = {...BadDefaultIPrice};
   const doubleAbsOpenPrice = Math.abs(tradeSettings.openingPrice) * 2;
@@ -173,7 +181,10 @@ async function CloseTrade(tradeSettings: ITradeSettings, currentPrice: number) {
     `G/L $${tradeSettings.gainLoss?.toFixed(2)} at ${tradeSettings.whenClosed} NY, _ID: ${tradeSettings._id}`;
   LogData(tradeSettings, message);
   // See if we should repeat the trade now that it is closed.
-  const okToRepeat = tradeSettings.whyClosed !== whyClosedEnum.emergencyExit && tradeSettings.whyClosed !== whyClosedEnum.timedExit;
+  const notTooLate = GetNewYorkTimeHourNow() <= tradeSettings.repeatStopHour ?? 16;
+  const okToRepeat = (tradeSettings.whyClosed !== whyClosedEnum.emergencyExit) &&
+    (tradeSettings.whyClosed !== whyClosedEnum.timedExit) &&
+    (notTooLate);
   if ((tradeSettings.isRepeat || wasPrerunning) && okToRepeat) {
     // Get fresh copy of the settings without values for whyClosed, openingPrice, closingPrice, gainLoss, etc.
     const settings = TradeSettings.findOne(tradeSettings.originalTradeSettingsId);
@@ -314,6 +325,17 @@ function checkRule4Exit(liveTrade: ITradeSettings, currentSample: IPrice) {
   return false;
 }
 
+function checkRule5Exit(liveTrade: ITradeSettings, currentSample: IPrice) {
+  if (liveTrade.isRule5) {
+    const desiredMinutes = liveTrade.rule5Value?.minutes ?? 0;
+    const desiredMovement = Math.abs(liveTrade.rule5Value?.underlyingPercentOfCredit * liveTrade.openingPrice ?? 0);
+    const durationInMinutes = getTradeDurationInMinutes(liveTrade);
+    const underlyingMovement = Math.abs(getUnderlyingMovement(liveTrade.monitoredPrices[0], currentSample));
+    return (desiredMinutes <= durationInMinutes && underlyingMovement >= desiredMovement);
+  }
+  return false;
+}
+
 function checkPrerunExit(liveTrade: ITradeSettings) {
   if (liveTrade.isPrerunning) {
     const ticks = liveTrade.prerunValue?.ticks ?? 0;
@@ -385,8 +407,9 @@ function MonitorTradeToCloseItOut(liveTrade: ITradeSettings) {
       const isRule2Exit = checkRule2Exit(liveTrade, currentSamplePrice);
       const isRule3Exit = checkRule3Exit(liveTrade, currentSamplePrice);
       const isRule4Exit = checkRule4Exit(liveTrade, currentSamplePrice);
+      const isRule5Exit = checkRule5Exit(liveTrade, currentSamplePrice);
       const isPrerunExit = checkPrerunExit(liveTrade);
-      if (isGainLimit || isLossLimit || isEndOfDay || isRule1Exit || isRule2Exit || isRule3Exit || isRule4Exit || isPrerunExit) {
+      if (isGainLimit || isLossLimit || isEndOfDay || isRule1Exit || isRule2Exit || isRule3Exit || isRule4Exit || isRule5Exit || isPrerunExit) {
         liveTrade.whyClosed = whyClosedEnum.gainLimit;
         if (isRule1Exit) {
           liveTrade.whyClosed = whyClosedEnum.rule1Exit;
@@ -399,6 +422,9 @@ function MonitorTradeToCloseItOut(liveTrade: ITradeSettings) {
         }
         if (isRule4Exit) {
           liveTrade.whyClosed = whyClosedEnum.rule4Exit;
+        }
+        if (isRule5Exit) {
+          liveTrade.whyClosed = whyClosedEnum.rule5Exit;
         }
         if (isPrerunExit) {
           liveTrade.whyClosed = whyClosedEnum.prerunExit;
@@ -668,6 +694,7 @@ export {
   WaitForOrderCompleted,
   MonitorTradeToCloseItOut,
   GetNewYorkTimeAt,
+  GetNewYorkTimeHourNow,
   GetNewYorkTimeNowAsText,
   PerformTradeForAllUsers,
   ExecuteTrade,

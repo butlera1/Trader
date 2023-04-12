@@ -22,6 +22,8 @@ import {DefaultRule3Value} from '../../Interfaces/IRule3Value';
 import Rule3 from './Rules/Rule3';
 import {DefaultRule4Value} from '../../Interfaces/IRule4Value';
 import Rule4 from './Rules/Rule4';
+import Rule5 from './Rules/Rule5';
+import {DefaultRule5Value} from '../../Interfaces/IRule5Value';
 
 const CheckboxGroup = Checkbox.Group;
 const generalMargins = 30;
@@ -52,15 +54,18 @@ export const TradeSettingsEditor = ({tradeSettings, changeCallback}: Props) => {
   const [errorText, setErrorText] = React.useState(null);
   const [tradeType, setTradeType] = React.useState(tradeSettings.tradeType ?? false);
   const [isRepeat, setIsRepeat] = React.useState(tradeSettings.isRepeat ?? false);
+  const [repeatStopHour, setRepeatStopHour] = React.useState(tradeSettings.repeatStopHour ?? 13);
   const [useShortOnlyForLimits, setUseShortOnlyForLimits] = React.useState(tradeSettings.useShortOnlyForLimits ?? false);
   const [isRule1, setIsRule1] = React.useState(tradeSettings.isRule1 ?? true);
   const [isRule2, setIsRule2] = React.useState(tradeSettings.isRule2 ?? false);
   const [isRule3, setIsRule3] = React.useState(tradeSettings.isRule3 ?? false);
   const [isRule4, setIsRule4] = React.useState(tradeSettings.isRule4 ?? false);
+  const [isRule5, setIsRule5] = React.useState(tradeSettings.isRule5 ?? false);
   const [rule1Value, setRule1Value] = React.useState(tradeSettings.rule1Value ?? {});
   const [rule2Value, setRule2Value] = React.useState(tradeSettings.rule2Value ?? {...DefaultRule2Value});
   const [rule3Value, setRule3Value] = React.useState(tradeSettings.rule3Value ?? {...DefaultRule3Value});
   const [rule4Value, setRule4Value] = React.useState(tradeSettings.rule4Value ?? {...DefaultRule4Value});
+  const [rule5Value, setRule5Value] = React.useState(tradeSettings.rule5Value ?? {...DefaultRule5Value});
   const [name, setName] = React.useState(tradeSettings.name ?? '');
   const [slope1Samples, setSlope1Samples] = React.useState(tradeSettings.slope1Samples ?? 0);
   const [slope2Samples, setSlope2Samples] = React.useState(tradeSettings.slope2Samples ?? 0);
@@ -87,17 +92,20 @@ export const TradeSettingsEditor = ({tradeSettings, changeCallback}: Props) => {
     legs: setLegs,
     tradeType: setTradeType,
     isRepeat: setIsRepeat,
+    repeatStopHour: setRepeatStopHour,
     useShortOnlyForLimits: setUseShortOnlyForLimits,
     isRule1: setIsRule1,
     isRule2: setIsRule2,
     isRule3: setIsRule3,
     isRule4: setIsRule4,
+    isRule5: setIsRule5,
     isPrerun: setIsPrerun,
     prerunValue: setPrerunValue,
     rule1Value: setRule1Value,
     rule2Value: setRule2Value,
     rule3Value: setRule3Value,
     rule4Value: setRule4Value,
+    rule5Value: setRule5Value,
     name: setName,
     slope1Samples: setSlope1Samples,
     slope2Samples: setSlope2Samples,
@@ -130,17 +138,20 @@ export const TradeSettingsEditor = ({tradeSettings, changeCallback}: Props) => {
         legs,
         tradeType,
         isRepeat,
+        repeatStopHour,
         useShortOnlyForLimits,
         isRule1,
         isRule2,
         isRule3,
         isRule4,
+        isRule5,
         isPrerun,
         prerunValue,
         rule1Value,
         rule2Value,
         rule3Value,
         rule4Value,
+        rule5Value,
         name,
         slope1Samples: slope1Samples,
         slope2Samples: slope2Samples,
@@ -162,8 +173,9 @@ export const TradeSettingsEditor = ({tradeSettings, changeCallback}: Props) => {
       }
     }, 1000);
   }, [isActive, isMocked, symbol, days, entryHour, entryMinute, exitHour, exitMinute, percentGain,
-    percentLoss, quantity, commissionPerContract, legs, tradeType, isRepeat, useShortOnlyForLimits,
-    isRule1, isRule2, isRule3, isRule4, isPrerun, prerunValue, rule1Value, rule2Value, rule3Value, rule4Value, name, slope1Samples,
+    percentLoss, quantity, commissionPerContract, legs, tradeType, isRepeat, repeatStopHour, useShortOnlyForLimits,
+    isRule1, isRule2, isRule3, isRule4, isRule5, isPrerun, prerunValue, rule1Value, rule2Value, rule3Value, rule4Value,
+    rule5Value, name, slope1Samples,
     slope2Samples, percentGainIsDollar,
     percentLossIsDollar]);
 
@@ -464,9 +476,19 @@ export const TradeSettingsEditor = ({tradeSettings, changeCallback}: Props) => {
           <Rule4 value={rule4Value} onChange={(value) => onChange('rule4Value', value)}/>
         </Col>
       </Row>
+      <Row style={{margin: generalMargins}}>
+        <Col span={24}>
+          <Checkbox
+            onChange={(e: CheckboxChangeEvent) => onChange('isRule5', e.target.checked)}
+            checked={isRule5}
+          >
+          </Checkbox>
+          <Rule5 value={rule5Value} onChange={(value) => onChange('rule5Value', value)}/>
+        </Col>
+      </Row>
 
       <Row style={{margin: generalMargins}}>
-        <Col span={8}>
+        <Col span={6}>
           <span>Quantity:</span>
           <InputNumber
             defaultValue={quantity}
@@ -475,20 +497,29 @@ export const TradeSettingsEditor = ({tradeSettings, changeCallback}: Props) => {
             style={{width: '50px'}}
             onChange={(value) => onChange('quantity', value)}/>
         </Col>
-        <Col span={10}>
+        <Col span={5}>
           <CheckboxGroup
             options={['IC', 'CS']}
             onChange={onChangeTradeType}
             value={tradeType}
           />
         </Col>
-        <Col span={6}>
+        <Col span={12}>
           <Checkbox
             onChange={(e: CheckboxChangeEvent) => onChange('isRepeat', e.target.checked)}
             checked={isRepeat}
           >
-            Repeat Trade
+            Repeat Trade if before
           </Checkbox>
+          <InputNumber
+            defaultValue={repeatStopHour ?? 0}
+            step={1}
+            min={1}
+            max={16}
+            addonAfter={'hour'}
+            style={{width: '100px'}}
+            onChange={(stopHour: number) => onChange('repeatStopHour', stopHour)}
+          />
         </Col>
       </Row>
       <div style={{margin: generalMargins}}>

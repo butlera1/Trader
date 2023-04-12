@@ -4,6 +4,7 @@ import {IPrerunValue} from '../ui/TradeSettings/Rules/PrerunRule';
 import IRule2Value from './IRule2Value';
 import IRule3Value from './IRule3Value';
 import IRule4Value from './IRule4Value';
+import IRule5Value from './IRule5Value';
 
 enum whyClosedEnum {
   emergencyExit = 'emergencyExit',
@@ -14,6 +15,7 @@ enum whyClosedEnum {
   rule2Exit = 'r2Exit',
   rule3Exit = 'r3Exit',
   rule4Exit = 'r4Exit',
+  rule5Exit = 'r5Exit',
   prerunExit = 'prerunExit',
 }
 
@@ -85,12 +87,14 @@ interface ITradeSettings {
   gainLimit?: number,
   lossLimit?: number,
   isRepeat?: boolean,
+  repeatStopHour?: number,
   originalTradeSettingsId?: string,
   useShortOnlyForLimits?: boolean,
   isRule1?: boolean,
   isRule2?: boolean,
   isRule3?: boolean,
   isRule4?: boolean,
+  isRule5?: boolean,
   isPrerun?: boolean,
   isPrerunning?: boolean,
   prerunValue?: IPrerunValue,
@@ -98,6 +102,7 @@ interface ITradeSettings {
   rule2Value?: IRule2Value,
   rule3Value?: IRule3Value,
   rule4Value?: IRule4Value,
+  rule5Value?: IRule5Value,
   totalFees?: number,
   slope1Samples?: number,
   slope2Samples?: number,
@@ -177,6 +182,7 @@ const DefaultTradeSettings: ITradeSettings = {
   useShortOnlyForLimits: true,
   isPrerunning: false,
   prerunValue: {ticks: 0, amount: 0},
+  repeatStopHour: 13,
 };
 
 function getTwoDTEValues(legs) {
