@@ -203,8 +203,10 @@ function GetDescription(tradeSettings: ITradeSettings) {
   const part3 = `${(tradeSettings.percentGain * 100).toFixed(1)}/${(tradeSettings.percentLoss * 100).toFixed(1)} %`;
   let part4 = '';
   if (tradeSettings.csvSymbols) {
-    const regex = new RegExp(`${tradeSettings.symbol}_......`, 'g');
+    let regex = new RegExp(`${tradeSettings.symbol}_......`, 'g');
     part4 = `\n${tradeSettings.csvSymbols.replace(regex, '').replace('VIX', '')}`;
+    regex = new RegExp(`,`, 'g');
+    part4 = part4.replace(regex, '\n');
   }
   let part5 = '';
   if (tradeSettings.isMocked) {
