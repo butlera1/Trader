@@ -78,7 +78,7 @@ function GetNewYorkTimeNowAsText() {
   return currentLocalTime.toLocaleString('en-US', {timeZone: 'America/New_York'});
 }
 
-function GetNewYorkTimeHourNow() {
+function GetNewYorkTime24HourNow() {
   const text = GetNewYorkTimeNowAsText();
   const parts = text.split(' ');
   const hour = parseInt(parts[1].split(':')[0], 10);
@@ -181,7 +181,7 @@ async function CloseTrade(tradeSettings: ITradeSettings, currentPrice: number) {
     `G/L $${tradeSettings.gainLoss?.toFixed(2)} at ${tradeSettings.whenClosed} NY, _ID: ${tradeSettings._id}`;
   LogData(tradeSettings, message);
   // See if we should repeat the trade now that it is closed.
-  const notTooLate = GetNewYorkTimeHourNow() <= tradeSettings.repeatStopHour ?? 16;
+  const notTooLate = GetNewYorkTime24HourNow() < tradeSettings.repeatStopHour ?? 16;
   const okToRepeat = (tradeSettings.whyClosed !== whyClosedEnum.emergencyExit) &&
     (tradeSettings.whyClosed !== whyClosedEnum.timedExit) &&
     (notTooLate);
@@ -694,7 +694,7 @@ export {
   WaitForOrderCompleted,
   MonitorTradeToCloseItOut,
   GetNewYorkTimeAt,
-  GetNewYorkTimeHourNow,
+  GetNewYorkTime24HourNow,
   GetNewYorkTimeNowAsText,
   PerformTradeForAllUsers,
   ExecuteTrade,
