@@ -20,7 +20,7 @@ const OptionTemplate = {
   orderLegCollection: [],
 };
 
-function GetOptionOrderBuysTriggeringSells(legs: ILegSettings[], quantity, isToClose) {
+function GetOptionOrderBuysTriggeringSells(legs: ILegSettings[], isToClose) {
   const buyForm = _.cloneDeep(OptionTemplate);
   const sellForm = _.cloneDeep(OptionTemplate);
   legs.forEach((leg) => {
@@ -32,7 +32,7 @@ function GetOptionOrderBuysTriggeringSells(legs: ILegSettings[], quantity, isToC
       // Reverse the buySell direction.
       buySell = leg.buySell === BuySell.BUY ? 'SELL' : 'BUY';
     }
-    StuffLegParams(legOrder, leg.option.symbol, quantity, `${buySell}${directionText}`);
+    StuffLegParams(legOrder, leg.option.symbol, leg.quantity, `${buySell}${directionText}`);
     if (buySell === 'BUY') {
       buyForm.orderLegCollection.push(legOrder);
     } else {

@@ -397,10 +397,12 @@ function MonitorTradeToCloseItOut(liveTrade: ITradeSettings) {
       const localNow = dayjs();
       const isEndOfDay = localEarlyExitTime.isBefore(localNow);
       const absAveragePrice = Math.abs(getAveragePrice(liveTrade.monitoredPrices, 2));
-      let isGainLimit = (absAveragePrice <= liveTrade.gainLimit);
+      const absCurrentPrice = Math.abs(currentSamplePrice.price);
+      let isGainLimit = (absCurrentPrice <= liveTrade.gainLimit);
+      // Using average on loss to make sure a spike does not trigger a loss exit.
       let isLossLimit = (absAveragePrice >= liveTrade.lossLimit);
       if (liveTrade.openingPrice > 0) { // Means we are long the trade (we want values to go up).
-        isGainLimit = (absAveragePrice >= liveTrade.gainLimit);
+        isGainLimit = (absCurrentPrice >= liveTrade.gainLimit);
         isLossLimit = (absAveragePrice <= liveTrade.lossLimit);
       }
       const isRule1Exit = checkRule1Exit(liveTrade, currentSamplePrice);

@@ -39,6 +39,15 @@ export const LegsEditor = ({
       return (
         <Row key={`leg${index}`} style={{marginTop: 5, marginLeft}}>
           <Space>
+            <InputNumber
+              min={1}
+              max={1000}
+              addonAfter={'Qty'}
+              style={{width: 105}}
+              defaultValue={leg.quantity}
+              onChange={(value) => onChange('quantity', index, value)}
+            />
+
             <Select
               defaultValue={leg.buySell}
               style={{width: 70}}

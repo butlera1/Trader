@@ -29,11 +29,11 @@ function GraphTrade({liveTrade}: { liveTrade: ITradeSettings }) {
   const initialLongStraddlePrice = Math.abs(monitoredPrices[0]?.longStraddlePrice ?? 0);
   let initialShortStraddlePrice = Math.abs(monitoredPrices[0]?.shortStraddlePrice ?? 0);
 
-  const getUnderlying = (price) => round((price.underlyingPrice ?? 0) - initialUnderlyingPrice) * liveTrade.quantity * 10;
+  const getUnderlying = (price) => round((price.underlyingPrice ?? 0) - initialUnderlyingPrice) * 10;
   const getLongStraddlePrice = (price) => {
-    return round((Math.abs(price.longStraddlePrice) ?? 0) - initialLongStraddlePrice) * 100 * liveTrade.quantity;
+    return round((Math.abs(price.longStraddlePrice) ?? 0) - initialLongStraddlePrice) * 100;
   };
-  const getShortStraddlePrice = (price) => round((Math.abs(price.shortStraddlePrice) ?? 0) - initialShortStraddlePrice) * 100 * liveTrade.quantity;
+  const getShortStraddlePrice = (price) => round((Math.abs(price.shortStraddlePrice) ?? 0) - initialShortStraddlePrice) * 100;
   const getGain = (price) => round(price.gain);
 
   return (

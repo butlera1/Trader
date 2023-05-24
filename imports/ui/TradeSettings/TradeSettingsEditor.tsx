@@ -12,7 +12,6 @@ import './TradeSettings.css';
 import {LegsEditor} from './LegsEditor';
 import {QuestionCircleOutlined} from '@ant-design/icons';
 import _ from 'lodash';
-import {diff} from 'deep-object-diff';
 import {CheckboxChangeEvent} from 'antd/lib/checkbox';
 import Rule1 from './Rules/Rule1';
 import PrerunRule from './Rules/PrerunRule';
@@ -48,7 +47,6 @@ export const TradeSettingsEditor = ({tradeSettings, changeCallback}: Props) => {
   const [exitAmPm, setExitAmPm] = React.useState(tradeSettings.exitHour > 11 ? 'pm' : 'am');
   const [percentGain, setPercentGain] = React.useState(tradeSettings.percentGain);
   const [percentLoss, setPercentLoss] = React.useState(tradeSettings.percentLoss);
-  const [quantity, setQuantity] = React.useState(tradeSettings.quantity);
   const [commissionPerContract, setCommissionPerContract] = React.useState(tradeSettings.commissionPerContract || 0);
   const [legs, setLegs] = React.useState(tradeSettings.legs);
   const [errorText, setErrorText] = React.useState(null);
@@ -87,7 +85,6 @@ export const TradeSettingsEditor = ({tradeSettings, changeCallback}: Props) => {
     exitAmPm: setExitAmPm,
     percentGain: setPercentGain,
     percentLoss: setPercentLoss,
-    quantity: setQuantity,
     commissionPerContract: setCommissionPerContract,
     legs: setLegs,
     tradeType: setTradeType,
@@ -133,7 +130,6 @@ export const TradeSettingsEditor = ({tradeSettings, changeCallback}: Props) => {
         exitMinute,
         percentGain,
         percentLoss,
-        quantity,
         commissionPerContract,
         legs,
         tradeType,
@@ -159,21 +155,18 @@ export const TradeSettingsEditor = ({tradeSettings, changeCallback}: Props) => {
         percentLossIsDollar: percentLossIsDollar,
       };
       strategy.description = GetDescription(strategy);
-      const thereAreChanges = !_.isEmpty(diff(strategy, tradeSettings));
-      if (thereAreChanges) {
-        Meteor.call('SetUserTradeSettings', strategy, (error, result) => {
-          if (error) {
-            setErrorText(error.toString());
-          } else {
-            if (_.isFunction(changeCallback)) {
-              changeCallback();
-            }
+      Meteor.call('SetUserTradeSettings', strategy, (error, result) => {
+        if (error) {
+          setErrorText(error.toString());
+        } else {
+          if (_.isFunction(changeCallback)) {
+            changeCallback();
           }
-        });
-      }
+        }
+      });
     }, 1000);
   }, [isActive, isMocked, symbol, days, entryHour, entryMinute, exitHour, exitMinute, percentGain,
-    percentLoss, quantity, commissionPerContract, legs, tradeType, isRepeat, repeatStopHour, useShortOnlyForLimits,
+    percentLoss, commissionPerContract, legs, tradeType, isRepeat, repeatStopHour, useShortOnlyForLimits,
     isRule1, isRule2, isRule3, isRule4, isRule5, isPrerun, prerunValue, rule1Value, rule2Value, rule3Value, rule4Value,
     rule5Value, name, slope1Samples,
     slope2Samples, percentGainIsDollar,
@@ -372,12 +365,13 @@ export const TradeSettingsEditor = ({tradeSettings, changeCallback}: Props) => {
             <InputNumber
               min={0}
               step="0.01"
-              defaultValue={Math.round(percentGain * 100000)/1000}
+              defaultValue={Math.round(percentGain * 100000) / 1000}
               max={1000}
               style={{width: '80px'}}
               onChange={(value) => onChange('percentGain', (value) / 100)}
             />
-            <Select defaultValue={percentGainIsDollar} style={{width: 60}} onChange={(value) => onChange('percentGainIsDollar', value)}>
+            <Select defaultValue={percentGainIsDollar} style={{width: 60}}
+                    onChange={(value) => onChange('percentGainIsDollar', value)}>
               <Select.Option value={false}>%</Select.Option>
               <Select.Option value={true}>$</Select.Option>
             </Select>
@@ -387,11 +381,12 @@ export const TradeSettingsEditor = ({tradeSettings, changeCallback}: Props) => {
               min={0}
               step="0.01"
               max={1000}
-              defaultValue={Math.round(percentLoss * 100000)/1000}
+              defaultValue={Math.round(percentLoss * 100000) / 1000}
               style={{width: '80px'}}
               onChange={(value) => onChange('percentLoss', (value) / 100)}
             />
-            <Select defaultValue={percentLossIsDollar} style={{width: 60}} onChange={(value) => onChange('percentLossIsDollar', value)}>
+            <Select defaultValue={percentLossIsDollar} style={{width: 60}}
+                    onChange={(value) => onChange('percentLossIsDollar', value)}>
               <Select.Option value={false}>%</Select.Option>
               <Select.Option value={true}>$</Select.Option>
             </Select>
@@ -488,15 +483,6 @@ export const TradeSettingsEditor = ({tradeSettings, changeCallback}: Props) => {
       </Row>
 
       <Row style={{margin: generalMargins}}>
-        <Col span={6}>
-          <span>Quantity:</span>
-          <InputNumber
-            defaultValue={quantity}
-            min={1}
-            max={200}
-            style={{width: '50px'}}
-            onChange={(value) => onChange('quantity', value)}/>
-        </Col>
         <Col span={5}>
           <CheckboxGroup
             options={['IC', 'CS']}

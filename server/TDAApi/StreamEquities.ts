@@ -4,7 +4,7 @@ import {Meteor} from 'meteor/meteor';
 import {GetUserPrinciples} from './TDAApi';
 import _ from 'lodash';
 import ITradeSettings, {BadDefaultIPrice, IPrice} from '../../imports/Interfaces/ITradeSettings';
-import CalculateOptionsPricings from '../CalculateOptionsPricing';
+import CalculateOptionsPricing from '../CalculateOptionsPricing';
 import Constants from '../../imports/Constants';
 import IStreamerData from '../../imports/Interfaces/IStreamData';
 import {AppSettings} from '../collections/AppSettings';
@@ -295,7 +295,7 @@ function GetStreamingOptionsPrice(tradeSettings: ITradeSettings) {
   result.underlyingPrice = LatestQuote(tradeSettings.symbol).mark || tradeSettings.underlyingPrice;
   tradeSettings.legs.forEach((leg) => {
     const quote = LatestQuote(leg.option.symbol);
-    result = CalculateOptionsPricings(result, leg, quote.mark);
+    result = CalculateOptionsPricing(result, leg, quote.mark);
   });
   return result;
 }

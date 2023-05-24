@@ -62,7 +62,6 @@ interface ITradeSettings {
   entryMinute: number,
   exitHour: number,
   exitMinute: number,
-  quantity: number,
   commissionPerContract: number,
   symbol: string,
   days: string[],
@@ -114,24 +113,28 @@ const DefaultIronCondorLegsSettings = [
     callPut: OptionType.CALL,
     delta: 0.5,
     dte: 0,
+    quantity: 1,
   },
   {
     buySell: BuySell.SELL,
     callPut: OptionType.PUT,
     delta: 0.5,
     dte: 0,
+    quantity: 1,
   },
   {
     buySell: BuySell.BUY,
     callPut: OptionType.CALL,
     delta: 0.01,
     dte: 0,
+    quantity: 1,
   },
   {
     buySell: BuySell.BUY,
     callPut: OptionType.PUT,
     delta: 0.01,
     dte: 0,
+    quantity: 1,
   },
 ];
 
@@ -141,24 +144,28 @@ const DefaultCalendarSpreadLegsSettings = [
     callPut: OptionType.CALL,
     delta: 0.5,
     dte: 0,
+    quantity: 1,
   },
   {
     buySell: BuySell.SELL,
     callPut: OptionType.PUT,
     delta: 0.5,
     dte: 0,
+    quantity: 1,
   },
   {
     buySell: BuySell.BUY,
     callPut: OptionType.CALL,
     delta: 0.5,
     dte: 4,
+    quantity: 1,
   },
   {
     buySell: BuySell.BUY,
     callPut: OptionType.PUT,
     delta: 0.5,
     dte: 4,
+    quantity: 1,
   },
 ];
 
@@ -172,7 +179,6 @@ const DefaultTradeSettings: ITradeSettings = {
   entryMinute: 50,
   exitHour: 11,
   exitMinute: 30,
-  quantity: 1,
   commissionPerContract: 0.25,
   symbol: 'QQQ',
   tradeType: ['IC'],
@@ -198,7 +204,7 @@ function GetDescription(tradeSettings: ITradeSettings) {
     type = `${type}(${getTwoDTEValues(tradeSettings.legs)})`;
   }
   const part0 = tradeSettings.name ? `${tradeSettings.name}: \n` : '';
-  const part1 = `${tradeSettings.symbol}(${tradeSettings.quantity}) ${type}`;
+  const part1 = `${tradeSettings.symbol} ${type}`;
   const part2 = `${tradeSettings.entryHour}:${tradeSettings.entryMinute}-${tradeSettings.exitHour}:${tradeSettings.exitMinute}`;
   const part3 = `${(tradeSettings.percentGain * 100).toFixed(1)}/${(tradeSettings.percentLoss * 100).toFixed(1)} %`;
   let part4 = '';

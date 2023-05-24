@@ -10,7 +10,7 @@ import {BuySell, OptionType} from '../../imports/Interfaces/ILegSettings';
 import {LogData} from '../collections/Logs';
 import {IronCondorMarketOrder} from './Templates/SellIronCondorOrder';
 import {BadDefaultIPrice} from '../../imports/Interfaces/ITradeSettings';
-import CalculateOptionsPricings from '../CalculateOptionsPricing';
+import CalculateOptionsPricing from '../CalculateOptionsPricing';
 
 const clientId = '8MXX4ODNOEKHOU0COANPEZIETKPXJRQZ@AMER.OAUTHAP';
 const redirectUrl = 'https://localhost/traderOAuthCallback';
@@ -269,15 +269,23 @@ export async function GetPriceForOptions(tradeSettings) {
       }
       // The quotes include the underlying stock price.
       result.underlyingPrice = quote.underlyingPrice;
-      // Base price on the lower value relative to the opposite desired entry buySell direction.
-      // This is because entry is simply a time point while exit is based on value and the legs
-      // define the buySell direction based on trade entry. So, do the opposite for exit.
-      let price = quote.bidPrice;
-      if (leg.buySell === BuySell.SELL) {
-        // Means we are buying this leg now to exit the trade.
-        price = quote.askPrice;
+      let price = 0;
+      // We have trying using the mark price or the bidPrice/askPrice this IF statement
+      // is used to keep both chunks of code logic here so we can easily switch back and forth.
+      const usingMarkPrice = true;
+      if (usingMarkPrice){
+        price = quote.mark;
+      } else {
+        // Base price on the lower value relative to the opposite desired entry buySell direction.
+        // This is because entry is simply a time point while exit is based on value and the legs
+        // define the buySell direction based on trade entry. So, do the opposite for exit.
+        price = quote.bidPrice;
+        if (leg.buySell === BuySell.SELL) {
+          // Means we are buying this leg now to exit the trade.
+          price = quote.askPrice;
+        }
       }
-      result = CalculateOptionsPricings(result, leg, price);
+      result = CalculateOptionsPricing(result, leg, price);
       countFoundQuotes++;
     });
     if (countFoundQuotes !== tradeSettings.legs.length) {
@@ -484,8 +492,8 @@ export function CreateOpenAndCloseOrders(chains, tradeSettings) {
     }
   } else {
     // Create market orders for open and close by having buys triggering the sell items.
-    tradeSettings.openingOrder = GetOptionOrderBuysTriggeringSells(tradeSettings.legs, tradeSettings.quantity, false);
-    tradeSettings.closingOrder = GetOptionOrderBuysTriggeringSells(tradeSettings.legs, tradeSettings.quantity, true);
+    tradeSettings.openingOrder = GetOptionOrderBuysTriggeringSells(tradeSettings.legs, false);
+    tradeSettings.closingOrder = GetOptionOrderBuysTriggeringSells(tradeSettings.legs, true);
   }
   return true;
 }

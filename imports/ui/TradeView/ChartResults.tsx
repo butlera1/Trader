@@ -15,7 +15,7 @@ interface ISumResults {
 }
 
 function getDescription(record) {
-  return record.description ?? `${record.symbol}(${record.quantity ?? 1})`;
+  return record.description ?? `${record.symbol}`;
 }
 
 function getDateTime(record) {

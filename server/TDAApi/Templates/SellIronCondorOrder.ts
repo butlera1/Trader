@@ -2,6 +2,11 @@ import _ from 'lodash';
 import StuffLegParams from './StuffLegParams';
 import {BuySell, OptionType} from '../../../imports/Interfaces/ILegSettings';
 
+interface ISymbolQuantity {
+  symbol: string,
+  quantity: number
+}
+
 const SellIronCondorOrderForm = {
   'session': 'NORMAL',
   'duration': 'DAY',
@@ -46,23 +51,28 @@ const SellIronCondorOrderForm = {
 };
 
 function Get4BuySellPutCallSymbols(legs) {
-  let buyCallSymbol = '';
-  let sellCallSymbol = '';
-  let buyPutSymbol = '';
-  let sellPutSymbol = '';
+  let buyCallSymbol = {symbol: '', quantity: 1};
+  let sellCallSymbol = {symbol: '', quantity: 1};
+  let buyPutSymbol = {symbol: '', quantity: 1};
+  let sellPutSymbol = {symbol: '', quantity: 1};
   legs.forEach((leg) => {
     const symbol = leg.option.symbol;
+    const quantity = leg.quantity;
     if (leg.buySell === BuySell.SELL) {
       if (leg.callPut === OptionType.CALL) {
-        sellCallSymbol = symbol;
+        sellCallSymbol.symbol = symbol;
+        sellCallSymbol.quantity = quantity;
       } else {
-        sellPutSymbol = symbol;
+        sellPutSymbol.symbol = symbol;
+        sellPutSymbol.quantity = quantity;
       }
     } else {
       if (leg.callPut === OptionType.CALL) {
-        buyCallSymbol = symbol;
+        buyCallSymbol.symbol = symbol;
+        buyCallSymbol.quantity = quantity;
       } else {
-        buyPutSymbol = symbol;
+        buyPutSymbol.symbol = symbol;
+        buyPutSymbol.quantity = quantity;
       }
     }
   });
@@ -70,20 +80,20 @@ function Get4BuySellPutCallSymbols(legs) {
 }
 
 function IronCondorMarketOrder(tradeSettings, isToOpen) {
-  const {quantity, legs} = tradeSettings;
+  const {legs} = tradeSettings;
   const form = _.cloneDeep(SellIronCondorOrderForm);
   const text = isToOpen ? '_TO_OPEN' : '_TO_CLOSE';
   const {buyCallSymbol, sellCallSymbol, buyPutSymbol, sellPutSymbol} = Get4BuySellPutCallSymbols(legs);
   if (isToOpen) {
-    StuffLegParams(form.orderLegCollection[0], buyCallSymbol, quantity, `BUY${text}`);
-    StuffLegParams(form.orderLegCollection[1], sellCallSymbol, quantity, `SELL${text}`);
-    StuffLegParams(form.orderLegCollection[2], buyPutSymbol, quantity, `BUY${text}`);
-    StuffLegParams(form.orderLegCollection[3], sellPutSymbol, quantity, `SELL${text}`);
+    StuffLegParams(form.orderLegCollection[0], buyCallSymbol.symbol, buyCallSymbol.quantity, `BUY${text}`);
+    StuffLegParams(form.orderLegCollection[1], sellCallSymbol.symbol, sellCallSymbol.quantity, `SELL${text}`);
+    StuffLegParams(form.orderLegCollection[2], buyPutSymbol.symbol, buyPutSymbol.quantity, `BUY${text}`);
+    StuffLegParams(form.orderLegCollection[3], sellPutSymbol.symbol, sellPutSymbol.quantity, `SELL${text}`);
   } else {
-    StuffLegParams(form.orderLegCollection[0], buyCallSymbol, quantity, `SELL${text}`);
-    StuffLegParams(form.orderLegCollection[1], sellCallSymbol, quantity, `BUY${text}`);
-    StuffLegParams(form.orderLegCollection[2], buyPutSymbol, quantity, `SELL${text}`);
-    StuffLegParams(form.orderLegCollection[3], sellPutSymbol, quantity, `BUY${text}`);
+    StuffLegParams(form.orderLegCollection[0], buyCallSymbol.symbol, buyCallSymbol.quantity, `SELL${text}`);
+    StuffLegParams(form.orderLegCollection[1], sellCallSymbol.symbol, sellCallSymbol.quantity, `BUY${text}`);
+    StuffLegParams(form.orderLegCollection[2], buyPutSymbol.symbol, buyPutSymbol.quantity, `SELL${text}`);
+    StuffLegParams(form.orderLegCollection[3], sellPutSymbol.symbol, sellPutSymbol.quantity, `BUY${text}`);
   }
   return form;
 }
@@ -103,17 +113,9 @@ function IronCondorStopOrder(tradeSettings, price, isToOpen) {
   return form;
 }
 
-function IronCondorSellMarketAtNoonOrder(buyCall, sellCall, buyPut, sellPut, quantity) {
-  const form = IronCondorMarketOrder(buyCall, sellCall, buyPut, sellPut, quantity, false);
-  // TODO (AWB) Fix the date time to be today's and adjusted for New York time.
-  form.releaseTime = '2022-10-17T16:00:00+0000';
-  return form;
-}
-
 export {
   IronCondorMarketOrder,
   IronCondorLimitOrder,
   IronCondorStopOrder,
-  IronCondorSellMarketAtNoonOrder,
   Get4BuySellPutCallSymbols
 };

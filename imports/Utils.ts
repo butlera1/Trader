@@ -12,17 +12,20 @@ function GetNewYorkTimeAsText(date: Date) {
 
 function CalculateTotalFees(tradeSettings) {
   if (tradeSettings.totalFees) return tradeSettings.totalFees;
-  const {quantity, commissionPerContract = 0, legs} = tradeSettings;
-  tradeSettings.totalFees = quantity * commissionPerContract * 2 * legs.length;
+  const {commissionPerContract = 0, legs} = tradeSettings;
+  legs.forEach((leg) => {
+    // Multiply by 2 because we are opening and closing the position.
+    tradeSettings.totalFees = leg.quantity * commissionPerContract * 2;
+  });
   return tradeSettings.totalFees;
 }
 
 function CalculateGain(tradeSettings, currentPrice) {
-  const {openingPrice, quantity} = tradeSettings;
-  let possibleGain = (Math.abs(openingPrice) - currentPrice) * 100.0 * quantity;
+  const {openingPrice} = tradeSettings;
+  let possibleGain = (Math.abs(openingPrice) - currentPrice) * 100.0;
   if (openingPrice > 0) {
     // We are in a long position.
-    possibleGain = (Math.abs(currentPrice) - openingPrice) * 100.0 * quantity;
+    possibleGain = (Math.abs(currentPrice) - openingPrice) * 100.0;
   }
   return possibleGain;
 }
