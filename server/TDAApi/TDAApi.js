@@ -467,11 +467,12 @@ export function CreateOpenAndCloseOrders(chains, tradeSettings) {
     if (!csvSymbols.includes(leg.option.symbol)) {
       csvSymbols = `${csvSymbols},${leg.option.symbol}`;
     }
+    const totalMarkPrice = leg.option.mark * leg.quantity;
     if (leg.buySell === BuySell.BUY) {
-      openingPrice = openingPrice + leg.option.mark;
+      openingPrice = openingPrice + totalMarkPrice;
     } else {
-      openingPrice = openingPrice - leg.option.mark;
-      shortOnlyPrice = shortOnlyPrice + leg.option.mark;
+      openingPrice = openingPrice - totalMarkPrice;
+      shortOnlyPrice = shortOnlyPrice + totalMarkPrice;
     }
   });
   tradeSettings.csvSymbols = csvSymbols.slice(1); // remove leading comma

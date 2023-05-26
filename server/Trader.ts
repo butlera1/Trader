@@ -88,7 +88,7 @@ function GetNewYorkTime24HourNow() {
 
 async function GetOptionsPriceLoop(tradeSettings: ITradeSettings): Promise<IPrice> {
   let result: IPrice = {...BadDefaultIPrice};
-  const doubleAbsOpenPrice = Math.abs(tradeSettings.openingPrice) * 2;
+  const tripleAbsOpenPrice = Math.abs(tradeSettings.openingPrice) * 3;
   let count = 0;
   while (count < 3) {
     try {
@@ -103,18 +103,18 @@ async function GetOptionsPriceLoop(tradeSettings: ITradeSettings): Promise<IPric
         release();
       }, 1000);
       if (_.isFinite(result.price)) {
-        if (Math.abs(result.price) < doubleAbsOpenPrice) {
-          return result;
-        } else {
-          console.error(`***************    GetOptionsPriceLoop: PRICE IS TOO FAR FROM OPENING PRICE.`, tradeSettings.openingPrice, result.price);
+        if (Math.abs(result.price) < tripleAbsOpenPrice) {
+          console.error(`***************    GetOptionsPriceLoop: ABSOLUTE PRICE IS TOO FAR FROM ABSOLUTE OPENING PRICE.`,
+            Math.abs(tradeSettings.openingPrice), Math.abs(result.price));
         }
+        return result;
       }
       count++;
     } catch (ex) {
       console.error(`GetOptionsPriceLoop: Failed GetPriceForOptions.`, ex);
     }
   }
-  const message = `GetOptionsPriceLoop: Failed to get currentPrice (probably too fast). User: ${tradeSettings.userName}, ${tradeSettings.csvSymbols}`;
+  const message = `***************    GetOptionsPriceLoop: Failed to get currentPrice (probably too fast). User: ${tradeSettings.userName}, ${tradeSettings.csvSymbols}`;
   console.error(message);
   return result;
 }
