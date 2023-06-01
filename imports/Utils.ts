@@ -7,7 +7,7 @@ dayjs.extend(utc);
 dayjs.extend(timezone);
 
 function GetNewYorkTimeAsText(date: Date) {
-  return dayjs(date).tz('America/New_York').format('MM/DD/YY hh:mm A');
+  return dayjs(date).tz('America/New_York').format('MM/DD/YY hh:mm:ss A');
 }
 
 function CalculateTotalFees(tradeSettings) {
