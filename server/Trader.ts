@@ -103,8 +103,8 @@ async function GetOptionsPriceLoop(tradeSettings: ITradeSettings): Promise<IPric
         release();
       }, 1000);
       if (_.isFinite(result.price)) {
-        if (Math.abs(result.price) < tripleAbsOpenPrice) {
-          console.error(`***************    GetOptionsPriceLoop: ABSOLUTE PRICE IS TOO FAR FROM ABSOLUTE OPENING PRICE.`,
+        if (Math.abs(result.price) > tripleAbsOpenPrice) {
+          console.error(`***************    GetOptionsPriceLoop: ABSOLUTE PRICE IS GREATER THAN TRIPLE THE ABSOLUTE OPENING PRICE.`,
             Math.abs(tradeSettings.openingPrice), Math.abs(result.price));
         }
         return result;
