@@ -487,8 +487,8 @@ function CalculateGrossOrderBuysAndSells(order) {
 
 function CalculateFilledOrderPrice(order): IOrderPriceResults {
   const grossPrices = CalculateGrossOrderBuysAndSells(order);
-  const orderPrice = grossPrices.buyPrice / order.quantity + grossPrices.sellPrice / order.quantity;
-  return {orderPrice, shortOnlyPrice: grossPrices.sellPrice / order.quantity};
+  const orderPrice = grossPrices.buyPrice + grossPrices.sellPrice;
+  return {orderPrice, shortOnlyPrice: grossPrices.sellPrice};
 }
 
 function calculateIfOrderIsFilled(order) {

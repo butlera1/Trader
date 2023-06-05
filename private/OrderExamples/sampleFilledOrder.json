@@ -1,0 +1,132 @@
+{
+  "session": "NORMAL",
+  "duration": "DAY",
+  "orderType": "MARKET",
+  "complexOrderStrategyType": "IRON_CONDOR",
+  "quantity": 1,
+  "filledQuantity": 1,
+  "remainingQuantity": 0,
+  "requestedDestination": "AUTO",
+  "destinationLinkName": "DFIN",
+  "orderLegCollection": [
+    {
+      "orderLegType": "OPTION",
+      "legId": 1,
+      "instrument": {
+        "assetType": "OPTION",
+        "cusip": "0SPXW.F534350000",
+        "symbol": "SPXW_060523C4350",
+        "description": "SPXW Jun 05 2023 4350.0 Call",
+        "type": "VANILLA",
+        "putCall": "CALL",
+        "underlyingSymbol": "$SPX.X"
+      },
+      "instruction": "BUY_TO_OPEN",
+      "positionEffect": "OPENING",
+      "quantity": 2
+    },
+    {
+      "orderLegType": "OPTION",
+      "legId": 2,
+      "instrument": {
+        "assetType": "OPTION",
+        "cusip": "0SPXW.F534315000",
+        "symbol": "SPXW_060523C4315",
+        "description": "SPXW Jun 05 2023 4315.0 Call",
+        "type": "VANILLA",
+        "putCall": "CALL",
+        "underlyingSymbol": "$SPX.X"
+      },
+      "instruction": "SELL_TO_OPEN",
+      "positionEffect": "OPENING",
+      "quantity": 1
+    },
+    {
+      "orderLegType": "OPTION",
+      "legId": 3,
+      "instrument": {
+        "assetType": "OPTION",
+        "cusip": "0SPXW.R534205000",
+        "symbol": "SPXW_060523P4205",
+        "description": "SPXW Jun 05 2023 4205.0 Put",
+        "type": "VANILLA",
+        "putCall": "PUT",
+        "underlyingSymbol": "$SPX.X"
+      },
+      "instruction": "BUY_TO_OPEN",
+      "positionEffect": "OPENING",
+      "quantity": 2
+    },
+    {
+      "orderLegType": "OPTION",
+      "legId": 4,
+      "instrument": {
+        "assetType": "OPTION",
+        "cusip": "0SPXW.R534255000",
+        "symbol": "SPXW_060523P4255",
+        "description": "SPXW Jun 05 2023 4255.0 Put",
+        "type": "VANILLA",
+        "putCall": "PUT",
+        "underlyingSymbol": "$SPX.X"
+      },
+      "instruction": "SELL_TO_OPEN",
+      "positionEffect": "OPENING",
+      "quantity": 1
+    }
+  ],
+  "orderStrategyType": "SINGLE",
+  "orderId": 11007130000,
+  "cancelable": false,
+  "editable": false,
+  "status": "FILLED",
+  "enteredTime": "2023-06-05T13:57:15+0000",
+  "closeTime": "2023-06-05T13:57:16+0000",
+  "tag": "AA_butlera2",
+  "accountId": 755541528,
+  "orderActivityCollection": [
+    {
+      "activityType": "EXECUTION",
+      "activityId": 56394048672,
+      "executionType": "FILL",
+      "quantity": 1,
+      "orderRemainingQuantity": 0,
+      "executionLegs": [
+        {
+          "legId": 1,
+          "quantity": 1,
+          "mismarkedQuantity": 0,
+          "price": 0.08,
+          "time": "2023-06-05T13:57:16+0000"
+        },
+        {
+          "legId": 3,
+          "quantity": 2,
+          "mismarkedQuantity": 0,
+          "price": 0.14,
+          "time": "2023-06-05T13:57:16+0000"
+        },
+        {
+          "legId": 2,
+          "quantity": 1,
+          "mismarkedQuantity": 0,
+          "price": 0.8,
+          "time": "2023-06-05T13:57:16+0000"
+        },
+        {
+          "legId": 4,
+          "quantity": 1,
+          "mismarkedQuantity": 0,
+          "price": 1.25,
+          "time": "2023-06-05T13:57:16+0000"
+        },
+        {
+          "legId": 1,
+          "quantity": 1,
+          "mismarkedQuantity": 0,
+          "price": 0.09,
+          "time": "2023-06-05T13:57:16+0000"
+        }
+      ]
+    }
+  ]
+}
