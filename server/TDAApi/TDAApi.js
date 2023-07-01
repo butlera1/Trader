@@ -403,10 +403,17 @@ function pickClosest(option, lastOption, desiredDelta) {
 
 function getOptionAtDelta(options, desiredDelta) {
   const items = Object.values(options);
+  // First define lastOption to be a valid option with a delta value.
   let lastOption = items[0][0];
-  for (let i = 1; i < items.length; i++) {
+  let startCnt = 1;
+  while (lastOption.delta === Number.NaN && startCnt < items.length) {
+    lastOption = items[startCnt][0];
+    startCnt++;
+  }
+  // Now find the first option that is at or below the desired delta.
+  for (let i = startCnt; i < items.length; i++) {
     const option = items[i][0];
-    if (option.delta !== 0.0) {
+    if (option.delta !== 0.0 && option.delta !== Number.NaN) {
       if (option.putCall === 'PUT') {
         if (Math.abs(option.delta) >= desiredDelta) {
           return pickClosest(option, lastOption, desiredDelta);
@@ -420,6 +427,12 @@ function getOptionAtDelta(options, desiredDelta) {
     lastOption = option;
   }
   const msg = `NoOption: getOptionAtDelta delta: ${desiredDelta}. Options: ${JSON.stringify(options)}`;
+  console.error(`*******    LISTING OPTION DELTAS: ${msg}`);
+  for (let i = 0; i < items.length; i++) {
+    const option = items[i][0];
+    console.error(`getOptionAtDelta delta= ${option.delta}`);
+  }
+  console.error(`*******    END: ${msg}`);
   throw new Meteor.Error(msg);
 }
 

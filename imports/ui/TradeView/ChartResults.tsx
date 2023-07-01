@@ -34,7 +34,7 @@ interface ITotalsProps {
   totalGains: number,
 }
 function Totals({numberOfTrades, winnings, losses, totalGains}: ITotalsProps){
-  const color = totalGains>0 ? 'green' : 'red';
+  const color = totalGains >= 0 ? 'green' : 'red';
   const ColoredStuff = <span >Result: ${totalGains.toFixed(2)}</span>;
   return <h2 style={{color}}>{numberOfTrades} trades, Wins: ${winnings.toFixed(2)} - Losses: ${Math.abs(losses).toFixed(2)} = {ColoredStuff}</h2>
 }

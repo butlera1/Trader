@@ -513,7 +513,7 @@ async function WaitForOrderCompleted(userId, accountNumber, orderId) {
         counter++;
         if (!order) {
           if (counter >= 20) {
-            const msg = `Order ${orderId} not obtained. Rejecting WaitForOrderCompleted.`;
+            const msg = `Order ${orderId} not obtained. Exiting WaitForOrderCompleted.`;
             LogData(null, msg, null);
             reject(msg);
             return;
@@ -535,7 +535,13 @@ async function WaitForOrderCompleted(userId, accountNumber, orderId) {
           return;
         }
         if (counter >= 20) {
-          const msg = `Order ${orderId} has failed to fill within the desired time.`;
+          const msg = `WaitForOrderCompleted: Order ${orderId} has failed to fill within the desired time.`;
+          LogData(null, msg, null);
+          reject(msg);
+          return;
+        }
+        if (order.status === 'REJECTED' || order.status === 'CANCELED') {
+          const msg = `WaitForOrderCompleted: Order ${orderId} has been ${order.status}. (RETRYING)`;
           LogData(null, msg, null);
           reject(msg);
           return;
