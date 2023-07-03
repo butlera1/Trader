@@ -1,4 +1,4 @@
-import ITradeSettings, {IPrice} from './Interfaces/ITradeSettings';
+import ITradeSettings, {IPrice, whyClosedEnum} from './Interfaces/ITradeSettings';
 import dayjs from 'dayjs';
 import utc from 'dayjs/plugin/utc';
 import timezone from 'dayjs/plugin/timezone';
@@ -21,8 +21,19 @@ function CalculateTotalFees(tradeSettings) {
   return tradeSettings.totalFees;
 }
 
+function CleanupGainLossWhenFailedClosingTrade(record: ITradeSettings) {
+  if (record.gainLoss === Number.NaN && record.whyClosed === whyClosedEnum.gainLimit) {
+    // Recalculate gain if the closing transaction never filled (assumed). Use expected gainLimit instead.
+    record.gainLoss = CalculateGain(record, record.gainLimit);
+  }
+}
+
 function CalculateGain(tradeSettings, currentPrice) {
-  const {openingPrice} = tradeSettings;
+  const {openingPrice, gainLoss, whyClosed, gainLimit} = tradeSettings;
+  // Logic to handle failed closing trade, leaving currentPrice as NaN.
+  if (currentPrice === Number.NaN && whyClosed === whyClosedEnum.gainLimit) {
+    currentPrice = gainLimit;
+  }
   let possibleGain = (Math.abs(openingPrice) - currentPrice) * 100.0;
   if (openingPrice > 0) {
     // We are in a long position.
@@ -95,4 +106,5 @@ export {
   CalculateLimitsAndFees,
   CalculateUnderlyingPriceAverageSlope,
   GetNewYorkTimeAsText,
+  CleanupGainLossWhenFailedClosingTrade
 };

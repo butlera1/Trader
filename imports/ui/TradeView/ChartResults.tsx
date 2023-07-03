@@ -3,9 +3,9 @@ import {CartesianGrid, Line, LineChart, Tooltip, XAxis, YAxis} from 'recharts';
 // @ts-ignore
 import {useTracker} from 'meteor/react-meteor-data';
 import {Space} from 'antd';
-import ITradeSettings from '../../Interfaces/ITradeSettings';
+import ITradeSettings, {whyClosedEnum} from '../../Interfaces/ITradeSettings';
 import dayjs from 'dayjs';
-import {CalculateTotalFees} from '../../Utils';
+import {CalculateGain, CalculateTotalFees, CleanupGainLossWhenFailedClosingTrade} from '../../Utils';
 
 interface ISumResults {
   description: string,
@@ -54,6 +54,7 @@ function ChartResults({records}: { records: ITradeSettings[] }) {
   const resultSum = records.reduce((sum, record) => {
     if (!record.isPrerunning) {
       const description = getDescription(record);
+      CleanupGainLossWhenFailedClosingTrade(record);
       const actualGainLoss = record.gainLoss - CalculateTotalFees(record);
       sum = sum + actualGainLoss;
       sumResults.push({

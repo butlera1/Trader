@@ -12,7 +12,7 @@ import {DeleteOutlined} from '@ant-design/icons';
 import ITradeSettings, {GetDescription, whyClosedEnum} from '../../Interfaces/ITradeSettings';
 // @ts-ignore
 import GraphTrade from './GraphTrade.tsx';
-import {CalculateTotalFees, GetNewYorkTimeAsText} from '../../Utils';
+import {CalculateGain, CalculateTotalFees, CleanupGainLossWhenFailedClosingTrade, GetNewYorkTimeAsText} from '../../Utils';
 import './CssActiveTradesTable';
 
 dayjs.extend(utc);
@@ -145,9 +145,10 @@ const columns: ColumnsType<ITradeSettings> = [
     align: 'center',
     dataIndex: 'gainLoss',
     sorter: (a, b) => a.gainLoss - b.gainLoss,
-    render: (gainLoss, record) => {
+    render: (_, record) => {
       const totalFees = CalculateTotalFees(record);
-      gainLoss = gainLoss - totalFees;
+      CleanupGainLossWhenFailedClosingTrade(record);
+      let gainLoss = record.gainLoss - totalFees;
       let color = (gainLoss < 0) ? 'red' : 'green';
       return (
         <span style={{color: color}} key={gainLoss}>{gainLoss.toFixed(2)}</span>
