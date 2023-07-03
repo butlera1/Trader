@@ -31,7 +31,7 @@ function getLastPriceSampled(record: ITradeSettings) {
 
 function CleanupGainLossWhenFailedClosingTrade(record: ITradeSettings) {
   const badNumber = !_.isFinite(record.gainLoss);
-  const isClosed = record.whyClosed === whyClosedEnum.gainLimit || record.whyClosed === whyClosedEnum.timedExit;
+  const isClosed = !!record.whyClosed;
   if (badNumber && isClosed) {
     // Recalculate gain if the closing transaction never filled (assumed). Use expected gainLimit instead.
     record.gainLoss = CalculateGain(record, getLastPriceSampled(record));
@@ -41,7 +41,7 @@ function CleanupGainLossWhenFailedClosingTrade(record: ITradeSettings) {
 function CalculateGain(tradeSettings, currentPrice) {
   const {openingPrice, whyClosed, gainLimit} = tradeSettings;
   // Logic to handle failed closing trade, leaving currentPrice as NaN.
-  const isClosed = (whyClosed === whyClosedEnum.gainLimit || whyClosed === whyClosedEnum.timedExit);
+  const isClosed = !!tradeSettings.whyClosed;
   if (!_.isFinite(currentPrice) && isClosed) {
     currentPrice = getLastPriceSampled(tradeSettings);
   }
