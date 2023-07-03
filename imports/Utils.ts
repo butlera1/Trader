@@ -22,7 +22,8 @@ function CalculateTotalFees(tradeSettings) {
 }
 
 function CleanupGainLossWhenFailedClosingTrade(record: ITradeSettings) {
-  if (record.gainLoss === Number.NaN && record.whyClosed === whyClosedEnum.gainLimit) {
+  const badNumber = (record.gainLoss === Number.NaN || record.gainLoss === undefined);
+  if (badNumber && record.whyClosed === whyClosedEnum.gainLimit) {
     // Recalculate gain if the closing transaction never filled (assumed). Use expected gainLimit instead.
     record.gainLoss = CalculateGain(record, record.gainLimit);
   }
@@ -31,7 +32,7 @@ function CleanupGainLossWhenFailedClosingTrade(record: ITradeSettings) {
 function CalculateGain(tradeSettings, currentPrice) {
   const {openingPrice, gainLoss, whyClosed, gainLimit} = tradeSettings;
   // Logic to handle failed closing trade, leaving currentPrice as NaN.
-  if (currentPrice === Number.NaN && whyClosed === whyClosedEnum.gainLimit) {
+  if ((currentPrice === Number.NaN || currentPrice === undefined) && whyClosed === whyClosedEnum.gainLimit) {
     currentPrice = gainLimit;
   }
   let possibleGain = (Math.abs(openingPrice) - currentPrice) * 100.0;
