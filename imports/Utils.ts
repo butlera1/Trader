@@ -23,10 +23,10 @@ function CalculateTotalFees(tradeSettings) {
 }
 
 function getLastPriceSampled(record: ITradeSettings) {
-  if (!record.monitoredPrices || record.monitoredPrices.length === 0) {
+  if (record.monitoredPrices && record.monitoredPrices.length > 0) {
     return record.monitoredPrices[record.monitoredPrices.length - 1].price;
   }
-  return 0;
+  return Number.NaN;
 }
 
 function CleanupGainLossWhenFailedClosingTrade(record: ITradeSettings) {
