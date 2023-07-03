@@ -156,7 +156,7 @@ async function CloseTrade(tradeSettings: ITradeSettings, currentPrice: number) {
       const priceResults = await WaitForOrderCompleted(userId, accountNumber, tradeSettings.closingOrderId).catch(reason => {
         const msg = `Exception waiting for order completion in CloseTrade: ${reason}.`;
         LogData(tradeSettings, msg, new Meteor.Error('FailedOrderCompletion', msg));
-        return 0;
+        return {orderPrice: Number.NaN, shortOnlyPrice: Number.NaN};
       });
       // The following cast should not be needed but typescript is complaining.
       const castPriceResults = priceResults as IOrderPriceResults;

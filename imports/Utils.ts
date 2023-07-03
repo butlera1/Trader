@@ -2,6 +2,7 @@ import ITradeSettings, {IPrice, whyClosedEnum} from './Interfaces/ITradeSettings
 import dayjs from 'dayjs';
 import utc from 'dayjs/plugin/utc';
 import timezone from 'dayjs/plugin/timezone';
+import _ from 'lodash';
 
 dayjs.extend(utc);
 dayjs.extend(timezone);
@@ -22,7 +23,7 @@ function CalculateTotalFees(tradeSettings) {
 }
 
 function CleanupGainLossWhenFailedClosingTrade(record: ITradeSettings) {
-  const badNumber = (record.gainLoss === Number.NaN || record.gainLoss === undefined);
+  const badNumber = !_.isFinite(record.gainLoss);
   if (badNumber && record.whyClosed === whyClosedEnum.gainLimit) {
     // Recalculate gain if the closing transaction never filled (assumed). Use expected gainLimit instead.
     record.gainLoss = CalculateGain(record, record.gainLimit);
@@ -30,9 +31,9 @@ function CleanupGainLossWhenFailedClosingTrade(record: ITradeSettings) {
 }
 
 function CalculateGain(tradeSettings, currentPrice) {
-  const {openingPrice, gainLoss, whyClosed, gainLimit} = tradeSettings;
+  const {openingPrice, whyClosed, gainLimit} = tradeSettings;
   // Logic to handle failed closing trade, leaving currentPrice as NaN.
-  if ((currentPrice === Number.NaN || currentPrice === undefined) && whyClosed === whyClosedEnum.gainLimit) {
+  if (!_.isFinite(currentPrice) && whyClosed === whyClosedEnum.gainLimit) {
     currentPrice = gainLimit;
   }
   let possibleGain = (Math.abs(openingPrice) - currentPrice) * 100.0;
