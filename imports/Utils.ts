@@ -22,19 +22,28 @@ function CalculateTotalFees(tradeSettings) {
   return tradeSettings.totalFees;
 }
 
+function getLastPriceSampled(record: ITradeSettings) {
+  if (!record.monitoredPrices || record.monitoredPrices.length === 0) {
+    return record.monitoredPrices[record.monitoredPrices.length - 1].price;
+  }
+  return 0;
+}
+
 function CleanupGainLossWhenFailedClosingTrade(record: ITradeSettings) {
   const badNumber = !_.isFinite(record.gainLoss);
-  if (badNumber && record.whyClosed === whyClosedEnum.gainLimit) {
+  const isClosed = record.whyClosed === whyClosedEnum.gainLimit || record.whyClosed === whyClosedEnum.timedExit;
+  if (badNumber && isClosed) {
     // Recalculate gain if the closing transaction never filled (assumed). Use expected gainLimit instead.
-    record.gainLoss = CalculateGain(record, record.gainLimit);
+    record.gainLoss = CalculateGain(record, getLastPriceSampled(record));
   }
 }
 
 function CalculateGain(tradeSettings, currentPrice) {
   const {openingPrice, whyClosed, gainLimit} = tradeSettings;
   // Logic to handle failed closing trade, leaving currentPrice as NaN.
-  if (!_.isFinite(currentPrice) && whyClosed === whyClosedEnum.gainLimit) {
-    currentPrice = gainLimit;
+  const isClosed = (whyClosed === whyClosedEnum.gainLimit || whyClosed === whyClosedEnum.timedExit);
+  if (!_.isFinite(currentPrice) && isClosed) {
+    currentPrice = getLastPriceSampled(tradeSettings);
   }
   let possibleGain = (Math.abs(openingPrice) - currentPrice) * 100.0;
   if (openingPrice > 0) {
