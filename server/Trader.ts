@@ -594,6 +594,16 @@ async function PlaceOpeningOrderAndMonitorToClose(tradeSettings: ITradeSettings)
   return;
 }
 
+function IsNotDuplicateTrade(tradeSettings: ITradeSettings) {
+  const existingTrade = Trades.findOne({
+    userName: tradeSettings.userName,
+    symbol: tradeSettings.symbol,
+    originalTradeSettingsId: tradeSettings._id,
+    whenClosed: {$exists: false},
+  });
+  return !existingTrade;
+}
+
 async function ExecuteTrade(tradeSettings: ITradeSettings, forceTheTrade = false, isPrerun = false) {
   if (!tradeSettings) {
     const msg = `ExecuteTrade called without 'tradeSettings'.`;
@@ -607,7 +617,20 @@ async function ExecuteTrade(tradeSettings: ITradeSettings, forceTheTrade = false
   const notTooLateToTrade = now.isBefore(justBeforeClose);
   const tradePatternIncludesThisDayOfTheWeek = tradeSettings.days?.includes(currentDayOfTheWeek);
   const hasLegsInTrade = tradeSettings.legs.length > 0;
-  const performTheTrade = (tradeSettings.isActive && notTooLateToTrade && tradePatternIncludesThisDayOfTheWeek && hasLegsInTrade);
+  const tradeIsNotADuplicate = IsNotDuplicateTrade(tradeSettings);
+  const isADuplicateTrade = !tradeIsNotADuplicate;
+  const performTheTrade = (
+    tradeSettings.isActive &&
+    notTooLateToTrade &&
+    tradePatternIncludesThisDayOfTheWeek &&
+    hasLegsInTrade &&
+    tradeIsNotADuplicate
+  );
+  if (isADuplicateTrade && !forceTheTrade) {
+    // Write logs indicating that this happened and is not desired.
+    const msg = `ExecuteTrade: Duplicated trade for ${tradeSettings.userName} with trade ${tradeSettings.description}. Skipping this additional trade.`;
+    LogData(tradeSettings, msg, new Meteor.Error(msg));
+  }
   if (forceTheTrade || performTheTrade) {
     try {
       // Make sure we have latest userSettings for this new trade about to happen.
