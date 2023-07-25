@@ -33,6 +33,7 @@ import {
   GetStreamingOptionsPrice,
   IsStreamingQuotes,
 } from './TDAApi/StreamEquities';
+import Semaphore from 'semaphore';
 
 const lock = mutexify();
 
@@ -666,6 +667,7 @@ No Legs: ${!hasLegsInTrade} with ${JSON.stringify(tradeSettings)}`;
 }
 
 const usersTimeoutHandles = {};
+const usersTimeoutHandlesSemaphore = Semaphore(1);
 
 function prepareUserForScheduling(user) {
   if (usersTimeoutHandles[user._id]?.length > 0) {
@@ -696,23 +698,26 @@ function scheduleUsersTrade(tradeSettings, user) {
 }
 
 async function QueueUsersTradesForTheDay(user) {
-  const isMarketOpened = await IsOptionMarketOpenToday(user._id);
-  if (!isMarketOpened) {
-    LogData(null, `Queueing ${user.username}'s trades but market is closed today`);
-    return;
-  }
-  LogData(null, `Market is open today so queueing ${user.username}'s trades.`);
-  const accountNumber = UserSettings.findOne(user._id)?.accountNumber;
-  if (!accountNumber || accountNumber === 'None') {
-    LogData(null, `User ${user.username} has no account number so skipping this user.`, null);
-    return;
-  }
-  prepareUserForScheduling(user);
-  const tradeSettingsSet = TradeSettings.find({userId: user._id}).fetch();
-  tradeSettingsSet.forEach((tradeSettings: ITradeSettings) => {
-    tradeSettings.accountNumber = accountNumber;
-    tradeSettings.userName = user.username;
-    scheduleUsersTrade(tradeSettings, user);
+  usersTimeoutHandlesSemaphore.take(async () => {
+    const isMarketOpened = await IsOptionMarketOpenToday(user._id);
+    if (!isMarketOpened) {
+      LogData(null, `Queueing ${user.username}'s trades but market is closed today`);
+      return;
+    }
+    LogData(null, `Market is open today so queueing ${user.username}'s trades.`);
+    const accountNumber = UserSettings.findOne(user._id)?.accountNumber;
+    if (!accountNumber || accountNumber === 'None') {
+      LogData(null, `User ${user.username} has no account number so skipping this user.`, null);
+      return;
+    }
+    prepareUserForScheduling(user);
+    const tradeSettingsSet = TradeSettings.find({userId: user._id}).fetch();
+    tradeSettingsSet.forEach((tradeSettings: ITradeSettings) => {
+      tradeSettings.accountNumber = accountNumber;
+      tradeSettings.userName = user.username;
+      scheduleUsersTrade(tradeSettings, user);
+    });
+    usersTimeoutHandlesSemaphore.leave();
   });
 }
 
