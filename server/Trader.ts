@@ -699,25 +699,30 @@ function scheduleUsersTrade(tradeSettings, user) {
 
 async function QueueUsersTradesForTheDay(user) {
   usersTimeoutHandlesSemaphore.take(async () => {
-    const isMarketOpened = await IsOptionMarketOpenToday(user._id);
-    if (!isMarketOpened) {
-      LogData(null, `Queueing ${user.username}'s trades but market is closed today`);
-      return;
+    try {
+      const isMarketOpened = await IsOptionMarketOpenToday(user._id);
+      if (!isMarketOpened) {
+        LogData(null, `Queueing ${user.username}'s trades but market is closed today`);
+        return;
+      }
+      LogData(null, `Market is open today so queueing ${user.username}'s trades.`);
+      const accountNumber = UserSettings.findOne(user._id)?.accountNumber;
+      if (!accountNumber || accountNumber === 'None') {
+        LogData(null, `User ${user.username} has no account number so skipping this user.`, null);
+        return;
+      }
+      prepareUserForScheduling(user);
+      const tradeSettingsSet = TradeSettings.find({userId: user._id}).fetch();
+      tradeSettingsSet.forEach((tradeSettings: ITradeSettings) => {
+        tradeSettings.accountNumber = accountNumber;
+        tradeSettings.userName = user.username;
+        scheduleUsersTrade(tradeSettings, user);
+      });
+    } catch (ex) {
+      LogData(null, `Failed to queue trades for user ${user.username}.`, ex);
+    } finally {
+      usersTimeoutHandlesSemaphore.leave();
     }
-    LogData(null, `Market is open today so queueing ${user.username}'s trades.`);
-    const accountNumber = UserSettings.findOne(user._id)?.accountNumber;
-    if (!accountNumber || accountNumber === 'None') {
-      LogData(null, `User ${user.username} has no account number so skipping this user.`, null);
-      return;
-    }
-    prepareUserForScheduling(user);
-    const tradeSettingsSet = TradeSettings.find({userId: user._id}).fetch();
-    tradeSettingsSet.forEach((tradeSettings: ITradeSettings) => {
-      tradeSettings.accountNumber = accountNumber;
-      tradeSettings.userName = user.username;
-      scheduleUsersTrade(tradeSettings, user);
-    });
-    usersTimeoutHandlesSemaphore.leave();
   });
 }
 
