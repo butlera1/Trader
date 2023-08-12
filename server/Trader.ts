@@ -681,7 +681,6 @@ function scheduleUsersTrade(tradeSettings, user) {
     const desiredTradeTime = GetNewYorkTimeAt(tradeSettings.entryHour, tradeSettings.entryMinute);
     let delayInMilliseconds = dayjs.duration(desiredTradeTime.diff(dayjs())).asMilliseconds();
     if (delayInMilliseconds > 0 && tradeSettings.isActive) {
-      LogData(tradeSettings, `Scheduling opening trade for ${user.username} at ${desiredTradeTime.format('hh:mm a')}.`);
       const timeoutHandle = Meteor.setTimeout(async function timerMethodToOpenTrade() {
         Meteor.clearTimeout(timeoutHandle);
         await ExecuteTrade(tradeSettings, false, tradeSettings.isPrerun)
@@ -690,7 +689,6 @@ function scheduleUsersTrade(tradeSettings, user) {
           });
       }, delayInMilliseconds);
       usersTimeoutHandles[user._id].push(timeoutHandle);
-      LogData(null, `Scheduled ${usersTimeoutHandles[user._id].length} trades for user ${user.username} today.`);
     }
   } catch (ex) {
     LogData(tradeSettings, `Failed to schedule opening trade ${user.username}.`);
@@ -698,19 +696,21 @@ function scheduleUsersTrade(tradeSettings, user) {
 }
 
 async function QueueUsersTradesForTheDay(user) {
+  const isMarketOpened = await IsOptionMarketOpenToday(user._id);
+  if (!isMarketOpened) {
+    LogData(null, `Queueing ${user.username}'s trades but market is closed today`);
+    return;
+  }
+  LogData(null, `Market is open today so queueing ${user.username}'s trades.`);
+  const accountNumber = UserSettings.findOne(user._id)?.accountNumber;
+  if (!accountNumber || accountNumber === 'None') {
+    LogData(null, `User ${user.username} has no account number so skipping this user.`, null);
+    return;
+  }
+  // 'async' is required for '.take' to bind Fiber to the function Meteor code to work inside Semaphore code.
+  // If 'async' is removed, then LogData cannot be called inside Semaphore code.
   usersTimeoutHandlesSemaphore.take(async () => {
     try {
-      const isMarketOpened = await IsOptionMarketOpenToday(user._id);
-      if (!isMarketOpened) {
-        LogData(null, `Queueing ${user.username}'s trades but market is closed today`);
-        return;
-      }
-      LogData(null, `Market is open today so queueing ${user.username}'s trades.`);
-      const accountNumber = UserSettings.findOne(user._id)?.accountNumber;
-      if (!accountNumber || accountNumber === 'None') {
-        LogData(null, `User ${user.username} has no account number so skipping this user.`, null);
-        return;
-      }
       prepareUserForScheduling(user);
       const tradeSettingsSet = TradeSettings.find({userId: user._id}).fetch();
       tradeSettingsSet.forEach((tradeSettings: ITradeSettings) => {
@@ -718,6 +718,7 @@ async function QueueUsersTradesForTheDay(user) {
         tradeSettings.userName = user.username;
         scheduleUsersTrade(tradeSettings, user);
       });
+      LogData(null, `Scheduled ${usersTimeoutHandles[user._id]?.length} trades for user ${user.username} today.`);
     } catch (ex) {
       LogData(null, `Failed to queue trades for user ${user.username}.`, ex);
     } finally {
