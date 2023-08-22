@@ -30,8 +30,8 @@ function GraphTrade({liveTrade}: { liveTrade: ITradeSettings }) {
   let initialShortStraddlePrice = Math.abs(monitoredPrices[0]?.shortStraddlePrice ?? 0);
 
   // Create the scale factor for the underlying price based on the chart range.
-  const maxChartRange = Math.max(gainLine, Math.abs(lossLine));
-  const underlyingMultiplier = maxChartRange > 1000 ? 20 : 10;
+  const multiplier = Math.trunc(Math.max(gainLine, Math.abs(lossLine)) / 1000.0) + 1;
+  const underlyingMultiplier = 10 * multiplier;
 
   const getUnderlying = (price) => round((price.underlyingPrice ?? 0) - initialUnderlyingPrice) * underlyingMultiplier;
 
