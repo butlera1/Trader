@@ -203,9 +203,12 @@ function GetDescription(tradeSettings: ITradeSettings) {
   if (type === 'CS') {
     type = `${type}(${getTwoDTEValues(tradeSettings.legs)})`;
   }
+
+  const entryHour = tradeSettings.entryHour > 12 ? tradeSettings.entryHour - 12 : tradeSettings.entryHour;
+  const exitHour = tradeSettings.exitHour > 12 ? tradeSettings.exitHour - 12 : tradeSettings.exitHour;
   const part0 = tradeSettings.name ? `${tradeSettings.name}: \n` : '';
   const part1 = `${tradeSettings.symbol} ${type}`;
-  const part2 = `${tradeSettings.entryHour}:${tradeSettings.entryMinute}-${tradeSettings.exitHour}:${tradeSettings.exitMinute}`;
+  const part2 = `${entryHour}:${tradeSettings.entryMinute}-${exitHour}:${tradeSettings.exitMinute}`;
   const part3 = `${(tradeSettings.percentGain * 100).toFixed(1)}/${(tradeSettings.percentLoss * 100).toFixed(1)} %`;
   let part4 = '';
   if (tradeSettings.csvSymbols) {

@@ -16,7 +16,6 @@ import dayjs, {Dayjs} from 'dayjs';
 import duration from 'dayjs/plugin/duration';
 import isoWeek from 'dayjs/plugin/isoWeek';
 import {Trades} from './collections/Trades';
-import {TradeOrders} from './collections/TradeOrders';
 import ITradeSettings, {BadDefaultIPrice, IPrice, whyClosedEnum} from '../imports/Interfaces/ITradeSettings';
 import {TradeSettings} from './collections/TradeSettings';
 import {UserSettings} from './collections/UserSettings';
@@ -526,12 +525,6 @@ async function WaitForOrderCompleted(userId, accountNumber, orderId) {
         const isOrderFilled = calculateIfOrderIsFilled(order);
         if (isOrderFilled) {
           const priceResults = CalculateFilledOrderPrice(order);
-          TradeOrders.insert({
-            _id: orderId,
-            calculatedFillPrice: priceResults.orderPrice,
-            shortOnlyPrice: priceResults.shortOnlyPrice,
-            order
-          });
           resolve(priceResults);
           return;
         }
