@@ -73,25 +73,29 @@ function CalculateLimitsAndFees(tradeSettings: ITradeSettings) {
   // If long entry, the openingPrice is positive (debit) and negative if short (credit).
   if (openingPrice > 0) {
     if (tradeSettings.percentGainIsDollar) {
-      tradeSettings.gainLimit = Math.abs(tradeSettings.openingPrice + (percentGain * 100));
+      // percentGain is stored as a percentage (e.g. 0.05 = 5%) but when used as a dollar amount, it is multiplied by 100.
+      tradeSettings.gainLimit = Math.abs(openingPrice + (percentGain * 100));
     } else {
-      tradeSettings.gainLimit = Math.abs(tradeSettings.openingPrice + openingPrice * percentGain);
+      tradeSettings.gainLimit = Math.abs(openingPrice + openingPrice * percentGain);
     }
     if (tradeSettings.percentLossIsDollar) {
-      tradeSettings.lossLimit = Math.abs(tradeSettings.openingPrice - (percentLoss * 100));
+      // percentGain is stored as a percentage (e.g. 0.05 = 5%) but when used as a dollar amount, it is multiplied by 100.
+      tradeSettings.lossLimit = Math.abs(openingPrice - (percentLoss * 100));
     } else {
-      tradeSettings.lossLimit = Math.abs(tradeSettings.openingPrice - openingPrice * percentLoss);
+      tradeSettings.lossLimit = Math.abs(openingPrice - openingPrice * percentLoss);
     }
   } else {
     if (tradeSettings.percentGainIsDollar) {
-      tradeSettings.gainLimit = Math.abs(tradeSettings.openingPrice - (percentGain * 100));
+      // percentGain is stored as a percentage (e.g. 0.05 = 5%) but when used as a dollar amount, it is multiplied by 100.
+      tradeSettings.gainLimit = Math.abs(openingPrice + (percentGain * 100));
     } else {
-      tradeSettings.gainLimit = Math.abs(tradeSettings.openingPrice - openingPrice * percentGain);
+      tradeSettings.gainLimit = Math.abs(openingPrice - openingPrice * percentGain);
     }
     if (tradeSettings.percentLossIsDollar) {
-      tradeSettings.lossLimit = Math.abs(tradeSettings.openingPrice + (percentLoss * 100));
+      // percentGain is stored as a percentage (e.g. 0.05 = 5%) but when used as a dollar amount, it is multiplied by 100.
+      tradeSettings.lossLimit = Math.abs(openingPrice - (percentLoss * 100));
     } else {
-      tradeSettings.lossLimit = Math.abs(tradeSettings.openingPrice + openingPrice * percentLoss);
+      tradeSettings.lossLimit = Math.abs(openingPrice + openingPrice * percentLoss);
     }
   }
 }
