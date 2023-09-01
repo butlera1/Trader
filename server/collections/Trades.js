@@ -1,5 +1,7 @@
 import {Mongo} from 'meteor/mongo';
 import {Meteor} from 'meteor/meteor';
+import {AppSettings} from './AppSettings';
+import Constants from '../../imports/Constants';
 
 export const Trades = new Mongo.Collection('trades');
 
@@ -11,10 +13,12 @@ function publishLiveTrades() {
 
 Meteor.publish('liveTrades', publishLiveTrades);
 
+
 /********************* Publish tradeResults **********************************/
 function publishTradeResults() {
   const query = {userId: this.userId, whyClosed: {$exists: true}};
-  return Trades.find(query, {limit: 20, sort: {whenOpened: -1}});
+  const settings = AppSettings.findOne(Constants.appSettingsId);
+  return Trades.find(query, {limit: settings?.maxPublishedTrades ?? 50, sort: {whenOpened: -1}});
 }
 
 Meteor.publish('tradeResults', publishTradeResults);

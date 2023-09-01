@@ -52,7 +52,7 @@ function TestStrategy(tradeSettingsId) {
   }
   const forceTheTrade = true;
   const tradeSettings = TradeSettings.findOne(tradeSettingsId);
-  ExecuteTrade(tradeSettings, forceTheTrade, tradeSettings.isPrerun).then();
+  ExecuteTrade(tradeSettings, forceTheTrade, tradeSettings.isPrerun, tradeSettings.isPrerunSlope).then();
 }
 
 function CheckForAnyExistingTradesAndMonitorThem() {
@@ -88,24 +88,22 @@ Meteor.methods({
 
 console.log(`Current local time is ${new Date()}.`);
 
-// Define the AppSettings record if not there already.
+// Define the AppSettings record if not there already. Let DB record valus override defaults.
 const settings = {
-  ...AppSettings.findOne(Constants.appSettingsId),
   startHourNY: 9,
   startMinuteNY: 25,
   endOfDayHourNY: 16,
   endOfDayMinuteNY: 15,
+  maxPublishedTrades: 50,
+  ...AppSettings.findOne(Constants.appSettingsId),
 };
 delete settings._id;
 AppSettings.upsert(Constants.appSettingsId, settings);
 
 ScheduleStartOfDayWork();
 ScheduleEndOfDayWork();
-
 CheckForAnyExistingTradesAndMonitorThem();
 
-//
-// Streaming logic removed.
 
 // PrepareStreaming()
 //   .then(() => {

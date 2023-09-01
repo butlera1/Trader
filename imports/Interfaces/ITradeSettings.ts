@@ -5,6 +5,7 @@ import IRule2Value from './IRule2Value';
 import IRule3Value from './IRule3Value';
 import IRule4Value from './IRule4Value';
 import IRule5Value from './IRule5Value';
+import IPrerunSlopeValue from './IPrerunSlopeValue';
 
 enum whyClosedEnum {
   emergencyExit = 'emergencyExit',
@@ -17,6 +18,7 @@ enum whyClosedEnum {
   rule4Exit = 'r4Exit',
   rule5Exit = 'r5Exit',
   prerunExit = 'prerunExit',
+  prerunSlopeExit = 'prerunSlopeExit',
 }
 
 interface IPrice {
@@ -30,6 +32,7 @@ interface IPrice {
   extrinsicLong?: number,
   slope1?: number,
   slope2?: number,
+  underlyingSlopeAngle?: number,
 }
 
 const BadDefaultIPrice = {
@@ -43,6 +46,7 @@ const BadDefaultIPrice = {
   extrinsicLong: 0,
   slope1: 0,
   slope2: 0,
+  underlyingSlopeAngle: 0,
 };
 
 interface ITradeSettings {
@@ -95,8 +99,11 @@ interface ITradeSettings {
   isRule4?: boolean,
   isRule5?: boolean,
   isPrerun?: boolean,
+  isPrerunSlope?: boolean,
   isPrerunning?: boolean,
+  isPrerunningSlope?: boolean,
   prerunValue?: IPrerunValue,
+  prerunSlopeValue?: IPrerunSlopeValue,
   rule1Value?: IRule1Value,
   rule2Value?: IRule2Value,
   rule3Value?: IRule3Value,
@@ -171,23 +178,24 @@ const DefaultCalendarSpreadLegsSettings = [
 
 const DefaultTradeSettings: ITradeSettings = {
   isActive: false,
-  isMocked: false,
+  isMocked: true,
   days: ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday'],
   percentGain: 0.10,
-  percentLoss: 1.00,
+  percentLoss: 0.10,
   entryHour: 9,
-  entryMinute: 50,
+  entryMinute: 32,
   exitHour: 11,
-  exitMinute: 30,
-  commissionPerContract: 0.25,
-  symbol: 'QQQ',
+  exitMinute: 0,
+  commissionPerContract: 1.00,
+  symbol: 'SPX',
   tradeType: ['IC'],
   legs: [...DefaultIronCondorLegsSettings],
   emailAddress: 'none',
   phone: 'none',
-  useShortOnlyForLimits: true,
+  useShortOnlyForLimits: false,
   isPrerunning: false,
   prerunValue: {ticks: 0, amount: 0},
+  isPrerunningSlope: false,
   repeatStopHour: 13,
 };
 
@@ -217,12 +225,7 @@ function GetDescription(tradeSettings: ITradeSettings) {
     regex = new RegExp(`,`, 'g');
     part4 = part4.replace(regex, '\n');
   }
-  let part5 = '';
-  if (tradeSettings.isMocked) {
-    const pVal = tradeSettings.prerunValue;
-    const prerun = tradeSettings.isPrerunning ? ` (Prerun ${pVal.amount.toFixed(2)}/${pVal.ticks})` : '';
-    part5 = `\nMocked${prerun}`;
-  }
+  let part5 = tradeSettings.isMocked ? 'Mocked' : '';
   return `${part0}${part1}\n${part2}\n${part3}${part4}${part5}`;
 }
 

@@ -3,6 +3,7 @@ import dayjs from 'dayjs';
 import utc from 'dayjs/plugin/utc';
 import timezone from 'dayjs/plugin/timezone';
 import _ from 'lodash';
+import IPrerunSlopeValue from './Interfaces/IPrerunSlopeValue';
 
 dayjs.extend(utc);
 dayjs.extend(timezone);
@@ -115,11 +116,30 @@ function CalculateUnderlyingPriceAverageSlope(samples: number, monitoredPrices: 
   return underlyingSlope;
 }
 
+function CalculateUnderlyingPriceSlopeAngle(prerunSlopeValue: IPrerunSlopeValue, monitoredPrices: IPrice[]){
+  if (prerunSlopeValue){
+    const {totalSamples, samplesToAverage} = prerunSlopeValue;
+    if (monitoredPrices.length > totalSamples && samplesToAverage < totalSamples) {
+      const start = monitoredPrices.length - totalSamples;
+      const average = (array: IPrice[]) => array.reduce((a, b) => a + b.underlyingPrice, 0) / array.length;
+      const average1 = average(monitoredPrices.slice(start, start + samplesToAverage));
+      const start2 = monitoredPrices.length - samplesToAverage;
+      const average2 = average(monitoredPrices.slice(start2));
+      const slope = (average2 - average1); // (y2-y1/x2-x1)
+      const angle = Math.abs(Math.atan(slope) * 180 / Math.PI);
+      monitoredPrices[monitoredPrices.length - 1].underlyingSlopeAngle = angle  ;
+      return angle;
+    }
+  }
+}
+
+
 export {
   CalculateGain,
   CalculateTotalFees,
   CalculateLimitsAndFees,
   CalculateUnderlyingPriceAverageSlope,
   GetNewYorkTimeAsText,
-  CleanupGainLossWhenFailedClosingTrade
+  CleanupGainLossWhenFailedClosingTrade,
+  CalculateUnderlyingPriceSlopeAngle,
 };

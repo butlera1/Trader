@@ -25,13 +25,13 @@ import _ from 'lodash';
 import {LogData} from './collections/Logs';
 import {SendTextToAdmin} from './SendOutInfo';
 import mutexify from 'mutexify/promise';
-import {CalculateGain, CalculateLimitsAndFees, CalculateUnderlyingPriceAverageSlope} from '../imports/Utils';
 import {
-  AddEquitiesToStream,
-  AddOptionsToStream,
-  GetStreamingOptionsPrice,
-  IsStreamingQuotes,
-} from './TDAApi/StreamEquities';
+  CalculateGain,
+  CalculateLimitsAndFees,
+  CalculateUnderlyingPriceAverageSlope,
+  CalculateUnderlyingPriceSlopeAngle
+} from '../imports/Utils';
+import {IsStreamingQuotes,} from './TDAApi/StreamEquities';
 import Semaphore from 'semaphore';
 
 const lock = mutexify();
@@ -94,11 +94,7 @@ async function GetOptionsPriceLoop(tradeSettings: ITradeSettings): Promise<IPric
     try {
       result = null;
       const release = await lock();
-      if (IsStreamingQuotes()) {
-        result = GetStreamingOptionsPrice(tradeSettings);
-      } else {
-        result = await GetPriceForOptions(tradeSettings);
-      }
+      result = await GetPriceForOptions(tradeSettings);
       setTimeout(() => {
         release();
       }, 1000);
@@ -175,17 +171,20 @@ async function CloseTrade(tradeSettings: ITradeSettings, currentPrice: number) {
     }
   });
   const wasPrerunning = tradeSettings.isPrerunning;
-  const preRunText = wasPrerunning ? 'PRERUN: ' : '';
-  const message = `${tradeSettings.userName}: ${preRunText}Trade closed (${tradeSettings.whyClosed}): Entry: $${openingPrice.toFixed(2)}, ` +
+  const wasPrerunningSlope = tradeSettings.isPrerunningSlope;
+  const message = `${tradeSettings.userName}: Trade closed (${tradeSettings.whyClosed}): Entry: $${openingPrice.toFixed(2)}, ` +
     `Exit: $${tradeSettings.closingPrice?.toFixed(2)}, ` +
     `G/L $${tradeSettings.gainLoss?.toFixed(2)} at ${tradeSettings.whenClosed} NY, _ID: ${tradeSettings._id}`;
   LogData(tradeSettings, message);
   // See if we should repeat the trade now that it is closed.
-  const notTooLate = GetNewYorkTime24HourNow() < tradeSettings.repeatStopHour ?? 16;
+  let notTooLate = true;
+  if (tradeSettings.isRepeat) {
+    notTooLate = (GetNewYorkTime24HourNow() < (tradeSettings.repeatStopHour ?? 16));
+  }
   const okToRepeat = (tradeSettings.whyClosed !== whyClosedEnum.emergencyExit) &&
     (tradeSettings.whyClosed !== whyClosedEnum.timedExit) &&
     (notTooLate);
-  if ((tradeSettings.isRepeat || wasPrerunning) && okToRepeat) {
+  if ((tradeSettings.isRepeat || wasPrerunning || wasPrerunningSlope) && okToRepeat) {
     // Get fresh copy of the settings without values for whyClosed, openingPrice, closingPrice, gainLoss, etc.
     const settings = TradeSettings.findOne(tradeSettings.originalTradeSettingsId);
     if (!settings) {
@@ -197,7 +196,12 @@ async function CloseTrade(tradeSettings: ITradeSettings, currentPrice: number) {
       if (wasPrerunning && tradeSettings.whyClosed !== whyClosedEnum.gainLimit && tradeSettings.whyClosed !== whyClosedEnum.prerunExit) {
         nowPrerunning = true; // Do another prerun because we exited for loss limit or similar.
       }
-      ExecuteTrade(settings, false, nowPrerunning)
+      let nowPrerunningSlope = wasPrerunningSlope ? false : settings.isPrerunSlope;
+      // If wasPrerunningSlope, and we exited for something other than (gainLimit or prerunSlopeExit), restart a prerun.
+      if (wasPrerunningSlope && tradeSettings.whyClosed !== whyClosedEnum.gainLimit && tradeSettings.whyClosed !== whyClosedEnum.prerunSlopeExit) {
+        nowPrerunningSlope = true; // Do another prerunSlope because we exited for loss limit or similar.
+      }
+      ExecuteTrade(settings, false, nowPrerunning, nowPrerunningSlope)
         .then()
         .catch((reason) => LogData(tradeSettings, `Failed doing a repeat ExecuteTrade ${reason}`, new Error(reason)));
     }
@@ -357,6 +361,22 @@ function checkPrerunExit(liveTrade: ITradeSettings) {
   return false;
 }
 
+/**
+ * Check if there are numberOfDesiredAnglesInARow with the desiredSlopeAngle or less.
+ * @param liveTrade
+ */
+function checkPrerunSlopeExit(liveTrade: ITradeSettings) {
+  if (liveTrade.isPrerunningSlope) {
+  const {totalSamples, desiredSlopeAngle, numberOfDesiredAnglesInARow } = liveTrade.prerunSlopeValue;
+    if (liveTrade.monitoredPrices.length >= totalSamples + numberOfDesiredAnglesInARow) {
+      const samples = liveTrade.monitoredPrices.slice(liveTrade.monitoredPrices.length - numberOfDesiredAnglesInARow);
+      const isAllLower = samples.reduce((isLower, sample) => isLower && sample.underlyingSlopeAngle <= desiredSlopeAngle, true);
+      return isAllLower;
+    }
+  }
+  return false;
+}
+
 function getAveragePrice(samples: IPrice[], desiredNumberOfSamples: number) {
   const numberOfSamples = Math.min(desiredNumberOfSamples, samples.length);
   if (numberOfSamples === 0) return 0;
@@ -368,10 +388,6 @@ function getAveragePrice(samples: IPrice[], desiredNumberOfSamples: number) {
 
 function MonitorTradeToCloseItOut(liveTrade: ITradeSettings) {
   const localEarlyExitTime = GetNewYorkTimeAt(liveTrade.exitHour, liveTrade.exitMinute);
-  if (IsStreamingQuotes()) {
-    AddOptionsToStream(liveTrade.csvSymbols);
-    AddEquitiesToStream(liveTrade.symbol);
-  }
   const monitorMethod = async () => {
     try {
       // The latestActiveTradeRecord can be updated via an 'Emergency Exit' call so check it along with the liveTrade.
@@ -392,6 +408,7 @@ function MonitorTradeToCloseItOut(liveTrade: ITradeSettings) {
       liveTrade.monitoredPrices.push(currentSamplePrice); // Update the local copy.
       currentSamplePrice.slope1 = CalculateUnderlyingPriceAverageSlope(liveTrade.slope1Samples, liveTrade.monitoredPrices);
       currentSamplePrice.slope2 = CalculateUnderlyingPriceAverageSlope(liveTrade.slope2Samples, liveTrade.monitoredPrices);
+      currentSamplePrice.underlyingSlopeAngle = CalculateUnderlyingPriceSlopeAngle(liveTrade.prerunSlopeValue, liveTrade.monitoredPrices);
       // Record price value for historical reference and charting.
       Trades.update(liveTrade._id, {$addToSet: {monitoredPrices: currentSamplePrice}});
       const localNow = dayjs();
@@ -411,7 +428,8 @@ function MonitorTradeToCloseItOut(liveTrade: ITradeSettings) {
       const isRule4Exit = checkRule4Exit(liveTrade, currentSamplePrice);
       const isRule5Exit = checkRule5Exit(liveTrade, currentSamplePrice);
       const isPrerunExit = checkPrerunExit(liveTrade);
-      if (isGainLimit || isLossLimit || isEndOfDay || isRule1Exit || isRule2Exit || isRule3Exit || isRule4Exit || isRule5Exit || isPrerunExit) {
+      const isPrerunSlopeExit = checkPrerunSlopeExit(liveTrade);
+      if (isGainLimit || isLossLimit || isEndOfDay || isRule1Exit || isRule2Exit || isRule3Exit || isRule4Exit || isRule5Exit || isPrerunExit || isPrerunSlopeExit) {
         liveTrade.whyClosed = whyClosedEnum.gainLimit;
         if (isRule1Exit) {
           liveTrade.whyClosed = whyClosedEnum.rule1Exit;
@@ -430,6 +448,9 @@ function MonitorTradeToCloseItOut(liveTrade: ITradeSettings) {
         }
         if (isPrerunExit) {
           liveTrade.whyClosed = whyClosedEnum.prerunExit;
+        }
+        if (isPrerunSlopeExit) {
+          liveTrade.whyClosed = whyClosedEnum.prerunSlopeExit;
         }
         if (isLossLimit) {
           liveTrade.whyClosed = whyClosedEnum.lossLimit;
@@ -556,11 +577,6 @@ async function PlaceOpeningOrderAndMonitorToClose(tradeSettings: ITradeSettings)
     tradeSettings.openingOrderId = Random.id() + '_MOCKED';
     // tradeSettings.openingPrice has already been estimated when orders were created.
     // tradeSettings.openingShortOnlyPrice has already been estimated when orders were created.
-
-    if (IsStreamingQuotes()) {
-      // Cause a delay to allow the streaming samples to come in before we start monitoring the trade.
-      await WaitMs(2000);
-    }
   } else {
     tradeSettings.openingOrderId = await PlaceOrder(tradeSettings.userId, tradeSettings.accountNumber, tradeSettings.openingOrder);
     const priceResults = await WaitForOrderCompleted(tradeSettings.userId, tradeSettings.accountNumber, tradeSettings.openingOrderId)
@@ -598,7 +614,7 @@ function IsNotDuplicateTrade(tradeSettings: ITradeSettings) {
   return !existingTrade;
 }
 
-async function ExecuteTrade(tradeSettings: ITradeSettings, forceTheTrade = false, isPrerun = false) {
+async function ExecuteTrade(tradeSettings: ITradeSettings, forceTheTrade = false, isPrerun = false, isPrerunSlope = false) {
   if (!tradeSettings) {
     const msg = `ExecuteTrade called without 'tradeSettings'.`;
     LogData(null, msg, new Error(msg));
@@ -633,7 +649,8 @@ async function ExecuteTrade(tradeSettings: ITradeSettings, forceTheTrade = false
       tradeSettings.phone = userSettings.phone;
       tradeSettings.emailAddress = userSettings.email;
       tradeSettings.isPrerunning = isPrerun;
-      tradeSettings.isMocked = tradeSettings.isMocked || isPrerun;
+      tradeSettings.isPrerunningSlope = isPrerunSlope;
+      tradeSettings.isMocked = tradeSettings.isMocked || isPrerun || isPrerunSlope;
       LogData(tradeSettings, `Trading for ${tradeSettings.userName} @ ${nowNYText} (NY) with ${JSON.stringify(tradeSettings)}`);
       // Place the opening trade and monitor it to later close it out.
       const chains = await GetATMOptionChains(tradeSettings);
@@ -676,7 +693,7 @@ function scheduleUsersTrade(tradeSettings, user) {
     if (delayInMilliseconds > 0 && tradeSettings.isActive) {
       const timeoutHandle = Meteor.setTimeout(async function timerMethodToOpenTrade() {
         Meteor.clearTimeout(timeoutHandle);
-        await ExecuteTrade(tradeSettings, false, tradeSettings.isPrerun)
+        await ExecuteTrade(tradeSettings, false, tradeSettings.isPrerun, tradeSettings.isPrerunSlope)
           .catch((reason) => {
             LogData(tradeSettings, `Failed to ExecuteTrade ${user.username}. Reason: ${reason}`);
           });

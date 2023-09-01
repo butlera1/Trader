@@ -67,18 +67,7 @@ function recordQuoteData(item) {
         when: new Date(item.timestamp),
       };
       streamedData[value.symbol].push(value);
-      // if (currentlyStreamedEquityNames.includes(value.symbol)) {
-      //   if (!valuesToBePersisted[value.symbol]) {
-      //     valuesToBePersisted[value.symbol] = [];
-      //   }
-      //   valuesToBePersisted[value.symbol].push(value);
-      //   if (valuesToBePersisted[value.symbol].length > 10) {
-      //     // Only persist every few values and the mark is the average value of those items.
-      //     value.mark = valuesToBePersisted[value.symbol].reduce((a, b) => a + b.mark, 0) / valuesToBePersisted[value.symbol].length;
-      //     // StreamedData.upsert(Constants.streamedDataId, {$addToSet: {[value.symbol]: value}});
-      //     valuesToBePersisted[value.symbol] = [];
-      //   }
-      // }
+      console.log(`Streamed ${quote.key}: ${value.mark} at ${value.when}`);
     });
   }
 }
@@ -172,16 +161,11 @@ async function PrepareStreaming() {
     mySock = new WebSocket("wss://" + userPrincipalsResponse.streamerInfo.streamerSocketUrl + "/ws");
 
     mySock.onmessage = Meteor.bindEnvironment(function (evt) {
-      // if (afterHours()) {
-      //   console.log("After Hours so closing websocket.");
-      //   CloseWebSocket();
-      //   return;
-      // }
       const data = JSON.parse(evt.data);
       if (data?.response && data.response[0]?.content?.code === 0 && data.response[0]?.command === "LOGIN") {
         console.log("Streaming Logged In");
         isWsOpen = true;
-        AddEquitiesToStream('QQQ');
+        AddEquitiesToStream('SPY');
       }
       if (data && _.isArray(data.data)) {
         data.data.forEach((item) => {
@@ -283,6 +267,27 @@ function LatestQuote(symbol: string): IStreamerData {
   return {mark: 0, symbol: symbol};
 }
 
+function getAverageMark(data: IStreamerData[]): number {
+  let sum = 0;
+  data.forEach((item) => {
+    sum += item.mark;
+  });
+  return sum / data.length;
+}
+
+function GetSlopeOfSymbol(symbol: string, samples: number, numberOfSamplesToAverage: number): number {
+  const data = streamedData[symbol];
+  if (data && data.length > samples && samples >= numberOfSamplesToAverage * 2) {
+    const firstIndex = data.length - samples;
+    const secondIndex = data.length - numberOfSamplesToAverage;
+    const firstAvgMark = getAverageMark(data.slice(firstIndex, firstIndex + numberOfSamplesToAverage - 1));
+    const lastAvgMark = getAverageMark(data.slice(secondIndex));
+    const slope = (lastAvgMark - firstAvgMark)  / 2;
+    return slope;
+  }
+  return 0;
+}
+
 function IsStreamingQuotes() {
   return isWsOpen;
 }
@@ -308,4 +313,5 @@ export {
   IsStreamingQuotes,
   GetStreamingOptionsPrice,
   AddEquitiesToStream,
+  GetSlopeOfSymbol,
 };

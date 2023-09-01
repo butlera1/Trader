@@ -9,6 +9,7 @@ let timeoutHandle = null;
 
 function UserSettings({userSettings}) {
   const [errorText, setErrorText] = useState(null);
+  const UsingPriceText = Constants.usingMarkPrice ? 'Mark' : 'Bid/Ask';
 
   const onChange = (propertyName, value) => {
     // setMap[propertyName](value);
@@ -27,7 +28,6 @@ function UserSettings({userSettings}) {
         }
       });
     }, 1000);
-
   };
 
   return (
@@ -35,7 +35,7 @@ function UserSettings({userSettings}) {
       <Space>
         <span style={{fontSize: '32px', color: 'blue'}}>
           <UserOutlined/> {Meteor.user().username}
-          <span style={{fontSize: '12px', color: 'grey'}}>  (Vr. {Constants.version})</span>
+          <span style={{fontSize: '12px', color: 'grey'}}>  (Vr. {Constants.version}) Using {UsingPriceText} price.</span>
         </span>
         {errorText
           ?

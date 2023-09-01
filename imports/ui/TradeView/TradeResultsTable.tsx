@@ -139,7 +139,7 @@ const columns: ColumnsType<ITradeSettings> = [
     render: (totalFees) => <span key={1} style={{color: 'red'}}>{`${(totalFees ?? 0).toFixed(2)}`}</span>,
   },
   {
-    title: '$ G/L',
+    title: 'G/L-Fees = $',
     key: 'gainLoss',
     width: 100,
     align: 'center',
