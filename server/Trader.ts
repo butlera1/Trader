@@ -9,7 +9,6 @@ import {
   GetPriceForOptions,
   IsOptionMarketOpenToday,
   PlaceOrder,
-  WaitMs,
 } from './TDAApi/TDAApi.js';
 import {Users} from './collections/users';
 import dayjs, {Dayjs} from 'dayjs';
@@ -31,7 +30,6 @@ import {
   CalculateUnderlyingPriceAverageSlope,
   CalculateUnderlyingPriceSlopeAngle
 } from '../imports/Utils';
-import {IsStreamingQuotes,} from './TDAApi/StreamEquities';
 import Semaphore from 'semaphore';
 
 const lock = mutexify();
@@ -200,6 +198,10 @@ async function CloseTrade(tradeSettings: ITradeSettings, currentPrice: number) {
       // If wasPrerunningSlope, and we exited for something other than (gainLimit or prerunSlopeExit), restart a prerun.
       if (wasPrerunningSlope && tradeSettings.whyClosed !== whyClosedEnum.gainLimit && tradeSettings.whyClosed !== whyClosedEnum.prerunSlopeExit) {
         nowPrerunningSlope = true; // Do another prerunSlope because we exited for loss limit or similar.
+      }
+      if (tradeSettings.isPrerunSlope && tradeSettings.whyClosed == whyClosedEnum.gainLimit) {
+        // If the setting is enabled and we just got a gainLimit, don't go back to prerunSlope again.
+        nowPrerunningSlope = false;
       }
       ExecuteTrade(settings, false, nowPrerunning, nowPrerunningSlope)
         .then()
