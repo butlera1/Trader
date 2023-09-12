@@ -5,6 +5,7 @@ import {Meteor} from 'meteor/meteor';
 import TradeResultsView from './TradeView/TradeResultsView';
 import Tools from './Tools';
 import ActiveTradesTable from './TradeView/ActiveTradesTable';
+import SPXSlopeAngleView from './SlopeAngleView/SPXSlopeAngleView';
 
 export const MainScreen = () => {
   const [userSettings, setUserSettings] = useState(null);
@@ -22,6 +23,7 @@ export const MainScreen = () => {
   return (<>
       <UserSettings userSettings={userSettings}/>
       <Tools/>
+      <SPXSlopeAngleView/>
       <ActiveTradesTable/>
       <TabTradeSettings/>
       <TradeResultsView/>

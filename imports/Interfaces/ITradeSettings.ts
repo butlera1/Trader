@@ -187,7 +187,7 @@ const DefaultTradeSettings: ITradeSettings = {
   exitHour: 11,
   exitMinute: 0,
   commissionPerContract: 1.00,
-  symbol: 'SPX',
+  symbol: '$SPX.X',
   tradeType: ['IC'],
   legs: [...DefaultIronCondorLegsSettings],
   emailAddress: 'none',

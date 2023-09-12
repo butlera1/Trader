@@ -35,6 +35,7 @@ import timezone from 'dayjs/plugin/timezone';
 
 import './TDAApi/StreamEquities';
 import ScheduleEndOfDayWork from './ScheduleEndOfDayWork';
+import {GetSlopeAngleOfSymbol, LatestQuote, PrepareStreaming} from './TDAApi/StreamEquities';
 
 dayjs.extend(utc);
 dayjs.extend(timezone);
@@ -83,6 +84,8 @@ Meteor.methods({
     GetATMOptionChains,
     TestStrategy,
     EmergencyCloseAllTrades,
+    GetSlopeAngleOfSymbol,
+    LatestQuote,
   }
 );
 
@@ -95,6 +98,8 @@ const settings = {
   endOfDayHourNY: 16,
   endOfDayMinuteNY: 15,
   maxPublishedTrades: 50,
+  slopeSamplesToAverage: 5,
+  totalSlopeSamples: 10,
   ...AppSettings.findOne(Constants.appSettingsId),
 };
 delete settings._id;
@@ -104,13 +109,12 @@ ScheduleStartOfDayWork();
 ScheduleEndOfDayWork();
 CheckForAnyExistingTradesAndMonitorThem();
 
-
-// PrepareStreaming()
-//   .then(() => {
-//     console.log(`Streaming is ready so checking on existing trades to monitor.`);
-//     CheckForAnyExistingTradesAndMonitorThem();
-//   })
-//   .catch((err) => {
-//     console.error(`Error preparing streaming: ${err}`);
-//   });
+// Turn on streaming for getting SPX data and charting it.
+PrepareStreaming()
+  .then(() => {
+    console.log(`Streaming is on.`);
+  })
+  .catch((err) => {
+    console.error(`Error preparing streaming: ${err}`);
+  });
 

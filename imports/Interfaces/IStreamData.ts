@@ -5,6 +5,9 @@ interface IStreamerData {
   volatility?: number;
   underlyingPrice?: number;
   when?: Date;
+  slopeAngle?: number;
+  minMark?: number;
+  maxMark?: number;
 }
 
 export default IStreamerData;

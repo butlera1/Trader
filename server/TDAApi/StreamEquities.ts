@@ -65,9 +65,16 @@ function recordQuoteData(item) {
         volatility: quote[24] ?? lastQuote.volatility ?? 0,
         underlyingPrice: quote[39] ?? 0,
         when: new Date(item.timestamp),
+        slopeAngle: 0,
       };
       streamedData[value.symbol].push(value);
-      console.log(`Streamed ${quote.key}: ${value.mark} at ${value.when}`);
+      const settings = AppSettings.findOne(Constants.appSettingsId);
+      const slopeSamplesToAverage = settings?.slopeSamplesToAverage ?? 5;
+      const totalSlopeSamples = settings?.totalSlopeSamples ?? 10;
+      value.slopeAngle = GetSlopeAngleOfSymbol(value.symbol, totalSlopeSamples, slopeSamplesToAverage);
+      value.maxMark = (lastQuote.maxMark ?? 0) > value.mark ? lastQuote.maxMark : value.mark;
+      value.minMark = (lastQuote.minMark ?? 0) < value.mark ? lastQuote.minMark : value.mark;
+      // console.log(`Streamed ${quote.key}: ${value.mark} at ${value.when}: Angle: ${value.slopeAngle}`);
     });
   }
 }
@@ -165,7 +172,7 @@ async function PrepareStreaming() {
       if (data?.response && data.response[0]?.content?.code === 0 && data.response[0]?.command === "LOGIN") {
         console.log("Streaming Logged In");
         isWsOpen = true;
-        AddEquitiesToStream('SPY');
+        AddEquitiesToStream('$SPX.X');
       }
       if (data && _.isArray(data.data)) {
         data.data.forEach((item) => {
@@ -264,7 +271,7 @@ function LatestQuote(symbol: string): IStreamerData {
   if (streamedData[symbol]) {
     return streamedData[symbol][streamedData[symbol].length - 1];
   }
-  return {mark: 0, symbol: symbol};
+  return {mark: 0, symbol: symbol, slopeAngle: 0, when: new Date()};
 }
 
 function getAverageMark(data: IStreamerData[]): number {
@@ -275,7 +282,7 @@ function getAverageMark(data: IStreamerData[]): number {
   return sum / data.length;
 }
 
-function GetSlopeOfSymbol(symbol: string, samples: number, numberOfSamplesToAverage: number): number {
+function GetSlopeAngleOfSymbol(symbol: string, samples: number, numberOfSamplesToAverage: number): number {
   const data = streamedData[symbol];
   if (data && data.length > samples && samples >= numberOfSamplesToAverage * 2) {
     const firstIndex = data.length - samples;
@@ -283,7 +290,9 @@ function GetSlopeOfSymbol(symbol: string, samples: number, numberOfSamplesToAver
     const firstAvgMark = getAverageMark(data.slice(firstIndex, firstIndex + numberOfSamplesToAverage - 1));
     const lastAvgMark = getAverageMark(data.slice(secondIndex));
     const slope = (lastAvgMark - firstAvgMark)  / 2;
-    return slope;
+    // Get angle and clip to 1 decimal place.
+    const angle = Math.trunc((Math.atan(slope) * 180 / Math.PI)*10)/10;
+    return angle;
   }
   return 0;
 }
@@ -313,5 +322,5 @@ export {
   IsStreamingQuotes,
   GetStreamingOptionsPrice,
   AddEquitiesToStream,
-  GetSlopeOfSymbol,
+  GetSlopeAngleOfSymbol,
 };
