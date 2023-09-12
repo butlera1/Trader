@@ -94,7 +94,7 @@ console.log(`Current local time is ${new Date()}.`);
 // Define the AppSettings record if not there already. Let DB record valus override defaults.
 const settings = {
   startHourNY: 9,
-  startMinuteNY: 25,
+  startMinuteNY: 29,
   endOfDayHourNY: 16,
   endOfDayMinuteNY: 15,
   maxPublishedTrades: 50,
