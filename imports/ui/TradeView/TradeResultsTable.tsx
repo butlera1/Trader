@@ -22,12 +22,13 @@ function deleteTradeResults(record: ITradeSettings) {
   Trades.remove(record._id);
 }
 
-function RenderOpenOrClosedData(when, price, under) {
+function RenderOpenOrClosedData(when, price, under, whyClosed) {
   return (
     <Space direction="vertical">
       <span>{when}</span>
       <span>${price}</span>
       <span>${under}</span>
+      <span>{whyClosed}</span>
     </Space>
   )
 }
@@ -64,7 +65,7 @@ const columns: ColumnsType<ITradeSettings> = [
     },
     render: (when, record) => {
       const under = record.monitoredPrices.length > 0 ? record.monitoredPrices[0]?.underlyingPrice ?? 0 : 0;
-      return RenderOpenOrClosedData(GetNewYorkTimeAsText(when), record.openingPrice.toFixed(2), under.toFixed(2));
+      return RenderOpenOrClosedData(GetNewYorkTimeAsText(when), record.openingPrice.toFixed(2), under.toFixed(2), '');
     }
   },
   {
@@ -84,16 +85,8 @@ const columns: ColumnsType<ITradeSettings> = [
       const priceDiff = record.openingPrice > 0 ? record.closingPrice + record.openingPrice  : record.closingPrice - record.openingPrice;
       const priceDiffAll = `${record.closingPrice?.toFixed(2)} (${(priceDiff).toFixed(3)})`;
       const underDiff = `${under.toFixed(2)} (${(initialUnder - under).toFixed(3)})`;
-      return RenderOpenOrClosedData(GetNewYorkTimeAsText(when), priceDiffAll, underDiff);
+      return RenderOpenOrClosedData(GetNewYorkTimeAsText(when), priceDiffAll, underDiff, record.whyClosed);
     },
-  },
-  {
-    title: 'Why',
-    key: 'whyClosed',
-    width: 150,
-    align: 'center',
-    dataIndex: 'whyClosed',
-    render: why => why?.slice(0, 10),
   },
   {
     title: 'SStrad $',
@@ -114,31 +107,6 @@ const columns: ColumnsType<ITradeSettings> = [
     },
   },
   {
-    title: 'LStrad $',
-    key: 'LStrad $',
-    dataIndex: 'monitoredPrices',
-    align: 'center',
-    width: 80,
-    render: (_, {monitoredPrices}) => {
-      if (monitoredPrices?.length > 0) {
-        return (
-          <Space direction={'vertical'}>
-            <span key={'up1'}>Open: {monitoredPrices[0].longStraddlePrice?.toFixed(2)}</span>
-            <span key={'up2'}>Closed: {monitoredPrices[monitoredPrices.length - 1].longStraddlePrice?.toFixed(2)}</span>
-          </Space>
-        );
-      }
-      return 0;
-    },
-  },
-  {
-    title: 'Fees',
-    key: 'Fees',
-    dataIndex: 'totalFees',
-    align: 'center',
-    render: (totalFees) => <span key={1} style={{color: 'red'}}>{`${(totalFees ?? 0).toFixed(2)}`}</span>,
-  },
-  {
     title: 'G/L-Fees = $',
     key: 'gainLoss',
     width: 100,
@@ -150,8 +118,9 @@ const columns: ColumnsType<ITradeSettings> = [
       CleanupGainLossWhenFailedClosingTrade(record);
       let gainLoss = record.gainLoss - totalFees;
       let color = (gainLoss < 0) ? 'red' : 'green';
+      const gainLossStr = `${record.gainLoss.toFixed(2)} - ${record.totalFees.toFixed(0)} = ${gainLoss.toFixed(2)}`;
       return (
-        <span style={{color: color}} key={gainLoss}>{gainLoss.toFixed(2)}</span>
+        <span style={{color: color}} key={gainLoss}>{gainLossStr}</span>
       );
     },
   },

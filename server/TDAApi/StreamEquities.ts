@@ -53,7 +53,7 @@ function recordQuoteData(item) {
   if (item.service === 'QUOTE' || item.service === 'OPTION') {
     item.content.forEach((quote) => {
       let lastQuote: IStreamerData = {};
-      if (streamedData[quote.key]) {
+      if (streamedData[quote.key]?.length > 0) {
         lastQuote = streamedData[quote.key][streamedData[quote.key].length - 1];
       } else {
         streamedData[quote.key] = [];
@@ -66,15 +66,21 @@ function recordQuoteData(item) {
         underlyingPrice: quote[39] ?? 0,
         when: new Date(item.timestamp),
         slopeAngle: 0,
+        vwap: 0,
       };
       streamedData[value.symbol].push(value);
       const settings = AppSettings.findOne(Constants.appSettingsId);
       const slopeSamplesToAverage = settings?.slopeSamplesToAverage ?? 5;
       const totalSlopeSamples = settings?.totalSlopeSamples ?? 10;
+      const vwapNumberOfSamples = settings?.vwapNumberOfSamples ?? 10;
       value.slopeAngle = GetSlopeAngleOfSymbol(value.symbol, totalSlopeSamples, slopeSamplesToAverage);
-      value.maxMark = (lastQuote.maxMark ?? 0) > value.mark ? lastQuote.maxMark : value.mark;
-      value.minMark = (lastQuote.minMark ?? 0) < value.mark ? lastQuote.minMark : value.mark;
-      // console.log(`Streamed ${quote.key}: ${value.mark} at ${value.when}: Angle: ${value.slopeAngle}`);
+      value.vwap = calculateVWAP(value.symbol, vwapNumberOfSamples);
+      value.maxMark = ((lastQuote.maxMark ?? 0) > value.mark) ? lastQuote.maxMark : value.mark;
+      value.minMark = ((lastQuote.minMark ?? 0) < value.mark) ? lastQuote.minMark : value.mark;
+      if (value.minMark === undefined) {
+        value.minMark = value.mark;
+      }
+      console.log(`Streamed ${quote.key}: ${value.mark} Angle: ${value.slopeAngle} VWAP: ${value.vwap} Vol: ${value.volume} Volatility: ${value.volatility} Min: ${value.minMark} Max: ${value.maxMark}`);
     });
   }
 }
@@ -283,7 +289,7 @@ function getAverageMark(data: IStreamerData[]): number {
 }
 
 function GetSlopeAngleOfSymbol(symbol: string, samples: number, numberOfSamplesToAverage: number): number {
-  const data = streamedData[symbol];
+  const data : IStreamerData[] = streamedData[symbol];
   if (data && data.length > samples && samples >= numberOfSamplesToAverage * 2) {
     const firstIndex = data.length - samples;
     const secondIndex = data.length - numberOfSamplesToAverage;
@@ -295,6 +301,19 @@ function GetSlopeAngleOfSymbol(symbol: string, samples: number, numberOfSamplesT
     return angle;
   }
   return 0;
+}
+
+function calculateVWAP(symbol: string, numberOfSamples: number): number {
+  const data : IStreamerData[] = streamedData[symbol] || [];
+  if (data.length < numberOfSamples) return 0;
+  let sumPriceTimesVolume = 0;
+  let sumVolume = 0;
+  for (let i = data.length - numberOfSamples; i < data.length; i++) {
+    const currentData = data[i];
+    sumPriceTimesVolume += currentData.mark * currentData.volume;
+    sumVolume += currentData.volume;
+  }
+  return Math.trunc((sumVolume ? sumPriceTimesVolume / sumVolume : 0) * 100) / 100;
 }
 
 function IsStreamingQuotes() {

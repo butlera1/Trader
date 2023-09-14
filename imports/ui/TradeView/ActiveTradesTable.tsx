@@ -2,7 +2,7 @@ import React from 'react';
 // @ts-ignore
 import {useTracker} from 'meteor/react-meteor-data';
 import Trades from '../../Collections/Trades';
-import ITradeSettings, {BadDefaultIPrice, GetDescription, IPrice} from '../../Interfaces/ITradeSettings';
+import ITradeSettings, {GetDescription} from '../../Interfaces/ITradeSettings';
 import {ColumnsType} from 'antd/lib/table';
 import {Space, Table} from 'antd';
 import EmergencyCloseActiveTrades from '../EmergencyCloseActiveTrades';
@@ -42,90 +42,47 @@ const columns: ColumnsType<ITradeSettings> = [
     },
   },
   {
-    title: 'Open $',
+    title: 'Prices $',
     dataIndex: 'openingPrice',
     key: 'openingPrice',
     align: 'right',
     width: 70,
     render: (_, record) => {
+      let currentPrice = Number.NaN;
+      if (record.monitoredPrices?.length > 0) {
+        currentPrice = record.monitoredPrices[record.monitoredPrices.length - 1].price;
+      }
       return (
         <Space direction="vertical">
-        <span>{GetNewYorkTimeAsText(record.whenOpened)}</span>
-        <span>${record.openingPrice.toFixed(2)}</span>
-      </Space>
-      );
-    }
-  },
-  {
-    title: 'G/L Limits $',
-    dataIndex: 'limits',
-    key: 'gainLimit',
-    align: 'right',
-    width: 70,
-    render: (_, record) => {
-      return (
-        <Space direction="vertical">
-          <span>{record.gainLimit?.toFixed(2)}</span>
-          <span>{record.lossLimit?.toFixed(2)}</span>
+          <span key={0}>{GetNewYorkTimeAsText(record.whenOpened)}</span>
+          <span key={1}>Opened: ${record.openingPrice.toFixed(2)}</span>
+          <span key={2}>Current: ${currentPrice.toFixed(2)}</span>
+          <span key={3}>Diff: ${(record.openingPrice + currentPrice).toFixed(2)}</span>
         </Space>
       );
     }
   },
   {
-    title: 'Price $',
-    dataIndex: 'currentPrice',
-    key: 'currentPrice',
-    align: 'right',
-    width: 70,
-    render: (_, {monitoredPrices}) => {
-      if (monitoredPrices?.length > 0) {
-        return monitoredPrices[monitoredPrices.length - 1].price.toFixed(2);
-      } else {
-        return Number.NaN;
-      }
-    }
-  },
-  {
-    title: 'UOpen $',
-    dataIndex: 'monitoredPrices',
-    key: 'UOpen',
-    align: 'right',
-    width: 80,
-    render: monitoredPrices => monitoredPrices.length > 0 ? monitoredPrices[0]?.underlyingPrice.toFixed(2) ?? 0 : 0,
-  },
-  {
-    title: 'UPrice $',
+    title: 'UPrices $',
     dataIndex: 'monitoredPrices',
     key: 'UPrice',
     align: 'right',
     width: 80,
     render: (monitoredPrices, record) => {
+      let openPrice = monitoredPrices.length > 0 ? monitoredPrices[0]?.underlyingPrice.toFixed(2) ?? 0 : 0;
       let currentUnderlyingPrice = 0;
+      let initialUnderlyingPrice = 0;
       let priceDiff = '0';
       if (monitoredPrices?.length > 0) {
         currentUnderlyingPrice = (monitoredPrices[monitoredPrices.length - 1].underlyingPrice);
-        priceDiff = (monitoredPrices[0].underlyingPrice - currentUnderlyingPrice).toFixed(3);
+        initialUnderlyingPrice = monitoredPrices[0].underlyingPrice;
+        priceDiff = (currentUnderlyingPrice - initialUnderlyingPrice).toFixed(3);
       }
       return (
         <Space direction={'vertical'}>
-          <span key={1}>{currentUnderlyingPrice.toFixed(2)}</span>
-          <span key={2}>{`(${priceDiff})`}</span>
-        </Space>
-      );
-    },
-  },
-  {
-    title: 'USlope1',
-    dataIndex: 'monitoredPrices',
-    key: 'USlope1',
-    align: 'center',
-    width: 100,
-    render: (monitoredPrices: IPrice[], record) => {
-      const monitoredPrice = monitoredPrices[monitoredPrices.length - 1] ?? {...BadDefaultIPrice};
-      return (
-        <Space direction={'vertical'}>
-          <span key={'slope1'}>S1: {(monitoredPrice.slope1 ?? 0).toFixed(2)}</span>
-          <span key={'slope2'}>S2: {(monitoredPrice.slope2 ?? 0).toFixed(2)}</span>
+          <span key={1}>UOpened: ${initialUnderlyingPrice.toFixed(2)}</span>
+          <span key={2}>UCurrent: ${currentUnderlyingPrice.toFixed(2)}</span>
+          <span key={3}>UDiff: ${priceDiff}</span>
         </Space>
       );
     },
@@ -144,24 +101,11 @@ const columns: ColumnsType<ITradeSettings> = [
     },
   },
   {
-    title: 'LStrad $',
-    key: 'LStrad $',
-    dataIndex: 'monitoredPrices',
-    align: 'center',
-    width: 80,
-    render: (_, {monitoredPrices}) => {
-      if (monitoredPrices?.length > 0) {
-        return monitoredPrices[monitoredPrices.length - 1].longStraddlePrice?.toFixed(2);
-      }
-      return 0;
-    },
-  },
-  {
     title: 'G/L-Fees $',
     key: 'gainLimitMinusFees',
     dataIndex: 'gainLimit',
     align: 'center',
-    width: 170,
+    width: 70,
     render: (_, record) => {
       let {gainLoss, priceDiff} = calculateGainLossAndPriceDiff(record);
       const resultGainLoss = gainLoss - (record.totalFees ?? 0);

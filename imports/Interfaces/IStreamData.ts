@@ -6,6 +6,7 @@ interface IStreamerData {
   underlyingPrice?: number;
   when?: Date;
   slopeAngle?: number;
+  vwap?: number;
   minMark?: number;
   maxMark?: number;
 }

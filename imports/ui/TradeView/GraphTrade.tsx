@@ -26,22 +26,16 @@ function GraphTrade({liveTrade}: { liveTrade: ITradeSettings }) {
   let lossLine = calculateGainGraphLine(liveTrade, liveTrade.lossLimit);
   const monitoredPrices = liveTrade.monitoredPrices || [];
   const initialUnderlyingPrice = monitoredPrices[0]?.underlyingPrice ?? 0;
-  const initialLongStraddlePrice = Math.abs(monitoredPrices[0]?.longStraddlePrice ?? 0);
   let initialShortStraddlePrice = Math.abs(monitoredPrices[0]?.shortStraddlePrice ?? 0);
 
   // Create the scale factor for the underlying price based on the chart range.
   const multiplier = Math.trunc(Math.max(gainLine, Math.abs(lossLine)) / 1000.0) + 1;
   const underlyingMultiplier = 10 * multiplier;
-  const underlyingAngleMultiplier = gainLine/90;
 
   const getUnderlying = (price) => round((price.underlyingPrice ?? 0) - initialUnderlyingPrice) * underlyingMultiplier;
 
-  const getLongStraddlePrice = (price) => {
-    return round((Math.abs(price.longStraddlePrice) ?? 0) - initialLongStraddlePrice) * 100;
-  };
   const getShortStraddlePrice = (price) => round((Math.abs(price.shortStraddlePrice) ?? 0) - initialShortStraddlePrice) * 100;
   const getGain = (price) => round(price.gain);
-  const getNormalizedUnderlyingSlopeAngle = (price) => round(price.underlyingSlopeAngle * underlyingAngleMultiplier);
 
   return (
     <LineChart
@@ -60,13 +54,9 @@ function GraphTrade({liveTrade}: { liveTrade: ITradeSettings }) {
             isAnimationActive={false}/>
       <Line type="monotone" strokeWidth={2} dataKey={getUnderlying} name={'Underlying'} stroke="red" dot={false}
             isAnimationActive={false}/>
-      <Line type="monotone" dataKey={getLongStraddlePrice} name={'Long Straddle'} stroke="hotpink" dot={false}
-            isAnimationActive={false}/>
       <Line type="monotone" dataKey={getShortStraddlePrice} name={'Short Straddle'} stroke="lightgreen" dot={false}
             isAnimationActive={false}/>
       <Line type="monotone" dataKey={() => lossLine} name={'Max Loss'} stroke="cyan" dot={false}
-            isAnimationActive={false}/>
-      <Line type="monotone" dataKey={getNormalizedUnderlyingSlopeAngle} name={'Underlying Slope Angle'} stroke="darkgrey" dot={false}
             isAnimationActive={false}/>
     </LineChart>
   );
