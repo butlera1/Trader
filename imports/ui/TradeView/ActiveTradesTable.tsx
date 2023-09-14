@@ -46,18 +46,19 @@ const columns: ColumnsType<ITradeSettings> = [
     dataIndex: 'openingPrice',
     key: 'openingPrice',
     align: 'right',
-    width: 70,
+    width: 170,
     render: (_, record) => {
       let currentPrice = Number.NaN;
       if (record.monitoredPrices?.length > 0) {
         currentPrice = record.monitoredPrices[record.monitoredPrices.length - 1].price;
       }
+      const priceDiff = record.openingPrice > 0 ? currentPrice - record.openingPrice  : -(currentPrice + record.openingPrice);
       return (
         <Space direction="vertical">
           <span key={0}>{GetNewYorkTimeAsText(record.whenOpened)}</span>
           <span key={1}>Opened: ${record.openingPrice.toFixed(2)}</span>
           <span key={2}>Current: ${currentPrice.toFixed(2)}</span>
-          <span key={3}>Diff: ${(record.openingPrice + currentPrice).toFixed(2)}</span>
+          <span key={3}>Diff: ${priceDiff.toFixed(2)}</span>
         </Space>
       );
     }
@@ -67,19 +68,21 @@ const columns: ColumnsType<ITradeSettings> = [
     dataIndex: 'monitoredPrices',
     key: 'UPrice',
     align: 'right',
-    width: 80,
+    width: 170,
     render: (monitoredPrices, record) => {
-      let openPrice = monitoredPrices.length > 0 ? monitoredPrices[0]?.underlyingPrice.toFixed(2) ?? 0 : 0;
       let currentUnderlyingPrice = 0;
       let initialUnderlyingPrice = 0;
       let priceDiff = '0';
+      let dateTimeText = 'No date/time';
       if (monitoredPrices?.length > 0) {
         currentUnderlyingPrice = (monitoredPrices[monitoredPrices.length - 1].underlyingPrice);
         initialUnderlyingPrice = monitoredPrices[0].underlyingPrice;
         priceDiff = (currentUnderlyingPrice - initialUnderlyingPrice).toFixed(3);
+        dateTimeText = GetNewYorkTimeAsText(monitoredPrices[monitoredPrices.length - 1].when);
       }
       return (
         <Space direction={'vertical'}>
+          <span key={0}>{dateTimeText}</span>
           <span key={1}>UOpened: ${initialUnderlyingPrice.toFixed(2)}</span>
           <span key={2}>UCurrent: ${currentUnderlyingPrice.toFixed(2)}</span>
           <span key={3}>UDiff: ${priceDiff}</span>
@@ -112,10 +115,7 @@ const columns: ColumnsType<ITradeSettings> = [
       let color = (resultGainLoss < 0) ? 'red' : 'green';
       const gainLossStr = `${gainLoss.toFixed(2)} - ${record.totalFees.toFixed(0)} = ${resultGainLoss.toFixed(2)}`;
       return (
-        <Space direction={'vertical'}>
-          <span key={1} style={{color: color}}>{`${gainLossStr}`}</span>
-          <span key={2} style={{color: color}}>{`(${priceDiff})`}</span>
-        </Space>
+        <span key={1} style={{color: color}}>{`${gainLossStr}`}</span>
       );
     },
   },

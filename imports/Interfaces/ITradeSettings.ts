@@ -33,6 +33,10 @@ interface IPrice {
   slope1?: number,
   slope2?: number,
   underlyingSlopeAngle?: number,
+  vwap?: number,
+  maxVWAPMark?: number,
+  minVWAPMark?: number,
+  vwapMark?: number,
 }
 
 const BadDefaultIPrice = {

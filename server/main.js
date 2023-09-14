@@ -100,7 +100,8 @@ const settings = {
   maxPublishedTrades: 50,
   slopeSamplesToAverage: 5,
   totalSlopeSamples: 10,
-  vwapNumberOfSamples: 30,
+  vwapNumberOfSamples: 60,
+  vwapEquity: 'SPY',
   ...AppSettings.findOne(Constants.appSettingsId),
 };
 delete settings._id;

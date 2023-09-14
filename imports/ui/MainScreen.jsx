@@ -23,7 +23,6 @@ export const MainScreen = () => {
   return (<>
       <UserSettings userSettings={userSettings}/>
       <Tools/>
-      <SPXSlopeAngleView/>
       <ActiveTradesTable/>
       <TabTradeSettings/>
       <TradeResultsView/>

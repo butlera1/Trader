@@ -9,6 +9,7 @@ interface IStreamerData {
   vwap?: number;
   minMark?: number;
   maxMark?: number;
+  tickVolume?: number;
 }
 
 export default IStreamerData;

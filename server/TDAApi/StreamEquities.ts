@@ -8,7 +8,7 @@ import CalculateOptionsPricing from '../CalculateOptionsPricing';
 import Constants from '../../imports/Constants';
 import IStreamerData from '../../imports/Interfaces/IStreamData';
 import {AppSettings} from '../collections/AppSettings';
-import {GetNewYorkTimeAt, GetNewYorkTimeNowAsText} from '../Trader';
+import {GetNewYorkTimeNowAsText} from '../Trader';
 
 let isWsOpen = false;
 let streamedData = {};
@@ -52,7 +52,7 @@ function eraseAllData() {
 function recordQuoteData(item) {
   if (item.service === 'QUOTE' || item.service === 'OPTION') {
     item.content.forEach((quote) => {
-      let lastQuote: IStreamerData = {};
+      let lastQuote: IStreamerData = {volume: 0};
       if (streamedData[quote.key]?.length > 0) {
         lastQuote = streamedData[quote.key][streamedData[quote.key].length - 1];
       } else {
@@ -72,24 +72,25 @@ function recordQuoteData(item) {
       const settings = AppSettings.findOne(Constants.appSettingsId);
       const slopeSamplesToAverage = settings?.slopeSamplesToAverage ?? 5;
       const totalSlopeSamples = settings?.totalSlopeSamples ?? 10;
-      const vwapNumberOfSamples = settings?.vwapNumberOfSamples ?? 10;
+      // Adjust volume to be the difference between the last two quotes.
+      value.tickVolume = value.volume - lastQuote.volume;
       value.slopeAngle = GetSlopeAngleOfSymbol(value.symbol, totalSlopeSamples, slopeSamplesToAverage);
-      value.vwap = calculateVWAP(value.symbol, vwapNumberOfSamples);
+      value.vwap = CalculateVWAP();
       value.maxMark = ((lastQuote.maxMark ?? 0) > value.mark) ? lastQuote.maxMark : value.mark;
       value.minMark = ((lastQuote.minMark ?? 0) < value.mark) ? lastQuote.minMark : value.mark;
       if (value.minMark === undefined) {
         value.minMark = value.mark;
       }
-      console.log(`Streamed ${quote.key}: ${value.mark} Angle: ${value.slopeAngle} VWAP: ${value.vwap} Vol: ${value.volume} Volatility: ${value.volatility} Min: ${value.minMark} Max: ${value.maxMark}`);
+      // console.log(`Streamed ${quote.key}: ${value.mark} Angle: ${value.slopeAngle} VWAP: ${value.vwap} TickVol: ${value.tickVolume} Min: ${value.minMark} Max: ${value.maxMark}`);
     });
   }
 }
 
-function getHourAndMinute(dateTimeText: string){
+function getHourAndMinute(dateTimeText: string) {
   const parts = dateTimeText.split(' ');
   let hoursAdded = 0;
   if (parts[parts.length - 1] === 'PM') {
-    hoursAdded = 12
+    hoursAdded = 12;
   }
   const timeOnlyText = parts.find((part) => part.includes(':'));
   const timeParts = timeOnlyText.split(':');
@@ -178,7 +179,9 @@ async function PrepareStreaming() {
       if (data?.response && data.response[0]?.content?.code === 0 && data.response[0]?.command === "LOGIN") {
         console.log("Streaming Logged In");
         isWsOpen = true;
-        AddEquitiesToStream('$SPX.X');
+        const settings = AppSettings.findOne(Constants.appSettingsId);
+        const vwapEquity = settings?.vwapEquity ?? 'SPY';
+        AddEquitiesToStream(vwapEquity);
       }
       if (data && _.isArray(data.data)) {
         data.data.forEach((item) => {
@@ -289,31 +292,63 @@ function getAverageMark(data: IStreamerData[]): number {
 }
 
 function GetSlopeAngleOfSymbol(symbol: string, samples: number, numberOfSamplesToAverage: number): number {
-  const data : IStreamerData[] = streamedData[symbol];
+  const data: IStreamerData[] = streamedData[symbol];
   if (data && data.length > samples && samples >= numberOfSamplesToAverage * 2) {
     const firstIndex = data.length - samples;
     const secondIndex = data.length - numberOfSamplesToAverage;
     const firstAvgMark = getAverageMark(data.slice(firstIndex, firstIndex + numberOfSamplesToAverage - 1));
     const lastAvgMark = getAverageMark(data.slice(secondIndex));
-    const slope = (lastAvgMark - firstAvgMark)  / 2;
+    const slope = (lastAvgMark - firstAvgMark) / 2;
     // Get angle and clip to 1 decimal place.
-    const angle = Math.trunc((Math.atan(slope) * 180 / Math.PI)*10)/10;
+    const angle = Math.trunc((Math.atan(slope) * 180 / Math.PI) * 10) / 10;
     return angle;
   }
   return 0;
 }
 
-function calculateVWAP(symbol: string, numberOfSamples: number): number {
-  const data : IStreamerData[] = streamedData[symbol] || [];
-  if (data.length < numberOfSamples) return 0;
+function GetVWAPMarkMax(){
+  const settings = AppSettings.findOne(Constants.appSettingsId);
+  const vwapEquity = settings?.vwapEquity ?? 'SPY';
+  const data: IStreamerData[] = streamedData[vwapEquity] || [];
+  if (data.length === 0) return 0;
+  return data[data.length - 1].maxMark;
+}
+
+function GetVWAPMarkMin(){
+  const settings = AppSettings.findOne(Constants.appSettingsId);
+  const vwapEquity = settings?.vwapEquity ?? 'SPY';
+  const data: IStreamerData[] = streamedData[vwapEquity] || [];
+  if (data.length === 0) return 0;
+  return data[data.length - 1].minMark;
+}
+
+function GetVWAPMark(){
+  const settings = AppSettings.findOne(Constants.appSettingsId);
+  const vwapEquity = settings?.vwapEquity ?? 'SPY';
+  const data: IStreamerData[] = streamedData[vwapEquity] || [];
+  if (data.length === 0) return 0;
+  return data[data.length - 1].mark;
+}
+
+function CalculateVWAP(): number {
+  const settings = AppSettings.findOne(Constants.appSettingsId);
+  const vwapNumberOfSamples = settings?.vwapNumberOfSamples ?? 60;
+  const vwapEquity = settings?.vwapEquity ?? 'SPY';
+  const data: IStreamerData[] = streamedData[vwapEquity] || [];
+  if (data.length < vwapNumberOfSamples) return data[data.length - 1]?.mark;
   let sumPriceTimesVolume = 0;
   let sumVolume = 0;
-  for (let i = data.length - numberOfSamples; i < data.length; i++) {
+  for (let i = data.length - vwapNumberOfSamples; i < data.length; i++) {
     const currentData = data[i];
-    sumPriceTimesVolume += currentData.mark * currentData.volume;
-    sumVolume += currentData.volume;
+    if (!currentData.mark || !currentData.tickVolume) continue;
+    sumPriceTimesVolume += currentData.mark * currentData.tickVolume;
+    sumVolume += currentData.tickVolume;
   }
-  return Math.trunc((sumVolume ? sumPriceTimesVolume / sumVolume : 0) * 100) / 100;
+  const vwap = Math.trunc((sumVolume ? sumPriceTimesVolume / sumVolume : 0) * 100) / 100;
+  if (vwap === 0) {
+    console.log("VWAP is zero");
+  }
+  return vwap;
 }
 
 function IsStreamingQuotes() {
@@ -342,4 +377,8 @@ export {
   GetStreamingOptionsPrice,
   AddEquitiesToStream,
   GetSlopeAngleOfSymbol,
+  CalculateVWAP,
+  GetVWAPMarkMax,
+  GetVWAPMarkMin,
+  GetVWAPMark,
 };
