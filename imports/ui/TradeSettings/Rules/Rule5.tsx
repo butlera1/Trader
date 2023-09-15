@@ -30,7 +30,7 @@ function Rule5({value, onChange}: { value: IRule5Value, onChange: (value: IRule5
           style={{width: '50px'}}
           onChange={(underlyingPercentOfCredit: number) => onChange({...value, underlyingPercentOfCredit: (underlyingPercentOfCredit / 100)})}
         />
-        <label>% of credit. </label>
+        <label>% of total original credit/debit. </label>
       </Space>
     </>
   );
