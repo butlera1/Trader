@@ -7,6 +7,7 @@ interface IStreamerData {
   when?: Date;
   slopeAngle?: number;
   vwap?: number;
+  vwapSlopeAngle?: number;
   minMark?: number;
   maxMark?: number;
   tickVolume?: number;

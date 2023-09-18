@@ -102,6 +102,7 @@ const settings = {
   totalSlopeSamples: 10,
   vwapNumberOfSamples: 60,
   vwapEquity: 'SPY',
+  vwapSlopeSamplesRequired: 10,
   ...AppSettings.findOne(Constants.appSettingsId),
 };
 delete settings._id;

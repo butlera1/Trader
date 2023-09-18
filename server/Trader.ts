@@ -31,7 +31,7 @@ import {
   CalculateUnderlyingPriceSlopeAngle
 } from '../imports/Utils';
 import Semaphore from 'semaphore';
-import {CalculateVWAP, GetVWAPMark, GetVWAPMarkMax, GetVWAPMarkMin} from './TDAApi/StreamEquities';
+import {CalculateVWAP, GetVWAPMark, GetVWAPMarkMax, GetVWAPMarkMin, GetVWAPSlopeAngle} from './TDAApi/StreamEquities';
 
 const lock = mutexify();
 
@@ -408,11 +408,11 @@ function MonitorTradeToCloseItOut(liveTrade: ITradeSettings) {
         return; // Try again on next interval timeout.
       }
       currentSamplePrice.gain = CalculateGain(liveTrade, currentSamplePrice.price);
-      const vwapNumberOfSamples = 60;
       currentSamplePrice.vwap = CalculateVWAP();
       currentSamplePrice.maxVWAPMark = GetVWAPMarkMax();
       currentSamplePrice.minVWAPMark = GetVWAPMarkMin();
       currentSamplePrice.vwapMark = GetVWAPMark();
+      currentSamplePrice.vwapSlopeAngle = GetVWAPSlopeAngle();
       liveTrade.monitoredPrices.push(currentSamplePrice); // Update the local copy.
       currentSamplePrice.slope1 = CalculateUnderlyingPriceAverageSlope(liveTrade.slope1Samples, liveTrade.monitoredPrices);
       currentSamplePrice.slope2 = CalculateUnderlyingPriceAverageSlope(liveTrade.slope2Samples, liveTrade.monitoredPrices);

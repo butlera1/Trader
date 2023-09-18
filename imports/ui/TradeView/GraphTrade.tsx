@@ -58,6 +58,15 @@ function GraphTrade({liveTrade}: { liveTrade: ITradeSettings }) {
           fontSize={14}
         />
       </YAxis>
+      <YAxis width={100} yAxisId="right2" orientation="right" tick={{fontSize: 10,}} domain={[-3, 3]}>
+        <Label
+          value={`VWAP Slope Angle`}
+          angle={-90}
+          position="outside"
+          fill="#676767"
+          fontSize={14}
+        />
+      </YAxis>
       <XAxis dataKey={getTime} unit={'m'}/>
       <Tooltip/>
       <Legend/>
@@ -65,12 +74,14 @@ function GraphTrade({liveTrade}: { liveTrade: ITradeSettings }) {
             isAnimationActive={false} yAxisId="left"/>
       <Line type="monotone" strokeWidth={2} dataKey={getGain} name={'G/L'} stroke="green" dot={false}
             isAnimationActive={false} yAxisId="left"/>
-      <Line type="monotone" strokeWidth={2} dataKey={'vwapMark'} name={'Underlying'} stroke="red" dot={false}
+      <Line type="monotone" strokeWidth={1} dataKey={'vwapMark'} name={'Underlying'} stroke="red" dot={false}
             isAnimationActive={false} yAxisId="right"/>
-      <Line type="monotone" strokeWidth={2} dataKey="vwap" name={'VWAP'} stroke="blue" dot={false}
+      <Line type="monotone" strokeWidth={1} dataKey="vwap" name={'VWAP'} stroke="blue" dot={false}
             isAnimationActive={false} yAxisId="right"/>
-      <Line type="monotone" dataKey={getShortStraddlePrice} name={'Short Straddle'} stroke="lightgreen" dot={false}
-            isAnimationActive={false} yAxisId="left"/>
+      <Line type="monotone" strokeWidth={1} dataKey="vwapSlopeAngle" name={'VWAP Slope Angle'} stroke="grey" dot={false}
+            isAnimationActive={false} yAxisId="right2"/>
+      {/*<Line type="monotone" dataKey={getShortStraddlePrice} name={'Short Straddle'} stroke="lightgreen" dot={false}*/}
+      {/*      isAnimationActive={false} yAxisId="left"/>*/}
       <Line type="monotone" dataKey={() => lossLine} name={'Max Loss'} stroke="cyan" dot={false}
             isAnimationActive={false} yAxisId="left"/>
     </LineChart>

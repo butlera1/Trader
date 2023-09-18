@@ -37,6 +37,7 @@ interface IPrice {
   maxVWAPMark?: number,
   minVWAPMark?: number,
   vwapMark?: number,
+  vwapSlopeAngle?: number,
 }
 
 const BadDefaultIPrice = {

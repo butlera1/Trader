@@ -67,6 +67,7 @@ function recordQuoteData(item) {
         when: new Date(item.timestamp),
         slopeAngle: 0,
         vwap: 0,
+        vwapSlopeAngle: 0,
       };
       streamedData[value.symbol].push(value);
       const settings = AppSettings.findOne(Constants.appSettingsId);
@@ -76,6 +77,7 @@ function recordQuoteData(item) {
       value.tickVolume = value.volume - lastQuote.volume;
       value.slopeAngle = GetSlopeAngleOfSymbol(value.symbol, totalSlopeSamples, slopeSamplesToAverage);
       value.vwap = CalculateVWAP();
+      value.vwapSlopeAngle = CalculateVWAPSlopeAngle();
       value.maxMark = ((lastQuote.maxMark ?? 0) > value.mark) ? lastQuote.maxMark : value.mark;
       value.minMark = ((lastQuote.minMark ?? 0) < value.mark) ? lastQuote.minMark : value.mark;
       if (value.minMark === undefined) {
@@ -322,6 +324,14 @@ function GetVWAPMarkMin(){
   return data[data.length - 1].minMark;
 }
 
+function GetVWAPSlopeAngle(){
+  const settings = AppSettings.findOne(Constants.appSettingsId);
+  const vwapEquity = settings?.vwapEquity ?? 'SPY';
+  const data: IStreamerData[] = streamedData[vwapEquity] || [];
+  if (data.length === 0) return 0;
+  return data[data.length - 1].vwapSlopeAngle;
+}
+
 function GetVWAPMark(){
   const settings = AppSettings.findOne(Constants.appSettingsId);
   const vwapEquity = settings?.vwapEquity ?? 'SPY';
@@ -344,11 +354,27 @@ function CalculateVWAP(): number {
     sumPriceTimesVolume += currentData.mark * currentData.tickVolume;
     sumVolume += currentData.tickVolume;
   }
-  const vwap = Math.trunc((sumVolume ? sumPriceTimesVolume / sumVolume : 0) * 100) / 100;
+  const vwap = Math.trunc((sumVolume ? sumPriceTimesVolume / sumVolume : 0) * 10000) / 10000;
   if (vwap === 0) {
     console.log("VWAP is zero");
   }
   return vwap;
+}
+
+function CalculateVWAPSlopeAngle(): number {
+  const settings = AppSettings.findOne(Constants.appSettingsId);
+  const vwapSlopeSamplesRequired = settings?.vwapSlopeSamplesRequired ?? 10;
+  const vwapEquity = settings?.vwapEquity ?? 'SPY';
+  const data: IStreamerData[] = streamedData[vwapEquity] || [];
+  if (data && data.length > vwapSlopeSamplesRequired) {
+    const firstVWAP = data[data.length - vwapSlopeSamplesRequired].vwap;
+    const secondVWAP = data[data.length - 1].vwap;
+    const slope = (secondVWAP - firstVWAP) / 2;
+    // Get angle and clip to 1 decimal place.
+    const angle = Math.trunc((Math.atan(slope) * 180 / Math.PI) * 1000) / 1000;
+    return angle;
+  }
+  return 0;
 }
 
 function IsStreamingQuotes() {
@@ -381,4 +407,5 @@ export {
   GetVWAPMarkMax,
   GetVWAPMarkMin,
   GetVWAPMark,
+  GetVWAPSlopeAngle,
 };
