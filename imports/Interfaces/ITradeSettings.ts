@@ -5,7 +5,7 @@ import IRule2Value from './IRule2Value';
 import IRule3Value from './IRule3Value';
 import IRule4Value from './IRule4Value';
 import IRule5Value from './IRule5Value';
-import IPrerunSlopeValue from './IPrerunSlopeValue';
+import IPrerunVWAPSlopeValue from './IPrerunVWAPSlopeValue';
 
 enum whyClosedEnum {
   emergencyExit = 'emergencyExit',
@@ -18,7 +18,7 @@ enum whyClosedEnum {
   rule4Exit = 'r4Exit',
   rule5Exit = 'r5Exit',
   prerunExit = 'prerunExit',
-  prerunSlopeExit = 'prerunSlopeExit',
+  prerunVWAPSlopeExit = 'prerunVWAPSlopeExit',
 }
 
 interface IPrice {
@@ -104,11 +104,11 @@ interface ITradeSettings {
   isRule4?: boolean,
   isRule5?: boolean,
   isPrerun?: boolean,
-  isPrerunSlope?: boolean,
   isPrerunning?: boolean,
-  isPrerunningSlope?: boolean,
   prerunValue?: IPrerunValue,
-  prerunSlopeValue?: IPrerunSlopeValue,
+  isPrerunVWAPSlope?: boolean,
+  isPrerunningVWAPSlope?: boolean,
+  prerunVWAPSlopeValue?: IPrerunVWAPSlopeValue,
   rule1Value?: IRule1Value,
   rule2Value?: IRule2Value,
   rule3Value?: IRule3Value,
@@ -200,7 +200,7 @@ const DefaultTradeSettings: ITradeSettings = {
   useShortOnlyForLimits: false,
   isPrerunning: false,
   prerunValue: {ticks: 0, amount: 0},
-  isPrerunningSlope: false,
+  isPrerunningVWAPSlope: false,
   repeatStopHour: 13,
 };
 

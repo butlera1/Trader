@@ -53,7 +53,7 @@ function TestStrategy(tradeSettingsId) {
   }
   const forceTheTrade = true;
   const tradeSettings = TradeSettings.findOne(tradeSettingsId);
-  ExecuteTrade(tradeSettings, forceTheTrade, tradeSettings.isPrerun, tradeSettings.isPrerunSlope).then();
+  ExecuteTrade(tradeSettings, forceTheTrade, tradeSettings.isPrerun, tradeSettings.isPrerunVWAPSlope).then();
 }
 
 function CheckForAnyExistingTradesAndMonitorThem() {

@@ -23,7 +23,7 @@ import {DefaultRule4Value} from '../../Interfaces/IRule4Value';
 import Rule4 from './Rules/Rule4';
 import Rule5 from './Rules/Rule5';
 import {DefaultRule5Value} from '../../Interfaces/IRule5Value';
-import PrerunSlopeRule from './Rules/PrerunSlopeRule';
+import PrerunUntilPositiveVWAPAngle from './Rules/PrerunUntilPositiveVWAPAngle';
 
 const CheckboxGroup = Checkbox.Group;
 const generalMargins = 30;
@@ -71,9 +71,9 @@ export const TradeSettingsEditor = ({tradeSettings, changeCallback}: Props) => {
   const [percentGainIsDollar, setPercentGainIsDollar] = React.useState(tradeSettings.percentGainIsDollar ?? false);
   const [percentLossIsDollar, setPercentLossIsDollar] = React.useState(tradeSettings.percentLossIsDollar ?? false);
   const [isPrerun, setIsPrerun] = React.useState(tradeSettings.isPrerun ?? false);
-  const [isPrerunSlope, setIsPrerunSlope] = React.useState(tradeSettings.isPrerunSlope ?? false);
+  const [isPrerunVWAPSlope, setIsPrerunVWAPSlope] = React.useState(tradeSettings.isPrerunVWAPSlope ?? false);
   const [prerunValue, setPrerunValue] = React.useState(tradeSettings.prerunValue ?? {});
-  const [prerunSlopeValue, setPrerunSlopeValue] = React.useState(tradeSettings.prerunSlopeValue ?? {});
+  const [prerunVWAPSlopeValue, setPrerunVWAPSlopeValue] = React.useState(tradeSettings.prerunVWAPSlopeValue ?? {});
 
   const setMap = {
     isActive: setIsActive,
@@ -100,9 +100,9 @@ export const TradeSettingsEditor = ({tradeSettings, changeCallback}: Props) => {
     isRule4: setIsRule4,
     isRule5: setIsRule5,
     isPrerun: setIsPrerun,
-    isPrerunSlope: setIsPrerunSlope,
+    isPrerunVWAPSlope: setIsPrerunVWAPSlope,
     prerunValue: setPrerunValue,
-    prerunSlopeValue: setPrerunSlopeValue,
+    prerunVWAPSlopeValue: setPrerunVWAPSlopeValue,
     rule1Value: setRule1Value,
     rule2Value: setRule2Value,
     rule3Value: setRule3Value,
@@ -148,8 +148,8 @@ export const TradeSettingsEditor = ({tradeSettings, changeCallback}: Props) => {
         isRule5,
         isPrerun,
         prerunValue,
-        isPrerunSlope,
-        prerunSlopeValue,
+        isPrerunVWAPSlope,
+        prerunVWAPSlopeValue,
         rule1Value,
         rule2Value,
         rule3Value,
@@ -175,13 +175,13 @@ export const TradeSettingsEditor = ({tradeSettings, changeCallback}: Props) => {
   }, [isActive, isMocked, symbol, days, entryHour, entryMinute, exitHour, exitMinute, percentGain,
     percentLoss, commissionPerContract, legs, tradeType, isRepeat, repeatStopHour, useShortOnlyForLimits,
     isRule1, isRule2, isRule3, isRule4, isRule5, isPrerun, prerunValue, rule1Value, rule2Value, rule3Value, rule4Value,
-    rule5Value, name, slope1Samples, isPrerunSlope, prerunSlopeValue,
+    rule5Value, name, slope1Samples, isPrerunVWAPSlope, prerunVWAPSlopeValue,
     slope2Samples, percentGainIsDollar,
     percentLossIsDollar]);
 
   const RunNow = () => {
     return (
-      <Space style={{marginLeft: 10}}>
+      <Space>
         <Popconfirm
           title="Are you sure: Run this trade now?"
           icon={<QuestionCircleOutlined style={{color: 'red'}}/>}
@@ -190,11 +190,33 @@ export const TradeSettingsEditor = ({tradeSettings, changeCallback}: Props) => {
           cancelText="No"
         >
           <Button
-            style={{marginTop: 5, marginRight: -20, marginBottom: -20, backgroundColor: 'lightgreen', color: 'black'}}
+            style={{backgroundColor: 'lightgreen', color: 'black'}}
             type="primary"
             shape="round"
           >
             Run Now
+          </Button>
+        </Popconfirm>
+      </Space>
+    );
+  };
+
+  const Backtest = () => {
+    return (
+      <Space>
+        <Popconfirm
+          title="Are you sure: Backtest this trade now?"
+          icon={<QuestionCircleOutlined style={{color: 'red'}}/>}
+          onConfirm={backtest}
+          okText="Yes"
+          cancelText="No"
+        >
+          <Button
+            style={{backgroundColor: 'lightgreen', color: 'black'}}
+            type="primary"
+            shape="round"
+          >
+            Backtest (not ready)
           </Button>
         </Popconfirm>
       </Space>
@@ -226,6 +248,10 @@ export const TradeSettingsEditor = ({tradeSettings, changeCallback}: Props) => {
         setErrorText(`Problem in testRun: ${error.toString()}`);
       }
     });
+  };
+
+  const backtest = () => {
+    console.log('Doing backtest (nothing right now)...');
   };
 
   return (
@@ -290,7 +316,12 @@ export const TradeSettingsEditor = ({tradeSettings, changeCallback}: Props) => {
               <Select.Option value="$SPX.X">SPX</Select.Option>
               <Select.Option value="$VIX.X">VIX</Select.Option>
             </Select>
+          </Space>
+        </Col>
+        <Col span={6}>
+          <Space>
             <RunNow/>
+            <Backtest/>
           </Space>
         </Col>
       </Row>
@@ -428,6 +459,11 @@ export const TradeSettingsEditor = ({tradeSettings, changeCallback}: Props) => {
           </Col>
         </Space>
       </Row>
+      <Row>
+        <Col span={24}>
+          <h3 style={{marginBottom: 0, marginLeft: 25, color: 'darkgrey'}}>PRERUN Rules.</h3>
+        </Col>
+      </Row>
       <Row style={{margin: generalMargins}}>
         <Col span={24}>
           <Checkbox
@@ -441,11 +477,17 @@ export const TradeSettingsEditor = ({tradeSettings, changeCallback}: Props) => {
       <Row style={{margin: generalMargins}}>
         <Col span={24}>
           <Checkbox
-            onChange={(e: CheckboxChangeEvent) => onChange('isPrerunSlope', e.target.checked)}
-            checked={isPrerunSlope}
+            onChange={(e: CheckboxChangeEvent) => onChange('isPrerunVWAPSlope', e.target.checked)}
+            checked={isPrerunVWAPSlope}
           >
           </Checkbox>
-          <PrerunSlopeRule value={prerunSlopeValue} onChange={(value) => onChange('prerunSlopeValue', value)}/>
+          <PrerunUntilPositiveVWAPAngle value={prerunVWAPSlopeValue}
+                                        onChange={(value) => onChange('prerunVWAPSlopeValue', value)}/>
+        </Col>
+      </Row>
+      <Row>
+        <Col span={24}>
+          <h3 style={{marginBottom: 0, marginLeft: 25, color: 'darkgrey'}}>EXIT Rules.</h3>
         </Col>
       </Row>
       <Row style={{margin: generalMargins}}>
