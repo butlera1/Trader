@@ -12,6 +12,7 @@ import {GetNewYorkTimeNowAsText} from '../Trader';
 
 let isWsOpen = false;
 let streamedData = {};
+let streamingCheckIntervalHandle = null;
 
 // Utility
 function jsonToQueryString(json) {
@@ -43,10 +44,9 @@ function StopDataStreaming() {
 
 let valuesToBePersisted = {};
 
-function eraseAllData() {
+function EraseAllStreamedData() {
   streamedData = {}; // Clear out old data.
   valuesToBePersisted = {};
-  // StreamedData.remove(Constants.streamedDataId);
 }
 
 function recordQuoteData(item) {
@@ -135,7 +135,6 @@ async function waitForLogin() {
 
 async function PrepareStreaming() {
   StopDataStreaming();
-  eraseAllData();
   const userId = Meteor.users.findOne({username: 'Arch'})?._id;
   if (userId) {
     userPrincipalsResponse = await GetUserPrinciples(userId);
@@ -184,6 +183,9 @@ async function PrepareStreaming() {
         const settings = AppSettings.findOne(Constants.appSettingsId);
         const vwapEquity = settings?.vwapEquity ?? 'SPY';
         AddEquitiesToStream(vwapEquity);
+        if (!streamingCheckIntervalHandle) {
+          streamingCheckIntervalHandle = Meteor.setInterval(resetStreamingIfFlatLining, 1000 * 5); // every 5 seconds check if flat lining.
+        }
       }
       if (data && _.isArray(data.data)) {
         data.data.forEach((item) => {
@@ -195,7 +197,7 @@ async function PrepareStreaming() {
     mySock.onclose = function (evt) {
       mySock = null;
       isWsOpen = false;
-      console.log("WebSocket CLOSED.");
+      console.log("Streaming WebSocket CLOSED.");
     };
 
     mySock.onopen = function (evt) {
@@ -248,6 +250,35 @@ function AddEquitiesToStream(equityNames: string) {
     };
     mySock.send(JSON.stringify(requestQuotes));
     console.log("Streaming Equities: " + keys);
+  }
+}
+
+function resetStreamingIfFlatLining() {
+  if (IsStreamingQuotes()) {
+    const now = new Date();
+    const settings = AppSettings.findOne(Constants.appSettingsId);
+    const vwapEquity = settings?.vwapEquity ?? 'SPY';
+    const lastQuote = LatestQuote(vwapEquity);
+    if (lastQuote) {
+      const diff = now.getTime() - lastQuote.when.getTime();
+      if (diff > 3000) { // If no data for 3 seconds, reset streaming.
+        console.error('Resetting streaming due to flat lining.');
+        PrepareStreaming()
+          .then(() => {
+            console.error(`Reset Streaming due to flat lining.`);
+          })
+          .catch((err) => {
+            console.error(`Error resetting streaming due to flat lining: ${err}`);
+          });
+      }
+    }
+  }
+  else {
+    if (streamingCheckIntervalHandle) {
+      // If not streaming and there is a timer, clear it.
+      Meteor.clearInterval(streamingCheckIntervalHandle);
+      streamingCheckIntervalHandle = null;
+    }
   }
 }
 
@@ -308,7 +339,7 @@ function GetSlopeAngleOfSymbol(symbol: string, samples: number, numberOfSamplesT
   return 0;
 }
 
-function GetVWAPMarkMax(){
+function GetVWAPMarkMax() {
   const settings = AppSettings.findOne(Constants.appSettingsId);
   const vwapEquity = settings?.vwapEquity ?? 'SPY';
   const data: IStreamerData[] = streamedData[vwapEquity] || [];
@@ -316,7 +347,7 @@ function GetVWAPMarkMax(){
   return data[data.length - 1].maxMark;
 }
 
-function GetVWAPMarkMin(){
+function GetVWAPMarkMin() {
   const settings = AppSettings.findOne(Constants.appSettingsId);
   const vwapEquity = settings?.vwapEquity ?? 'SPY';
   const data: IStreamerData[] = streamedData[vwapEquity] || [];
@@ -324,7 +355,7 @@ function GetVWAPMarkMin(){
   return data[data.length - 1].minMark;
 }
 
-function GetVWAPSlopeAngle(){
+function GetVWAPSlopeAngle() {
   const settings = AppSettings.findOne(Constants.appSettingsId);
   const vwapEquity = settings?.vwapEquity ?? 'SPY';
   const data: IStreamerData[] = streamedData[vwapEquity] || [];
@@ -332,7 +363,7 @@ function GetVWAPSlopeAngle(){
   return data[data.length - 1].vwapSlopeAngle;
 }
 
-function GetVWAPMark(){
+function GetVWAPMark() {
   const settings = AppSettings.findOne(Constants.appSettingsId);
   const vwapEquity = settings?.vwapEquity ?? 'SPY';
   const data: IStreamerData[] = streamedData[vwapEquity] || [];
@@ -408,4 +439,5 @@ export {
   GetVWAPMarkMin,
   GetVWAPMark,
   GetVWAPSlopeAngle,
+  EraseAllStreamedData,
 };

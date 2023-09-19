@@ -1,5 +1,8 @@
 interface IPrerunVWAPSlopeValue {
   numberOfDesiredVWAPAnglesInARow: number;
 }
+const defaultPrerunVWAPSlopeValue: IPrerunVWAPSlopeValue = {
+  numberOfDesiredVWAPAnglesInARow: 4,
+};
 
-export default IPrerunVWAPSlopeValue;
+export {IPrerunVWAPSlopeValue as default, defaultPrerunVWAPSlopeValue};

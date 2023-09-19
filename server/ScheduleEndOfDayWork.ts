@@ -5,7 +5,7 @@ import {Meteor} from 'meteor/meteor';
 import {GetNewYorkTimeAt} from './Trader';
 import {AppSettings} from './collections/AppSettings';
 import Constants from '../imports/Constants';
-import {StopDataStreaming} from './TDAApi/StreamEquities';
+import {EraseAllStreamedData, StopDataStreaming} from './TDAApi/StreamEquities';
 
 function ScheduleEndOfDayWork() {
   try {
@@ -21,6 +21,7 @@ function ScheduleEndOfDayWork() {
       try {
         Meteor.clearTimeout(timerHandle);
         StopDataStreaming();
+        EraseAllStreamedData();
         ScheduleEndOfDayWork();
       } catch (ex) {
         LogData(null, `Failed inside timeOut loop for 'EndOfDayWord' and 'ScheduleEndOfDayWork'.`, ex);

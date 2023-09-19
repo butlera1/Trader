@@ -5,7 +5,7 @@ import IRule2Value from './IRule2Value';
 import IRule3Value from './IRule3Value';
 import IRule4Value from './IRule4Value';
 import IRule5Value from './IRule5Value';
-import IPrerunVWAPSlopeValue from './IPrerunVWAPSlopeValue';
+import IPrerunVWAPSlopeValue, {defaultPrerunVWAPSlopeValue} from './IPrerunVWAPSlopeValue';
 
 enum whyClosedEnum {
   emergencyExit = 'emergencyExit',
@@ -201,6 +201,7 @@ const DefaultTradeSettings: ITradeSettings = {
   isPrerunning: false,
   prerunValue: {ticks: 0, amount: 0},
   isPrerunningVWAPSlope: false,
+  prerunVWAPSlopeValue: {...defaultPrerunVWAPSlopeValue},
   repeatStopHour: 13,
 };
 
@@ -231,7 +232,13 @@ function GetDescription(tradeSettings: ITradeSettings) {
     part4 = part4.replace(regex, '\n');
   }
   let part5 = tradeSettings.isMocked ? 'Mocked' : '';
-  return `${part0}${part1}\n${part2}\n${part3}${part4}${part5}`;
+  if (tradeSettings.isPrerunning) {
+    part5 = `Mocked for Prerunning`;
+  }
+  if (tradeSettings.isPrerunningVWAPSlope) {
+    part5 = `Mocked for Prerunning VWAP Slope`;
+  }
+  return `${part0}${part1}\n${part2}\n${part3}${part4}\n${part5}`;
 }
 
 
