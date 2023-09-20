@@ -363,9 +363,20 @@ function checkPrerunVWAPSlopeExit(liveTrade: ITradeSettings) {
   if (liveTrade.isPrerunningVWAPSlope) {
     const numberOfDesiredVWAPAnglesInARow = liveTrade.prerunVWAPSlopeValue.numberOfDesiredVWAPAnglesInARow ?? 4;
     if (liveTrade.monitoredPrices.length >= numberOfDesiredVWAPAnglesInARow) {
+      // This approach is for checking for slope trending up (increasing in value
       const samples = liveTrade.monitoredPrices.slice(liveTrade.monitoredPrices.length - numberOfDesiredVWAPAnglesInARow);
-      const isPositive = samples.reduce((isPositive, sample) => isPositive && sample.vwapSlopeAngle >= 0, true);
-      return isPositive;
+      let trendingUp = true;
+      for (let i = 0; i < samples.length - 1; i++) {
+        trendingUp = trendingUp && samples[i].vwapSlopeAngle <= samples[i + 1].vwapSlopeAngle;
+      }
+      return trendingUp;
+
+      //
+      // This is the approach for checking for positive slope.
+      // const samples = liveTrade.monitoredPrices.slice(liveTrade.monitoredPrices.length - numberOfDesiredVWAPAnglesInARow);
+      // const isPositive = samples.reduce((isPositive, sample) => isPositive && sample.vwapSlopeAngle >= 0, true);
+      // return isPositive;
+      //
     }
   }
   return false;

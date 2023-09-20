@@ -9,7 +9,7 @@ function PrerunUntilPositiveVWAPAngle({
   return (
     <>
       <Space style={{marginLeft: 10}}>
-        <label>Prerun: Until VWAP Slope Angle is positive for</label>
+        <label>Prerun: Until VWAP Slope Angle is moving up for</label>
         <InputNumber
           defaultValue={value.numberOfDesiredVWAPAnglesInARow ?? 10}
           min={1}
@@ -18,7 +18,7 @@ function PrerunUntilPositiveVWAPAngle({
           style={{width: '60px'}}
           onChange={(numberOfDesiredVWAPAnglesInARow: number) => onChange({...value, numberOfDesiredVWAPAnglesInARow})}
         />
-        <label>seconds in a row.</label>
+        <label>samples in a row.</label>
       </Space>
     </>
   );

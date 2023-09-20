@@ -261,7 +261,7 @@ function resetStreamingIfFlatLining() {
     const lastQuote = LatestQuote(vwapEquity);
     if (lastQuote) {
       const diff = now.getTime() - lastQuote.when.getTime();
-      if (diff > 3000) { // If no data for 3 seconds, reset streaming.
+      if (diff > 5000) { // If no data for 5 seconds, reset streaming.
         console.error('Resetting streaming due to flat lining.');
         PrepareStreaming()
           .then(() => {
