@@ -52,7 +52,7 @@ function ChartResults({records}: { records: ITradeSettings[] }) {
   let sumLosses = 0;
 
   const resultSum = records.reduce((sum, record) => {
-    if (!record.isPrerunning) {
+    if (!record.isPrerunning && !record.isPrerunningVWAPSlope) {
       const description = getDescription(record);
       CleanupGainLossWhenFailedClosingTrade(record);
       const actualGainLoss = record.gainLoss - CalculateTotalFees(record);

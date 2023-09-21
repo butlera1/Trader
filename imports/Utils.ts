@@ -4,12 +4,20 @@ import utc from 'dayjs/plugin/utc';
 import timezone from 'dayjs/plugin/timezone';
 import _ from 'lodash';
 import IPrerunSlopeValue from './Interfaces/IPrerunSlopeValue';
+import {GetNewYorkTimeAt} from '../server/Trader';
 
 dayjs.extend(utc);
 dayjs.extend(timezone);
 
 function GetNewYorkTimeAsText(date: Date) {
   return dayjs(date).tz('America/New_York').format('MM/DD/YY hh:mm:ss A');
+}
+
+function InTradeHours(){
+  const now = dayjs();
+  const open = GetNewYorkTimeAt(9, 30);
+  const close = GetNewYorkTimeAt(16, 0);
+  return now.isAfter(open) && now.isBefore(close);
 }
 
 function CalculateTotalFees(tradeSettings) {
@@ -142,4 +150,5 @@ export {
   GetNewYorkTimeAsText,
   CleanupGainLossWhenFailedClosingTrade,
   CalculateUnderlyingPriceSlopeAngle,
+  InTradeHours,
 };

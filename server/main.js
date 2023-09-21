@@ -114,8 +114,12 @@ CheckForAnyExistingTradesAndMonitorThem();
 
 // Turn on streaming for getting SPX data and charting it.
 PrepareStreaming()
-  .then(() => {
-    console.log(`Streaming is on.`);
+  .then((isOn) => {
+    if (isOn) {
+      console.log(`Streaming is on.`);
+    } else {
+      console.log(`Streaming is off.`);
+    }
   })
   .catch((err) => {
     console.error(`Error preparing streaming: ${err}`);

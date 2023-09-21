@@ -12,6 +12,7 @@ import {IronCondorMarketOrder} from './Templates/SellIronCondorOrder';
 import {BadDefaultIPrice} from '../../imports/Interfaces/ITradeSettings';
 import CalculateOptionsPricing from '../CalculateOptionsPricing';
 import Constants from '../../imports/Constants';
+import {InTradeHours} from '../../imports/Utils';
 
 const clientId = '8MXX4ODNOEKHOU0COANPEZIETKPXJRQZ@AMER.OAUTHAP';
 const redirectUrl = 'https://localhost/traderOAuthCallback';
@@ -360,6 +361,10 @@ export async function PlaceOrder(userId, accountNumber, order) {
 }
 
 export async function IsOptionMarketOpenToday(userId) {
+  if (!InTradeHours()) {
+    console.log(`IsOptionMarketOpenToday: Not in trade hours.`);
+    return false;
+  }
   const token = await GetAccessToken(userId);
   const options = {
     method: 'GET',

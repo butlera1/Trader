@@ -9,6 +9,7 @@ import Constants from '../../imports/Constants';
 import IStreamerData from '../../imports/Interfaces/IStreamData';
 import {AppSettings} from '../collections/AppSettings';
 import {GetNewYorkTimeNowAsText} from '../Trader';
+import {InTradeHours} from '../../imports/Utils';
 
 let streamedData = {};
 let streamingCheckIntervalHandle = null;
@@ -138,6 +139,10 @@ let pingIntervalHandle = null;
 
 async function PrepareStreaming() {
   StopDataStreaming();
+  if (!InTradeHours()) {
+    console.error('Not streaming data because it is outside of trade hours.');
+    return false
+  }
   const userId = Meteor.users.findOne({username: 'Arch'})?._id;
   if (userId) {
     userPrincipalsResponse = await GetUserPrinciples(userId);

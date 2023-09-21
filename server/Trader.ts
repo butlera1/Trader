@@ -18,6 +18,7 @@ import {Trades} from './collections/Trades';
 import ITradeSettings, {BadDefaultIPrice, IPrice, whyClosedEnum} from '../imports/Interfaces/ITradeSettings';
 import {TradeSettings} from './collections/TradeSettings';
 import {UserSettings} from './collections/UserSettings';
+import {DailyTradeSummaries, IDailyTradeSummary} from './collections/DailyTradeSummaries';
 // @ts-ignore
 import {Random} from 'meteor/random';
 import _ from 'lodash';
@@ -27,6 +28,7 @@ import mutexify from 'mutexify/promise';
 import {CalculateGain, CalculateLimitsAndFees, CalculateUnderlyingPriceAverageSlope} from '../imports/Utils';
 import Semaphore from 'semaphore';
 import {CalculateVWAP, GetVWAPMark, GetVWAPMarkMax, GetVWAPMarkMin, GetVWAPSlopeAngle} from './TDAApi/StreamEquities';
+import IUserSettings from '../imports/Interfaces/IUserSettings';
 
 const lock = mutexify();
 
@@ -130,6 +132,33 @@ async function GetSmartOptionsPrice(tradeSettings: ITradeSettings): Promise<IPri
   return lastSample;
 }
 
+function saveTradeToHistory(tradeSettings: ITradeSettings) {
+  // if (tradeSettings.isPrerunningVWAPSlope || tradeSettings.isPrerunning || tradeSettings.isMocked) {
+  //   // Don't record any pre-running trades or mocked trades.
+  //   return;
+  // }
+  const dateText = dayjs().format('YYYY-MM-DD');
+  const {userId, accountNumber} = tradeSettings;
+  const summary: IDailyTradeSummary = DailyTradeSummaries.findOne({userId, accountNumber, dateText}) || {
+    gainLoss: 0,
+    tradeIds: [],
+    userId,
+    accountNumber,
+    dateText
+  };
+  const id = summary._id || Random.id();
+  delete summary._id;
+  summary.gainLoss += tradeSettings.gainLoss;
+  summary.tradeIds.push(tradeSettings._id);
+  const userSettings: IUserSettings = UserSettings.findOne({_id: userId});
+  if (summary.gainLoss < -Math.abs(userSettings.maxAllowedDailyLoss)) {
+    // User has lost too much money today.  Disable their account.
+    UserSettings.update({_id: userId}, {$set: {accountIsActive: false}});
+    EmergencyCloseAllTradesForUser(userId);
+  }
+  DailyTradeSummaries.upsert(id, summary);
+}
+
 async function CloseTrade(tradeSettings: ITradeSettings, currentPrice: number) {
   const {isMocked, userId, accountNumber, closingOrder, openingPrice} = tradeSettings;
   if (isMocked) {
@@ -164,6 +193,7 @@ async function CloseTrade(tradeSettings: ITradeSettings, currentPrice: number) {
       gainLoss: tradeSettings.gainLoss,
     }
   });
+  saveTradeToHistory(tradeSettings);
   const wasPrerunning = tradeSettings.isPrerunning;
   const wasPrerunningVWAPSlope = tradeSettings.isPrerunningVWAPSlope;
   const message = `${tradeSettings.userName}: Trade closed (${tradeSettings.whyClosed}): Entry: $${openingPrice.toFixed(2)}, ` +
@@ -206,14 +236,11 @@ async function CloseTrade(tradeSettings: ITradeSettings, currentPrice: number) {
   }
 }
 
-function EmergencyCloseAllTrades() {
-  if (!Meteor.userId()) {
-    throw new Meteor.Error('EmergencyCloseAllTrades: Must have valid user.');
-  }
+function EmergencyCloseAllTradesForUser(userId: string) {
   let result = '';
   try {
     // Find all live trades for this user.
-    const liveTrades = Trades.find({userId: Meteor.userId(), whyClosed: {$exists: false}}).fetch();
+    const liveTrades = Trades.find({userId: userId, whyClosed: {$exists: false}}).fetch();
     result = `Found ${liveTrades.label} trades.`;
     liveTrades.forEach(async (tradeSettings) => {
       // Get the last recorded price for this trade and use it for the exit price if in mocked mode.
@@ -230,6 +257,14 @@ function EmergencyCloseAllTrades() {
     return `${result} Closed them all down.`;
   } catch (ex) {
     throw new Meteor.Error(`EmergencyCloseAllTrades: ${result}. Closing them failed with ${ex}`);
+  }
+}
+
+function EmergencyCloseAllTrades() {
+  if (!Meteor.userId()) {
+    throw new Meteor.Error('EmergencyCloseAllTrades: Must have valid user.');
+  } else {
+    EmergencyCloseAllTradesForUser(Meteor.userId());
   }
 }
 
@@ -629,6 +664,11 @@ async function ExecuteTrade(tradeSettings: ITradeSettings, forceTheTrade = false
     LogData(null, msg, new Error(msg));
     return;
   }
+  const userSettings = UserSettings.findOne({_id: tradeSettings.userId});
+  if (!userSettings?.isAccountActive) {
+    LogData(tradeSettings, `ExecuteTrade called for ${tradeSettings.userName} but account is not active.`, null);
+    return;
+  }
   const now = dayjs();
   const nowNYText = now.toDate().toLocaleString('en-US', {timeZone: 'America/New_York'});
   const currentDayOfTheWeek = isoWeekdayNames[now.isoWeekday()];
@@ -721,9 +761,13 @@ async function QueueUsersTradesForTheDay(user) {
     return;
   }
   LogData(null, `Market is open today so queueing ${user.username}'s trades.`);
-  const accountNumber = UserSettings.findOne(user._id)?.accountNumber;
+  const {accountNumber, isAccountActive} = UserSettings.findOne(user._id) || {};
   if (!accountNumber || accountNumber === 'None') {
     LogData(null, `User ${user.username} has no account number so skipping this user.`, null);
+    return;
+  }
+  if (!isAccountActive) {
+    LogData(null, `User ${user.username} has an inactive account so skipping this user.`, null);
     return;
   }
   // 'async' is required for '.take' to bind Fiber to the function Meteor code to work inside Semaphore code.
