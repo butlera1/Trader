@@ -6,6 +6,7 @@
       "dom"
     ],
     "allowSyntheticDefaultImports": true,
+    "allowImportingTsExtensions": "iKnowWhatImDoing",
     "jsx": "react",
     "paths": {
       "react": [

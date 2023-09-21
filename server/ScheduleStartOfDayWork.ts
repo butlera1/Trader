@@ -2,7 +2,8 @@ import dayjs from 'dayjs';
 import {LogData} from './collections/Logs';
 // @ts-ignore
 import {Meteor} from 'meteor/meteor';
-import {GetNewYorkTimeAt, PerformTradeForAllUsers} from './Trader';
+import {PerformTradeForAllUsers} from './Trader';
+import {GetNewYorkTimeAt,} from '../imports/Utils';
 import {AppSettings} from './collections/AppSettings';
 import Constants from '../imports/Constants';
 import {PrepareStreaming} from './TDAApi/StreamEquities';
@@ -25,9 +26,9 @@ function ScheduleStartOfDayWork() {
         Meteor.clearTimeout(timerHandle);
         const isStreaming = await PrepareStreaming()
           .catch((ex) => {
-          LogData(null, `Failed to start streaming within ScheduleStartOfDayWork. Trying again tomorrow.`, ex);
-          return false;
-        });
+            LogData(null, `Failed to start streaming within ScheduleStartOfDayWork. Trying again tomorrow.`, ex);
+            return false;
+          });
         if (isStreaming) {
           LogData(null, `Streaming started successfully within ScheduleStartOfDayWork. Performing trades for all users.`);
           PerformTradeForAllUsers();

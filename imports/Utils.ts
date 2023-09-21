@@ -1,19 +1,50 @@
-import ITradeSettings, {IPrice, whyClosedEnum} from './Interfaces/ITradeSettings';
+import ITradeSettings, {IPrice} from './Interfaces/ITradeSettings';
 import dayjs from 'dayjs';
 import utc from 'dayjs/plugin/utc';
 import timezone from 'dayjs/plugin/timezone';
 import _ from 'lodash';
 import IPrerunSlopeValue from './Interfaces/IPrerunSlopeValue';
-import {GetNewYorkTimeAt} from '../server/Trader';
+// @ts-ignore
+import {GetNewYorkTimeAt} from '../server/Trader.ts';
 
 dayjs.extend(utc);
 dayjs.extend(timezone);
+
+/**
+ * Given an hour number 0-23 and minutes, this returns a dayjs object that is that time in New York times zone.
+ * This assumes that any time zone differences from where the code is running and New York is in hours and single
+ * digits at that.
+ *
+ * @param hourIn
+ * @param minute
+ * @returns {dayjs.Dayjs}
+ */
+function GetNewYorkTimeAt(hourIn: number, minute: number): dayjs.Dayjs {
+  let hour = hourIn;
+  const currentLocalTime = new Date();
+  const currentNYTime = new Date(currentLocalTime.toLocaleString('en-US', {timeZone: 'America/New_York'}));
+  let timeZoneDifference = currentNYTime.getHours() - currentLocalTime.getHours();
+  const currentTimeZoneOffset = currentLocalTime.getTimezoneOffset() / 60;
+  let nyTimeZoneOffsetFromCurrentTimeZone = Math.abs(currentTimeZoneOffset - timeZoneDifference);
+  if (nyTimeZoneOffsetFromCurrentTimeZone > 12) {
+    nyTimeZoneOffsetFromCurrentTimeZone = 24 - nyTimeZoneOffsetFromCurrentTimeZone;
+  }
+  let amPm = 'AM';
+  if (hour > 11) {
+    amPm = 'PM';
+    if (hour > 12) {
+      hour = hour - 12;
+    }
+  }
+  const newYorkTimeAtGivenHourAndMinuteText = `${dayjs().format('YYYY-MM-DD')}, ${hour}:${minute}:00 ${amPm} GMT-0${nyTimeZoneOffsetFromCurrentTimeZone}00`;
+  return dayjs(newYorkTimeAtGivenHourAndMinuteText);
+}
 
 function GetNewYorkTimeAsText(date: Date) {
   return dayjs(date).tz('America/New_York').format('MM/DD/YY hh:mm:ss A');
 }
 
-function InTradeHours(){
+function InTradeHours() {
   const now = dayjs();
   const open = GetNewYorkTimeAt(9, 30);
   const close = GetNewYorkTimeAt(16, 0);
@@ -124,8 +155,8 @@ function CalculateUnderlyingPriceAverageSlope(samples: number, monitoredPrices: 
   return underlyingSlope;
 }
 
-function CalculateUnderlyingPriceSlopeAngle(prerunSlopeValue: IPrerunSlopeValue, monitoredPrices: IPrice[]){
-  if (prerunSlopeValue){
+function CalculateUnderlyingPriceSlopeAngle(prerunSlopeValue: IPrerunSlopeValue, monitoredPrices: IPrice[]) {
+  if (prerunSlopeValue) {
     const {totalSamples, samplesToAverage} = prerunSlopeValue;
     if (monitoredPrices.length > totalSamples && samplesToAverage < totalSamples) {
       const start = monitoredPrices.length - totalSamples;
@@ -135,7 +166,7 @@ function CalculateUnderlyingPriceSlopeAngle(prerunSlopeValue: IPrerunSlopeValue,
       const average2 = average(monitoredPrices.slice(start2));
       const slope = (average2 - average1); // (y2-y1/x2-x1)
       const angle = Math.abs(Math.atan(slope) * 180 / Math.PI);
-      monitoredPrices[monitoredPrices.length - 1].underlyingSlopeAngle = angle  ;
+      monitoredPrices[monitoredPrices.length - 1].underlyingSlopeAngle = angle;
       return angle;
     }
   }
@@ -148,6 +179,7 @@ export {
   CalculateLimitsAndFees,
   CalculateUnderlyingPriceAverageSlope,
   GetNewYorkTimeAsText,
+  GetNewYorkTimeAt,
   CleanupGainLossWhenFailedClosingTrade,
   CalculateUnderlyingPriceSlopeAngle,
   InTradeHours,

@@ -11,7 +11,7 @@ import {
   PlaceOrder,
 } from './TDAApi/TDAApi.js';
 import {Users} from './collections/users';
-import dayjs, {Dayjs} from 'dayjs';
+import dayjs from 'dayjs';
 import duration from 'dayjs/plugin/duration';
 import isoWeek from 'dayjs/plugin/isoWeek';
 import {Trades} from './collections/Trades';
@@ -25,7 +25,12 @@ import _ from 'lodash';
 import {LogData} from './collections/Logs';
 import {SendTextToAdmin} from './SendOutInfo';
 import mutexify from 'mutexify/promise';
-import {CalculateGain, CalculateLimitsAndFees, CalculateUnderlyingPriceAverageSlope} from '../imports/Utils';
+import {
+  CalculateGain,
+  CalculateLimitsAndFees,
+  CalculateUnderlyingPriceAverageSlope,
+  GetNewYorkTimeAt
+} from '../imports/Utils';
 import Semaphore from 'semaphore';
 import {CalculateVWAP, GetVWAPMark, GetVWAPMarkMax, GetVWAPMarkMin, GetVWAPSlopeAngle} from './TDAApi/StreamEquities';
 import IUserSettings from '../imports/Interfaces/IUserSettings';
@@ -38,36 +43,6 @@ dayjs.extend(isoWeek);
 const isoWeekdayNames = ['skip', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'];
 
 const oneSeconds = 1000;
-
-/**
- * Given an hour number 0-23 and minutes, this returns a dayjs object that is that time in New York times zone.
- * This assumes that any time zone differences from where the code is running and New York is in hours and single
- * digits at that.
- *
- * @param hourIn
- * @param minute
- * @returns {dayjs.Dayjs}
- */
-function GetNewYorkTimeAt(hourIn: number, minute: number) {
-  let hour = hourIn;
-  const currentLocalTime = new Date();
-  const currentNYTime = new Date(currentLocalTime.toLocaleString('en-US', {timeZone: 'America/New_York'}));
-  let timeZoneDifference = currentNYTime.getHours() - currentLocalTime.getHours();
-  const currentTimeZoneOffset = currentLocalTime.getTimezoneOffset() / 60;
-  let nyTimeZoneOffsetFromCurrentTimeZone = Math.abs(currentTimeZoneOffset - timeZoneDifference);
-  if (nyTimeZoneOffsetFromCurrentTimeZone > 12) {
-    nyTimeZoneOffsetFromCurrentTimeZone = 24 - nyTimeZoneOffsetFromCurrentTimeZone;
-  }
-  let amPm = 'AM';
-  if (hour > 11) {
-    amPm = 'PM';
-    if (hour > 12) {
-      hour = hour - 12;
-    }
-  }
-  const newYorkTimeAtGivenHourAndMinuteText = `${dayjs().format('YYYY-MM-DD')}, ${hour}:${minute}:00 ${amPm} GMT-0${nyTimeZoneOffsetFromCurrentTimeZone}00`;
-  return dayjs(newYorkTimeAtGivenHourAndMinuteText);
-}
 
 function GetNewYorkTimeNowAsText() {
   const currentLocalTime = new Date();
@@ -737,7 +712,7 @@ function prepareUserForScheduling(user) {
 
 function scheduleUsersTrade(tradeSettings, user) {
   try {
-    const desiredTradeTime = GetNewYorkTimeAt(tradeSettings.entryHour, tradeSettings.entryMinute);
+    const desiredTradeTime: dayjs.Dayjs = GetNewYorkTimeAt(tradeSettings.entryHour, tradeSettings.entryMinute);
     let delayInMilliseconds = dayjs.duration(desiredTradeTime.diff(dayjs())).asMilliseconds();
     if (delayInMilliseconds > 0 && tradeSettings.isActive) {
       const timeoutHandle = Meteor.setTimeout(async function timerMethodToOpenTrade() {
@@ -798,7 +773,6 @@ function PerformTradeForAllUsers() {
 export {
   WaitForOrderCompleted,
   MonitorTradeToCloseItOut,
-  GetNewYorkTimeAt,
   GetNewYorkTime24HourNow,
   GetNewYorkTimeNowAsText,
   PerformTradeForAllUsers,

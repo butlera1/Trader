@@ -2,10 +2,10 @@ import dayjs from 'dayjs';
 import {LogData} from './collections/Logs';
 // @ts-ignore
 import {Meteor} from 'meteor/meteor';
-import {GetNewYorkTimeAt} from './Trader';
 import {AppSettings} from './collections/AppSettings';
 import Constants from '../imports/Constants';
 import {EraseAllStreamedData, StopDataStreaming} from './TDAApi/StreamEquities';
+import {GetNewYorkTimeAt} from '../imports/Utils';
 
 function ScheduleEndOfDayWork() {
   try {
