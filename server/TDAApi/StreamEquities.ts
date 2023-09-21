@@ -10,7 +10,6 @@ import IStreamerData from '../../imports/Interfaces/IStreamData';
 import {AppSettings} from '../collections/AppSettings';
 import {GetNewYorkTimeNowAsText} from '../Trader';
 
-let isWsOpen = false;
 let streamedData = {};
 let streamingCheckIntervalHandle = null;
 
@@ -35,18 +34,16 @@ function incrementRequestId() {
 }
 
 function StopDataStreaming() {
+  if (streamingCheckIntervalHandle) {
+    Meteor.clearInterval(streamingCheckIntervalHandle);
+  }
   if (mySock) {
     mySock.close();
   }
-  isWsOpen = false;
-  mySock = null;
 }
-
-let valuesToBePersisted = {};
 
 function EraseAllStreamedData() {
   streamedData = {}; // Clear out old data.
-  valuesToBePersisted = {};
 }
 
 function recordQuoteData(item) {
@@ -121,7 +118,7 @@ async function waitForLogin() {
     let count = 0;
     const interval = Meteor.setInterval(() => {
       count++;
-      if (isWsOpen) {
+      if (mySock?.isLoggedIn) {
         Meteor.clearInterval(interval);
         resolve(true);
       }
@@ -132,6 +129,12 @@ async function waitForLogin() {
     }, 100);
   });
 }
+
+function heartbeat() {
+  mySock.isAlive = true;
+}
+
+let pingIntervalHandle = null;
 
 async function PrepareStreaming() {
   StopDataStreaming();
@@ -174,18 +177,32 @@ async function PrepareStreaming() {
     };
 
     mySock = new WebSocket("wss://" + userPrincipalsResponse.streamerInfo.streamerSocketUrl + "/ws");
+    mySock.isAlive = false;
+
+    mySock.on('pong', heartbeat);
+
+    if (pingIntervalHandle) {
+      Meteor.clearInterval(pingIntervalHandle);
+    }
+    pingIntervalHandle = Meteor.setInterval(function ping() {
+      if (mySock.isAlive === false) {
+        console.error("Streaming Ping Failed. Restarting steaming...");
+        PrepareStreaming();
+        return;
+      }
+      mySock.isAlive = false;
+      mySock.ping();
+    }, 30000);
+
 
     mySock.onmessage = Meteor.bindEnvironment(function (evt) {
       const data = JSON.parse(evt.data);
       if (data?.response && data.response[0]?.content?.code === 0 && data.response[0]?.command === "LOGIN") {
         console.log("Streaming Logged In");
-        isWsOpen = true;
+        mySock.isLoggedIn = true;
         const settings = AppSettings.findOne(Constants.appSettingsId);
         const vwapEquity = settings?.vwapEquity ?? 'SPY';
         AddEquitiesToStream(vwapEquity);
-        if (!streamingCheckIntervalHandle) {
-          streamingCheckIntervalHandle = Meteor.setInterval(resetStreamingIfFlatLining, 1000 * 5); // every 5 seconds check if flat lining.
-        }
       }
       if (data && _.isArray(data.data)) {
         data.data.forEach((item) => {
@@ -195,12 +212,14 @@ async function PrepareStreaming() {
     });
 
     mySock.onclose = function (evt) {
-      mySock = null;
-      isWsOpen = false;
+      mySock.isAlive = false;
+      mySock.isClosed = true;
       console.log("Streaming WebSocket CLOSED.");
     };
 
     mySock.onopen = function (evt) {
+      mySock.isClosed = false;
+      mySock.isAlive = true;
       mySock.send(JSON.stringify(loginRequest));
     };
 
@@ -227,7 +246,7 @@ function buildNames(names: string, list: string[]): string {
 }
 
 function AddEquitiesToStream(equityNames: string) {
-  if (isWsOpen) {
+  if (IsStreamingQuotes()) {
     const keys = buildNames(equityNames, currentlyStreamedEquityNames);
     const requestQuotes = {
       requests: [
@@ -253,37 +272,8 @@ function AddEquitiesToStream(equityNames: string) {
   }
 }
 
-function resetStreamingIfFlatLining() {
-  if (IsStreamingQuotes()) {
-    const now = new Date();
-    const settings = AppSettings.findOne(Constants.appSettingsId);
-    const vwapEquity = settings?.vwapEquity ?? 'SPY';
-    const lastQuote = LatestQuote(vwapEquity);
-    if (lastQuote) {
-      const diff = now.getTime() - lastQuote.when.getTime();
-      if (diff > 5000) { // If no data for 5 seconds, reset streaming.
-        console.error('Resetting streaming due to flat lining.');
-        PrepareStreaming()
-          .then(() => {
-            console.error(`Reset Streaming due to flat lining.`);
-          })
-          .catch((err) => {
-            console.error(`Error resetting streaming due to flat lining: ${err}`);
-          });
-      }
-    }
-  }
-  else {
-    if (streamingCheckIntervalHandle) {
-      // If not streaming and there is a timer, clear it.
-      Meteor.clearInterval(streamingCheckIntervalHandle);
-      streamingCheckIntervalHandle = null;
-    }
-  }
-}
-
 function AddOptionsToStream(optionNames: string) {
-  if (isWsOpen) {
+  if (IsStreamingQuotes()) {
     const keys = buildNames(optionNames, currentlyStreamedOptionsNames);
     const requestOptionQuotes = {
       requests: [
@@ -408,8 +398,8 @@ function CalculateVWAPSlopeAngle(): number {
   return 0;
 }
 
-function IsStreamingQuotes() {
-  return isWsOpen;
+function IsStreamingQuotes(): boolean {
+  return mySock && mySock.isClosed === false;
 }
 
 function GetStreamingOptionsPrice(tradeSettings: ITradeSettings) {
