@@ -1,6 +1,6 @@
 interface IUserSettings {
   _id: string,
-  accountNumber?: number,
+  accountNumber?: string,
   email?: string,
   phone?: string,
   accountIsActive?: boolean,

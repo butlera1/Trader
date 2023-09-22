@@ -639,8 +639,8 @@ async function ExecuteTrade(tradeSettings: ITradeSettings, forceTheTrade = false
     LogData(null, msg, new Error(msg));
     return;
   }
-  const userSettings = UserSettings.findOne({_id: tradeSettings.userId});
-  if (!userSettings?.isAccountActive) {
+  const userSettings: IUserSettings = UserSettings.findOne({_id: tradeSettings.userId});
+  if (!userSettings?.accountIsActive) {
     LogData(tradeSettings, `ExecuteTrade called for ${tradeSettings.userName} but account is not active.`, null);
     return;
   }
@@ -668,7 +668,6 @@ async function ExecuteTrade(tradeSettings: ITradeSettings, forceTheTrade = false
   if (forceTheTrade || performTheTrade) {
     try {
       // Make sure we have latest userSettings for this new trade about to happen.
-      const userSettings = UserSettings.findOne({_id: tradeSettings.userId});
       tradeSettings.accountNumber = userSettings.accountNumber;
       tradeSettings.phone = userSettings.phone;
       tradeSettings.emailAddress = userSettings.email;
