@@ -13,9 +13,21 @@ function calculateGainGraphLine(tradeSettings, price) {
 
 function GraphTrade({liveTrade}: { liveTrade: ITradeSettings }) {
   let initialTime = liveTrade.monitoredPrices[0] ? dayjs(liveTrade.monitoredPrices[0].whenNY) : dayjs();
-  const lastPrice = liveTrade.monitoredPrices[liveTrade.monitoredPrices.length - 1];
-  const vwapMax = lastPrice?.maxVWAPMark ?? 0 + 1;
-  const vwapMin = lastPrice?.minVWAPMark ?? 0 - 1;
+  let vwapMin = Number.MAX_VALUE;
+  let vwapMax = Number.MIN_VALUE;
+  let angleMin = Number.MAX_VALUE;
+  let angleMax = Number.MIN_VALUE;
+
+  liveTrade.monitoredPrices.forEach((price) => {
+    vwapMin = Math.min(vwapMin, price.vwapMark, price.vwap);
+    vwapMax = Math.max(vwapMax, price.vwapMark, price.vwap);
+    angleMin = Math.min(angleMin, price.vwapSlopeAngle);
+    angleMax = Math.max(angleMax, price.vwapSlopeAngle);
+  });
+
+  const maxAngle = Math.floor(Math.max(Math.abs(angleMin), Math.abs(angleMax), 1)) + 1;
+
+  console.log(`Angle min: ${angleMin}, max: ${angleMax}, total max ${maxAngle}`);
 
   const getTime = (price: IPrice) => {
     return dayjs(price.whenNY).diff(initialTime, 'minute', true).toFixed(1);
@@ -58,7 +70,7 @@ function GraphTrade({liveTrade}: { liveTrade: ITradeSettings }) {
           fontSize={14}
         />
       </YAxis>
-      <YAxis width={100} yAxisId="right2" orientation="right" tick={{fontSize: 10,}} domain={[-3, 3]}>
+      <YAxis width={100} yAxisId="right2" orientation="right" tick={{fontSize: 10,}} domain={[-maxAngle, maxAngle]}>
         <Label
           value={`VWAP Slope Angle`}
           angle={-90}
