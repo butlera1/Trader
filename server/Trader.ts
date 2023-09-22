@@ -107,11 +107,12 @@ async function GetSmartOptionsPrice(tradeSettings: ITradeSettings): Promise<IPri
   return lastSample;
 }
 
+/**
+ * Saves the daily trades as a single daily record. Sums up the total gain/loss for the day as well.
+ * Does not inclulde pre-running trades in the summing.
+ * @param tradeSettings
+ */
 function saveTradeToHistory(tradeSettings: ITradeSettings) {
-  // if (tradeSettings.isPrerunningVWAPSlope || tradeSettings.isPrerunning || tradeSettings.isMocked) {
-  //   // Don't record any pre-running trades or mocked trades.
-  //   return;
-  // }
   const dateText = dayjs().format('YYYY-MM-DD');
   const {userId, accountNumber} = tradeSettings;
   const summary: IDailyTradeSummary = DailyTradeSummaries.findOne({userId, accountNumber, dateText}) || {
@@ -123,7 +124,10 @@ function saveTradeToHistory(tradeSettings: ITradeSettings) {
   };
   const id = summary._id || Random.id();
   delete summary._id;
-  summary.gainLoss += tradeSettings.gainLoss;
+  if (!tradeSettings.isPrerunningVWAPSlope && !tradeSettings.isPrerunning) {
+    // Don't record any pre-running trades.
+    summary.gainLoss += tradeSettings.gainLoss;
+  }
   summary.tradeIds.push(tradeSettings._id);
   const userSettings: IUserSettings = UserSettings.findOne({_id: userId});
   if (summary.gainLoss < -Math.abs(userSettings.maxAllowedDailyLoss)) {
