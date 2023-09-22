@@ -46,8 +46,8 @@ function GetNewYorkTimeAsText(date: Date) {
 
 function InTradeHours() {
   const now = dayjs();
-  const open = GetNewYorkTimeAt(9, 30);
-  const close = GetNewYorkTimeAt(16, 0);
+  const open = GetNewYorkTimeAt(9, 15);
+  const close = GetNewYorkTimeAt(16, 15);
   return now.isAfter(open) && now.isBefore(close);
 }
 
