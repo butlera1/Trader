@@ -1,20 +1,36 @@
-import React, {useState} from 'react';
+import React, {useEffect, useState} from 'react';
 // @ts-ignore
 import {Meteor} from 'meteor/meteor';
 import {Alert, Button, Checkbox, Input, InputNumber, Row, Space, Spin} from 'antd';
 import {UserOutlined} from '@ant-design/icons';
 import Constants from '../Constants';
 import {CheckboxChangeEvent} from 'antd/lib/checkbox';
-import IUserSettings from '../Interfaces/IUserSettings';
 
 let timeoutHandle = null;
 
-function UserSettings({userSettings}: { userSettings: IUserSettings }) {
+function UserSettings() {
+  const [userSettings, setUserSettings] = useState(null);
   const [errorText, setErrorText] = useState(null);
+
+  function getLatestUserSettings() {
+    Meteor.call('GetUserSettings', (error, userSettingsRecord) => {
+      if (error) {
+        alert(`Failed to get user settings. Error: ${error}`);
+        return;
+      }
+      setUserSettings({...userSettingsRecord});
+    });
+  }
+
+  useEffect(getLatestUserSettings, []);
+
   const UsingPriceText = Constants.usingMarkPrice ? 'Mark' : 'Bid/Ask';
+
+  const warningNotActive = userSettings?.accountIsActive === false ? ' (Warning: Account is not active)' : '';
 
   const onChange = (propertyName, value) => {
     userSettings[propertyName] = value;
+    setUserSettings({...userSettings}); // force update
     if (propertyName === 'accountIsActive' && value === false) {
       Meteor.call('EmergencyCloseAllTrades', (error) => {
         if (error) {
@@ -34,6 +50,8 @@ function UserSettings({userSettings}: { userSettings: IUserSettings }) {
       Meteor.call('SaveUserSettings', userSettings, (error) => {
         if (error) {
           setErrorText(error.toString());
+        } else {
+          setErrorText(null);
         }
       });
     }, 1000);
@@ -72,6 +90,7 @@ function UserSettings({userSettings}: { userSettings: IUserSettings }) {
             <Checkbox
               onChange={(e: CheckboxChangeEvent) => onChange('accountIsActive', e.target.checked)}
               defaultChecked={userSettings.accountIsActive ?? false}
+              checked={userSettings.accountIsActive ?? false}
             >
               Account is Active
             </Checkbox>
@@ -91,7 +110,7 @@ function UserSettings({userSettings}: { userSettings: IUserSettings }) {
               style={{width: '270px'}}
               onChange={(value) => onChange('maxAllowedDailyLoss', value)}
             />
-
+            {userSettings.accountIsActive === false ? <h2 style={{color: 'red'}}>{warningNotActive}</h2> : null}
           </Space>
         </Row>
         :
