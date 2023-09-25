@@ -40,6 +40,7 @@ function StopDataStreaming() {
   }
   if (mySock) {
     mySock.close();
+    mySock = null;
   }
 }
 
@@ -131,10 +132,6 @@ async function waitForLogin() {
   });
 }
 
-function heartbeat() {
-  mySock.isAlive = true;
-}
-
 let pingIntervalHandle = null;
 
 async function PrepareStreaming() {
@@ -182,18 +179,24 @@ async function PrepareStreaming() {
     };
 
     mySock = new WebSocket("wss://" + userPrincipalsResponse.streamerInfo.streamerSocketUrl + "/ws");
-    mySock.isAlive = false;
+    mySock.isAlive = true;
 
-    mySock.on('pong', heartbeat);
+    mySock.on('pong', () : boolean => mySock.isAlive = true);
 
     if (pingIntervalHandle) {
       Meteor.clearInterval(pingIntervalHandle);
     }
     pingIntervalHandle = Meteor.setInterval(function ping() {
       if (mySock.isAlive === false) {
-        console.error("Streaming Ping Failed. Restarting steaming...");
-        PrepareStreaming();
-        return;
+        if (InTradeHours()) {
+          console.error("Streaming Ping Failed. In trading hours. Restarting streaming...");
+          PrepareStreaming();
+          return;
+        } else {
+          console.error("Attempting Streaming outside trade hours, stopping streaming...");
+          StopDataStreaming();
+          return;
+        }
       }
       mySock.isAlive = false;
       mySock.ping();
@@ -201,6 +204,7 @@ async function PrepareStreaming() {
 
 
     mySock.onmessage = Meteor.bindEnvironment(function (evt) {
+      mySock.isAlive = true;
       const data = JSON.parse(evt.data);
       if (data?.response && data.response[0]?.content?.code === 0 && data.response[0]?.command === "LOGIN") {
         console.log("Streaming Logged In");
@@ -208,23 +212,29 @@ async function PrepareStreaming() {
         const settings = AppSettings.findOne(Constants.appSettingsId);
         const vwapEquity = settings?.vwapEquity ?? 'SPY';
         AddEquitiesToStream(vwapEquity);
+        return;
       }
       if (data && _.isArray(data.data)) {
         data.data.forEach((item) => {
           recordQuoteData(item);
         });
+        return;
       }
+      if (data && data.notify && data.notify[0]?.heartbeat) {
+        return;
+      }
+      if (data && data.response && data.response[0]?.content?.code === 0 && data.response[0]?.command === "SUBS") {
+        return;
+      }
+      console.error("Streaming Message Unknown: " + evt.data);
     });
 
     mySock.onclose = function (evt) {
       mySock.isAlive = false;
-      mySock.isClosed = true;
       console.log("Streaming WebSocket CLOSED.");
     };
 
     mySock.onopen = function (evt) {
-      mySock.isClosed = false;
-      mySock.isAlive = true;
       mySock.send(JSON.stringify(loginRequest));
     };
 
@@ -404,7 +414,7 @@ function CalculateVWAPSlopeAngle(): number {
 }
 
 function IsStreamingQuotes(): boolean {
-  return mySock && mySock.isClosed === false;
+  return mySock && mySock.isAlive;
 }
 
 function GetStreamingOptionsPrice(tradeSettings: ITradeSettings) {

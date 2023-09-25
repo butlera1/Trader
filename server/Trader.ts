@@ -739,12 +739,13 @@ async function QueueUsersTradesForTheDay(user) {
     return;
   }
   LogData(null, `Market is open today so queueing ${user.username}'s trades.`);
-  const {accountNumber, isAccountActive} = UserSettings.findOne(user._id) || {};
+  const userSettings : IUserSettings = UserSettings.findOne(user._id) ?? {};
+  const {accountNumber, accountIsActive} = userSettings;
   if (!accountNumber || accountNumber === 'None') {
     LogData(null, `User ${user.username} has no account number so skipping this user.`, null);
     return;
   }
-  if (!isAccountActive) {
+  if (!accountIsActive) {
     LogData(null, `User ${user.username} has an inactive account so skipping this user.`, null);
     return;
   }
