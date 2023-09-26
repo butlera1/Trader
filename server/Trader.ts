@@ -15,7 +15,12 @@ import dayjs from 'dayjs';
 import duration from 'dayjs/plugin/duration';
 import isoWeek from 'dayjs/plugin/isoWeek';
 import {Trades} from './collections/Trades';
-import ITradeSettings, {BadDefaultIPrice, IPrice, whyClosedEnum} from '../imports/Interfaces/ITradeSettings';
+import ITradeSettings, {
+  BadDefaultIPrice,
+  DefaultIPrice,
+  IPrice,
+  whyClosedEnum
+} from '../imports/Interfaces/ITradeSettings';
 import {TradeSettings} from './collections/TradeSettings';
 import {UserSettings} from './collections/UserSettings';
 import {DailyTradeSummaries, IDailyTradeSummary} from './collections/DailyTradeSummaries';
@@ -411,6 +416,20 @@ function getAveragePrice(samples: IPrice[], desiredNumberOfSamples: number) {
   return sum / numberOfSamples;
 }
 
+function calculateVariousValues(liveTrade: ITradeSettings, currentSample: IPrice) {
+  currentSample.gain = CalculateGain(liveTrade, currentSample.price);
+  currentSample.vwap = CalculateVWAP();
+  currentSample.maxVWAPMark = GetVWAPMarkMax();
+  currentSample.minVWAPMark = GetVWAPMarkMin();
+  currentSample.vwapMark = GetVWAPMark();
+  currentSample.vwapSlopeAngle = GetVWAPSlopeAngle();
+  liveTrade.monitoredPrices.push(currentSample); // Update the local copy.
+  currentSample.slope1 = CalculateUnderlyingPriceAverageSlope(liveTrade.slope1Samples, liveTrade.monitoredPrices);
+  currentSample.slope2 = CalculateUnderlyingPriceAverageSlope(liveTrade.slope2Samples, liveTrade.monitoredPrices);
+  // Record price value for historical reference and charting.
+  Trades.update(liveTrade._id, {$addToSet: {monitoredPrices: currentSample}});
+}
+
 function MonitorTradeToCloseItOut(liveTrade: ITradeSettings) {
   const localEarlyExitTime = GetNewYorkTimeAt(liveTrade.exitHour, liveTrade.exitMinute);
   const monitorMethod = async () => {
@@ -429,17 +448,7 @@ function MonitorTradeToCloseItOut(liveTrade: ITradeSettings) {
         Meteor.setTimeout(monitorMethod, oneSeconds);
         return; // Try again on next interval timeout.
       }
-      currentSamplePrice.gain = CalculateGain(liveTrade, currentSamplePrice.price);
-      currentSamplePrice.vwap = CalculateVWAP();
-      currentSamplePrice.maxVWAPMark = GetVWAPMarkMax();
-      currentSamplePrice.minVWAPMark = GetVWAPMarkMin();
-      currentSamplePrice.vwapMark = GetVWAPMark();
-      currentSamplePrice.vwapSlopeAngle = GetVWAPSlopeAngle();
-      liveTrade.monitoredPrices.push(currentSamplePrice); // Update the local copy.
-      currentSamplePrice.slope1 = CalculateUnderlyingPriceAverageSlope(liveTrade.slope1Samples, liveTrade.monitoredPrices);
-      currentSamplePrice.slope2 = CalculateUnderlyingPriceAverageSlope(liveTrade.slope2Samples, liveTrade.monitoredPrices);
-      // Record price value for historical reference and charting.
-      Trades.update(liveTrade._id, {$addToSet: {monitoredPrices: currentSamplePrice}});
+      calculateVariousValues(liveTrade, currentSamplePrice);
       const localNow = dayjs();
       const isEndOfDay = localEarlyExitTime.isBefore(localNow);
       const absAveragePrice = Math.abs(getAveragePrice(liveTrade.monitoredPrices, 2));
@@ -617,6 +626,7 @@ async function PlaceOpeningOrderAndMonitorToClose(tradeSettings: ITradeSettings)
       tradeSettings.openingShortOnlyPrice = priceResults.shortOnlyPrice;
     }
   }
+
   tradeSettings.originalTradeSettingsId = tradeSettings._id;
   delete tradeSettings._id; // Remove the old _id for so when storing into Trades collection, a new _id is created.
   tradeSettings.whenOpened = new Date();
@@ -625,6 +635,14 @@ async function PlaceOpeningOrderAndMonitorToClose(tradeSettings: ITradeSettings)
   // Record this opening order data as a new active trade.
   tradeSettings._id = Trades.insert({...tradeSettings});
   LogData(tradeSettings, `DEBUG: Just inserted new Trades: ${tradeSettings._id} for ${tradeSettings.userName}`);
+  const currentSample: IPrice = {
+    ...DefaultIPrice,
+    price: tradeSettings.openingPrice,
+    whenNY: tradeSettings.whenOpened,
+    underlyingPrice: tradeSettings.openingUnderlyingPrice,
+  };
+  calculateVariousValues(tradeSettings, currentSample);
+
   if (_.isFinite(tradeSettings.openingPrice)) {
     MonitorTradeToCloseItOut(tradeSettings);
   } else {
@@ -745,7 +763,7 @@ async function QueueUsersTradesForTheDay(user) {
     return;
   }
   LogData(null, `Market is open today so queueing ${user.username}'s trades.`);
-  const userSettings : IUserSettings = UserSettings.findOne(user._id) ?? {};
+  const userSettings: IUserSettings = UserSettings.findOne(user._id) ?? {};
   const {accountNumber, accountIsActive} = userSettings;
   if (!accountNumber || accountNumber === 'None') {
     LogData(null, `User ${user.username} has no account number so skipping this user.`, null);

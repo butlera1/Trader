@@ -40,6 +40,25 @@ interface IPrice {
   vwapSlopeAngle?: number,
 }
 
+const DefaultIPrice = {
+  price: 0,
+  whenNY: new Date(),
+  gain: 0,
+  underlyingPrice: 0,
+  shortStraddlePrice: 0,
+  longStraddlePrice: 0,
+  extrinsicShort: 0,
+  extrinsicLong: 0,
+  slope1: 0,
+  slope2: 0,
+  underlyingSlopeAngle: 0,
+  vwap: 0,
+  maxVWAPMark: 0,
+  minVWAPMark: 0,
+  vwapMark: 0,
+  vwapSlopeAngle: 0,
+};
+
 const BadDefaultIPrice = {
   price: Number.NaN,
   whenNY: undefined,
@@ -118,6 +137,7 @@ interface ITradeSettings {
   slope1Samples?: number,
   slope2Samples?: number,
   isCopiedOpenPriceToClosePrice?: boolean,
+  openingUnderlyingPrice?: number,
 }
 
 const DefaultIronCondorLegsSettings = [
@@ -252,4 +272,5 @@ export {
   DefaultIronCondorLegsSettings,
   DefaultCalendarSpreadLegsSettings,
   BadDefaultIPrice,
+  DefaultIPrice,
 };

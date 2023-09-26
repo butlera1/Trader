@@ -473,6 +473,7 @@ export function CreateOpenAndCloseOrders(chains, tradeSettings) {
   let csvSymbols = ``;
   let openingPrice = 0.0;
   let shortOnlyPrice = 0.0;
+  tradeSettings.openingUnderlyingPrice = chains?.underlying?.mark ?? 0.0;
   // For each leg, find the closest option based on Delta
   tradeSettings.legs.forEach((leg) => {
     const {putsChain, callsChain, dteValue} = getOptionChainsAtOrNearDTE(chains, leg.dte);
