@@ -161,6 +161,12 @@ async function CloseTrade(tradeSettings: ITradeSettings, currentPrice: number) {
       tradeSettings.closingPrice = castPriceResults?.orderPrice ?? Number.NaN;
     }
   }
+  if (Number.isNaN(tradeSettings.closingPrice)) {
+    const msg = `CloseTrade ERROR. Closing price === NA. Setting it to openingPrice!!!`;
+    LogData(tradeSettings, msg, new Meteor.Error('FailedCloseTrade', msg));
+    tradeSettings.closingPrice = openingPrice;
+    tradeSettings.isCopiedOpenPriceToClosePrice = true;
+  }
   tradeSettings.whenClosed = new Date();
   tradeSettings.gainLoss = CalculateGain(tradeSettings, tradeSettings.closingPrice);
   Trades.update(tradeSettings._id, {

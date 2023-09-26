@@ -36,11 +36,22 @@ function setStartOfDay(date: Dayjs) {
 
 function TradeResultsView() {
   const [isRealTradesOnly, setIsRealTradesOnly] = React.useState(false);
+  const [isPrerunTradesOnly, setIsPrerunTradesOnly] = React.useState(false);
   const [filteredRecords, setFilteredRecords] = React.useState([]);
   const [startDate, setStartDate] = React.useState(setStartOfDay(dayjs()));
   const [endDate, setEndDate] = React.useState(setEndOfDay(dayjs()));
   const [selectedNames, setSelectedNames] = React.useState([]);
   const [tradeSettingNames, setTradeSettingNames] = React.useState([]);
+  const [isGraphPrerunningTrades, setIsGraphPrerunningTrades] = React.useState(false);
+  const [warningText, setWarningText] = React.useState('');
+
+  function cleanupTrade(trade: ITradeSettings) {
+    CalculateLimitsAndFees(trade);
+    if (Number.isNaN(trade.closingPrice)) {
+      trade.closingPrice = trade.openingPrice;
+      setWarningText(`Warning: some trades had a NaN closing price so we used the opening price.`);
+    }
+  }
 
   useEffect(() => {
     Meteor.call('GetTradeSettingNames', (error, names) => {
@@ -54,10 +65,15 @@ function TradeResultsView() {
 
   useTracker(() => {
     const query = {whyClosed: {$exists: true}};
+
     if (isRealTradesOnly) {
       query['isMocked'] = false;
+    }
+    if (isPrerunTradesOnly) {
+      query['$or'] = [{isPrerunning: true}, {isPrerunningVWAPSlope: true}];
+      setIsGraphPrerunningTrades(true);
     } else {
-      delete query['isMocked'];
+      setIsGraphPrerunningTrades(false);
     }
     if (startDate) {
       query['whenOpened'] = {$gte: startDate.toDate()};
@@ -71,9 +87,11 @@ function TradeResultsView() {
     const opts = {sort: sortFunction};
     const records: ITradeSettings[] = Trades.find(query, opts).fetch();
     // Recalculate the limits since we've changed that approach several times.
-    records.forEach(CalculateLimitsAndFees);
+    setWarningText('');
+    records.forEach(cleanupTrade);
+
     setFilteredRecords([...records]);
-  }, [Trades, isRealTradesOnly, startDate, endDate, selectedNames]);
+  }, [Trades, isRealTradesOnly, startDate, endDate, selectedNames, isPrerunTradesOnly]);
 
   const onStartDateChange = (date: Dayjs) => {
     const value = date ? date : dayjs();
@@ -109,11 +127,21 @@ function TradeResultsView() {
             checked={isRealTradesOnly}
           />
         </h2>
+        <h2>
+          Prerun Trades Only:
+          <Checkbox
+            size={'large'}
+            style={{marginLeft: '20px'}}
+            onChange={(e: CheckboxChangeEvent) => setIsPrerunTradesOnly(e.target.checked)}
+            checked={isPrerunTradesOnly}
+          />
+        </h2>
         <h2>Start Date: <DatePicker onChange={onStartDateChange} defaultValue={startDate}/></h2>
         <h2>End Date: <DatePicker onChange={onEndDateChange} defaultValue={endDate}/></h2>
         <h2>Which Strategies: <NamesSelector names={tradeSettingNames}/></h2>
       </Space>
-      <ChartResults records={filteredRecords}/>
+      <ChartResults records={filteredRecords} isGraphPrerunningTrades={isGraphPrerunningTrades}/>
+      <h2 style={{color:'red'}}>{warningText}</h2>
       <Divider/>
       <TradeResultsTable records={[...filteredRecords].reverse()}/>
     </Space>

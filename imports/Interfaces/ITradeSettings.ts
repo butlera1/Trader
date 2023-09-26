@@ -117,6 +117,7 @@ interface ITradeSettings {
   totalFees?: number,
   slope1Samples?: number,
   slope2Samples?: number,
+  isCopiedOpenPriceToClosePrice?: boolean,
 }
 
 const DefaultIronCondorLegsSettings = [
@@ -233,10 +234,10 @@ function GetDescription(tradeSettings: ITradeSettings) {
   }
   let part5 = tradeSettings.isMocked ? 'Mocked' : '';
   if (tradeSettings.isPrerunning) {
-    part5 = `Mocked for Prerunning`;
+    part5 = `Mocked for Prerun`;
   }
   if (tradeSettings.isPrerunningVWAPSlope) {
-    part5 = `Mocked for Prerunning VWAP Slope`;
+    part5 = `Mocked for Prerun VWAP Slope`;
   }
   return `${part0}${part1}\n${part2}\n${part3}${part4}\n${part5}`;
 }

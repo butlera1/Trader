@@ -39,7 +39,7 @@ function Totals({numberOfTrades, winnings, losses, totalGains}: ITotalsProps){
   return <h2 style={{color}}>{numberOfTrades} trades, Wins: ${winnings.toFixed(2)} - Losses: ${Math.abs(losses).toFixed(2)} = {ColoredStuff}</h2>
 }
 
-function ChartResults({records}: { records: ITradeSettings[] }) {
+function ChartResults({records, isGraphPrerunningTrades}: { records: ITradeSettings[], isGraphPrerunningTrades: boolean }) {
   const sumResults: ISumResults[] = [];
   let wins = 0.0;
   let losses = 0.0;
@@ -52,7 +52,7 @@ function ChartResults({records}: { records: ITradeSettings[] }) {
   let sumLosses = 0;
 
   const resultSum = records.reduce((sum, record) => {
-    if (!record.isPrerunning && !record.isPrerunningVWAPSlope) {
+    if ((!record.isPrerunning && !record.isPrerunningVWAPSlope) || isGraphPrerunningTrades) {
       const description = getDescription(record);
       CleanupGainLossWhenFailedClosingTrade(record);
       const actualGainLoss = record.gainLoss - CalculateTotalFees(record);
