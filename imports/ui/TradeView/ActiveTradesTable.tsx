@@ -49,10 +49,11 @@ const columns: ColumnsType<ITradeSettings> = [
     width: 170,
     render: (_, record) => {
       let currentPrice = Number.NaN;
+      let priceDiff = 0;
       if (record.monitoredPrices?.length > 0) {
         currentPrice = record.monitoredPrices[record.monitoredPrices.length - 1].price;
+        priceDiff = record.monitoredPrices[record.monitoredPrices.length - 1].gain / 100;
       }
-      const priceDiff = record.openingPrice > 0 ? currentPrice - record.openingPrice  : -(currentPrice + record.openingPrice);
       return (
         <Space direction="vertical">
           <span key={0}>{GetNewYorkTimeAsText(record.whenOpened)}</span>

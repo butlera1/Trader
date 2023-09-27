@@ -26,7 +26,7 @@ import {WebApp} from 'meteor/webapp';
 import {Trades} from './collections/Trades';
 import {LogData} from './collections/Logs';
 import ScheduleStartOfDayWork from './ScheduleStartOfDayWork';
-import {AppSettings} from './collections/AppSettings';
+import {AppSettings, GetAppSettings, SetAppSettings} from './collections/AppSettings';
 import Constants from '../imports/Constants';
 
 import dayjs from 'dayjs';
@@ -36,6 +36,7 @@ import timezone from 'dayjs/plugin/timezone';
 import './TDAApi/StreamEquities';
 import ScheduleEndOfDayWork from './ScheduleEndOfDayWork';
 import {GetSlopeAngleOfSymbol, LatestQuote, PrepareStreaming} from './TDAApi/StreamEquities';
+import {DefaultAppSettings} from '../imports/Interfaces/IAppSettings';
 
 dayjs.extend(utc);
 dayjs.extend(timezone);
@@ -86,6 +87,8 @@ Meteor.methods({
     EmergencyCloseAllTrades,
     GetSlopeAngleOfSymbol,
     LatestQuote,
+    GetAppSettings,
+    SetAppSettings,
   }
 );
 
@@ -93,16 +96,7 @@ console.log(`Current local time is ${new Date()}.`);
 
 // Define the AppSettings record if not there already. Let DB record valus override defaults.
 const settings = {
-  startHourNY: 9,
-  startMinuteNY: 29,
-  endOfDayHourNY: 16,
-  endOfDayMinuteNY: 15,
-  maxPublishedTrades: 50,
-  slopeSamplesToAverage: 5,
-  totalSlopeSamples: 10,
-  vwapNumberOfSamples: 60,
-  vwapEquity: 'SPY',
-  vwapSlopeSamplesRequired: 10,
+  ...DefaultAppSettings,
   ...AppSettings.findOne(Constants.appSettingsId),
 };
 delete settings._id;

@@ -637,7 +637,7 @@ async function PlaceOpeningOrderAndMonitorToClose(tradeSettings: ITradeSettings)
   LogData(tradeSettings, `DEBUG: Just inserted new Trades: ${tradeSettings._id} for ${tradeSettings.userName}`);
   const currentSample: IPrice = {
     ...DefaultIPrice,
-    price: tradeSettings.openingPrice,
+    price: -tradeSettings.openingPrice, // Negative for monitoring to close the trade.
     whenNY: tradeSettings.whenOpened,
     underlyingPrice: tradeSettings.openingUnderlyingPrice,
   };

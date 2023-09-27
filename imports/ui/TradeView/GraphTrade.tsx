@@ -27,8 +27,6 @@ function GraphTrade({liveTrade}: { liveTrade: ITradeSettings }) {
 
   const maxAngle = Math.floor(Math.max(Math.abs(angleMin), Math.abs(angleMax), 1)) + 1;
 
-  console.log(`Angle min: ${angleMin}, max: ${angleMax}, total max ${maxAngle}`);
-
   const getTime = (price: IPrice) => {
     return dayjs(price.whenNY).diff(initialTime, 'minute', true).toFixed(1);
   };
@@ -52,7 +50,7 @@ function GraphTrade({liveTrade}: { liveTrade: ITradeSettings }) {
       data={monitoredPrices}
     >
       <CartesianGrid strokeDasharray="3 3"/>
-      <YAxis width={70} yAxisId="left" tick={{fontSize: 10}} >
+      <YAxis width={70} yAxisId="left" tick={{fontSize: 10}}  domain={[lossLine-100, gainLine+100]}>
         <Label
           value={`Gain/Loss`}
           angle={-90}
