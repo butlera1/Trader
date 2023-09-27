@@ -1,6 +1,4 @@
 import React from 'react';
-// @ts-ignore
-import {useTracker} from 'meteor/react-meteor-data';
 import {CartesianGrid, Label, Legend, Line, LineChart, Tooltip, XAxis, YAxis} from 'recharts';
 import ITradeSettings, {IPrice} from '../../Interfaces/ITradeSettings';
 import dayjs from 'dayjs';
@@ -37,6 +35,8 @@ function GraphTrade({liveTrade}: { liveTrade: ITradeSettings }) {
 
   let gainLine = calculateGainGraphLine(liveTrade, liveTrade.gainLimit);
   let lossLine = calculateGainGraphLine(liveTrade, liveTrade.lossLimit);
+  let maxLossRange = Math.min(lossLine, -gainLine) - 100;
+  let maxGainRange = Math.max(gainLine, -lossLine) + 100; // Make the chart symmetrical around zero.
   const monitoredPrices = liveTrade.monitoredPrices || [];
   let initialShortStraddlePrice = Math.abs(monitoredPrices[0]?.shortStraddlePrice ?? 0);
 
@@ -50,7 +50,7 @@ function GraphTrade({liveTrade}: { liveTrade: ITradeSettings }) {
       data={monitoredPrices}
     >
       <CartesianGrid strokeDasharray="3 3"/>
-      <YAxis width={70} yAxisId="left" tick={{fontSize: 10}}  domain={[lossLine-100, gainLine+100]}>
+      <YAxis width={70} yAxisId="left" tick={{fontSize: 10}} domain={[maxLossRange, maxGainRange]} allowDecimals={false} ticks={[maxLossRange, 0, maxGainRange]}>
         <Label
           value={`Gain/Loss`}
           angle={-90}
@@ -59,7 +59,7 @@ function GraphTrade({liveTrade}: { liveTrade: ITradeSettings }) {
           fontSize={14}
         />
       </YAxis>
-      <YAxis width={120} yAxisId="right" orientation="right" tick={{fontSize: 10,}} domain={[vwapMin, vwapMax]}>
+      <YAxis width={120} yAxisId="right" orientation="right" tick={{fontSize: 10,}} domain={[vwapMin, vwapMax]} allowDecimals={false}>
         <Label
           value={`Underlying Mark`}
           angle={-90}
@@ -68,7 +68,7 @@ function GraphTrade({liveTrade}: { liveTrade: ITradeSettings }) {
           fontSize={14}
         />
       </YAxis>
-      <YAxis width={100} yAxisId="right2" orientation="right" tick={{fontSize: 10,}} domain={[-maxAngle, maxAngle]}>
+      <YAxis width={100} yAxisId="right2" orientation="right" tick={{fontSize: 10,}} domain={[-maxAngle, maxAngle]} allowDecimals={false}>
         <Label
           value={`VWAP Slope Angle`}
           angle={-90}
