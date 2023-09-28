@@ -40,7 +40,6 @@ function StopDataStreaming() {
   }
   if (mySock) {
     mySock.close();
-    mySock = null;
   }
 }
 
@@ -187,6 +186,10 @@ async function PrepareStreaming() {
       Meteor.clearInterval(pingIntervalHandle);
     }
     pingIntervalHandle = Meteor.setInterval(function ping() {
+      if (!mySock) {
+        Meteor.clearInterval(pingIntervalHandle);
+        return;
+      }
       if (mySock.isAlive === false) {
         if (InTradeHours()) {
           console.error("Streaming Ping Failed. In trading hours. Restarting streaming...");
@@ -231,6 +234,7 @@ async function PrepareStreaming() {
 
     mySock.onclose = function (evt) {
       mySock.isAlive = false;
+      Meteor.clearInterval(pingIntervalHandle);
       console.log("Streaming WebSocket CLOSED.");
     };
 
