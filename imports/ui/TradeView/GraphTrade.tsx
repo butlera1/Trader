@@ -11,19 +11,21 @@ function calculateGainGraphLine(tradeSettings, price) {
 
 function GraphTrade({liveTrade}: { liveTrade: ITradeSettings }) {
   let initialTime = liveTrade.monitoredPrices[0] ? dayjs(liveTrade.monitoredPrices[0].whenNY) : dayjs();
-  let vwapMin = Number.MAX_VALUE;
-  let vwapMax = Number.MIN_VALUE;
-  let angleMin = Number.MAX_VALUE;
-  let angleMax = Number.MIN_VALUE;
+  let underlyingMin = Number.MAX_VALUE;
+  let underlyingMax = Number.MIN_VALUE;
+  let vixMarkMin = Number.MAX_VALUE;
+  let vixMarkMax = Number.MIN_VALUE;
+  let vixSlopeMin = Number.MAX_VALUE;
+  let vixSlopeMax = Number.MIN_VALUE;
 
   liveTrade.monitoredPrices.forEach((price) => {
-    vwapMin = Math.min(vwapMin, price.vwapMark, price.vwap);
-    vwapMax = Math.max(vwapMax, price.vwapMark, price.vwap);
-    angleMin = Math.min(angleMin, price.vwapSlopeAngle);
-    angleMax = Math.max(angleMax, price.vwapSlopeAngle);
+    underlyingMin = Math.min(underlyingMin, price.underlyingPrice);
+    underlyingMax = Math.max(underlyingMax, price.underlyingPrice);
+    vixMarkMin = Math.min(vixMarkMin, price.vixMark);
+    vixMarkMax = Math.max(vixMarkMax, price.vixMark);
+    vixSlopeMin = Math.min(vixSlopeMin, price.vixSlope);
+    vixSlopeMax = Math.max(vixSlopeMax, price.vixSlope);
   });
-
-  const maxAngle = Math.floor(Math.max(Math.abs(angleMin), Math.abs(angleMax), 1)) + 1;
 
   const getTime = (price: IPrice) => {
     return dayjs(price.whenNY).diff(initialTime, 'minute', true).toFixed(1);
@@ -59,7 +61,7 @@ function GraphTrade({liveTrade}: { liveTrade: ITradeSettings }) {
           fontSize={14}
         />
       </YAxis>
-      <YAxis width={120} yAxisId="right" orientation="right" tick={{fontSize: 10,}} domain={[vwapMin, vwapMax]} allowDecimals={false}>
+      <YAxis width={70} yAxisId="right" orientation="right" tick={{fontSize: 10,}} domain={[underlyingMin, underlyingMax]} allowDecimals={false}>
         <Label
           value={`Underlying Mark`}
           angle={-90}
@@ -68,9 +70,18 @@ function GraphTrade({liveTrade}: { liveTrade: ITradeSettings }) {
           fontSize={14}
         />
       </YAxis>
-      <YAxis width={100} yAxisId="right2" orientation="right" tick={{fontSize: 10,}} domain={[-maxAngle, maxAngle]} allowDecimals={false}>
+      <YAxis width={70} yAxisId="right2" orientation="right" tick={{fontSize: 10,}} domain={[vixMarkMin, vixMarkMax]} allowDecimals={false}>
         <Label
-          value={`VWAP Slope Angle`}
+          value={`VIX Mark`}
+          angle={-90}
+          position="outside"
+          fill="#676767"
+          fontSize={14}
+        />
+      </YAxis>
+      <YAxis width={70} yAxisId="right3" orientation="right" tick={{fontSize: 10,}} domain={[-1, 1]} allowDecimals={false}>
+        <Label
+          value={`VIX Slope`}
           angle={-90}
           position="outside"
           fill="#676767"
@@ -84,14 +95,12 @@ function GraphTrade({liveTrade}: { liveTrade: ITradeSettings }) {
             isAnimationActive={false} yAxisId="left"/>
       <Line type="monotone" strokeWidth={2} dataKey={getGain} name={'G/L'} stroke="green" dot={false}
             isAnimationActive={false} yAxisId="left"/>
-      <Line type="monotone" strokeWidth={1} dataKey={'vwapMark'} name={'Underlying'} stroke="red" dot={false}
+      <Line type="monotone" strokeWidth={1} dataKey={'underlyingPrice'} name={'Underlying'} stroke="red" dot={false}
             isAnimationActive={false} yAxisId="right"/>
-      <Line type="monotone" strokeWidth={1} dataKey="vwap" name={'VWAP'} stroke="blue" dot={false}
-            isAnimationActive={false} yAxisId="right"/>
-      <Line type="monotone" strokeWidth={1} dataKey="vwapSlopeAngle" name={'VWAP Slope Angle'} stroke="grey" dot={false}
+      <Line type="monotone" strokeWidth={1} dataKey={'vixMark'} name={'VIX'} stroke="blue" dot={false}
             isAnimationActive={false} yAxisId="right2"/>
-      {/*<Line type="monotone" dataKey={getShortStraddlePrice} name={'Short Straddle'} stroke="lightgreen" dot={false}*/}
-      {/*      isAnimationActive={false} yAxisId="left"/>*/}
+      <Line type="monotone" strokeWidth={1} dataKey={'vixSlope'} name={'VIX Slope'} stroke="grey" dot={false}
+            isAnimationActive={false} yAxisId="right3"/>
       <Line type="monotone" dataKey={() => lossLine} name={'Max Loss'} stroke="cyan" dot={false}
             isAnimationActive={false} yAxisId="left"/>
     </LineChart>

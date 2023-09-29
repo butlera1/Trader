@@ -38,6 +38,9 @@ interface IPrice {
   minVWAPMark?: number,
   vwapMark?: number,
   vwapSlopeAngle?: number,
+  vixMark?: number,
+  vixSlopeAngle?: number,
+  vixSlope?: number,
 }
 
 const DefaultIPrice = {

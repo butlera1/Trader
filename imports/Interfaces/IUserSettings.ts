@@ -5,6 +5,6 @@ interface IUserSettings {
   phone?: string,
   accountIsActive?: boolean,
   maxAllowedDailyLoss?: number,
-};
+}
 
 export default IUserSettings;

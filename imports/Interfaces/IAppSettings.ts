@@ -10,7 +10,7 @@ interface IAppSettings {
   vwapNumberOfSamples: number,
   vwapEquity: string,
   vwapSlopeSamplesRequired?: number,
-};
+}
 
 const DefaultAppSettings: IAppSettings = {
   startHourNY: 9,

@@ -198,7 +198,7 @@ function simulateTrade(tradeSettings: ITradeSettings, tradeDate: Dayjs) {
 }
 
 export async function BackTest(tradeSettings: ITradeSettings, startDate: Dayjs, endDate: Dayjs) {
-  let runDate = startDate.clone().set('hour', 9).set('minute', 31).set('second', 0);;
+  let runDate = startDate.clone().set('hour', 9).set('minute', 31).set('second', 0);
   while (runDate.isBefore(endDate) && runDate.isBefore(dayjs()) && isTradingToday(runDate)) {
     const result = simulateTrade(tradeSettings, runDate);
     runDate = moveToNextTradeDay(runDate);

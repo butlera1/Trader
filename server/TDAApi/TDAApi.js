@@ -302,6 +302,44 @@ export async function GetPriceForOptions(tradeSettings) {
   }
 }
 
+export async function GetPriceForSymbols(userId, symbols) {
+  try {
+    const token = await GetAccessToken(userId);
+    if (!token) return [];
+    const queryParams = new URLSearchParams({
+      symbol: symbols,
+      apikey: clientId,
+    });
+    const url = `https://api.tdameritrade.com/v1/marketdata/quotes?${queryParams}`;
+    const fetchOptions = {
+      method: 'GET',
+      headers: {
+        Authorization: `Bearer ${token}`,
+      }
+    };
+    const response = await fetch(url, fetchOptions);
+    if (response.status !== 200) {
+      const msg = `Error: GetPriceForSymbols fetch called failed. status: ${response.status}, ${JSON.stringify(response)}`;
+      console.error(msg);
+      return [];
+    }
+    const quotesData = await response.json();
+    const quotes = Object.values(quotesData);
+    if (quotes?.length === 1 && _.isString(quotes[0]) && quotes[0].includes('transactions per seconds restriction')) {
+      console.error(`GetPriceForSymbols: Transactions for price check are too fast per second...`);
+      return [];
+    }
+    if (!quotes || quotes?.length === 0) {
+      return [];
+    }
+    return quotes;
+  } catch (error) {
+    const msg = `TDAApi.GetPriceForSymbols: failed with: ${error}`;
+    console.error(msg);
+    return [];
+  }
+}
+
 export async function GetATMOptionChains(tradeSettings) {
   const {symbol, userId} = tradeSettings;
   const token = await GetAccessToken(userId);

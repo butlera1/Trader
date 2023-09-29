@@ -1,7 +1,5 @@
 // @ts-ignore
 import {Meteor} from 'meteor/meteor';
-// @ts-ignore
-import {Email} from 'meteor/email';
 import {
   CreateOpenAndCloseOrders,
   GetATMOptionChains,
@@ -29,7 +27,7 @@ import {Random} from 'meteor/random';
 import _ from 'lodash';
 import {LogData} from './collections/Logs';
 import {SendTextToAdmin} from './SendOutInfo';
-import mutexify from 'mutexify/promise';
+import PollingMutex from './PollingMutex';
 import {
   CalculateGain,
   CalculateLimitsAndFees,
@@ -39,8 +37,7 @@ import {
 import Semaphore from 'semaphore';
 import {CalculateVWAP, GetVWAPMark, GetVWAPMarkMax, GetVWAPMarkMin, GetVWAPSlopeAngle} from './TDAApi/StreamEquities';
 import IUserSettings from '../imports/Interfaces/IUserSettings';
-
-const lock = mutexify();
+import {GetVIXMark, GetVIXSlope, GetVIXSlopeAngle} from "./BackgroundPolling";
 
 dayjs.extend(duration);
 dayjs.extend(isoWeek);
@@ -69,7 +66,7 @@ async function GetOptionsPriceLoop(tradeSettings: ITradeSettings): Promise<IPric
   while (count < 3) {
     try {
       result = null;
-      const release = await lock();
+      const release = await PollingMutex();
       result = await GetPriceForOptions(tradeSettings);
       setTimeout(() => {
         release();
@@ -418,14 +415,10 @@ function getAveragePrice(samples: IPrice[], desiredNumberOfSamples: number) {
 
 function calculateVariousValues(liveTrade: ITradeSettings, currentSample: IPrice) {
   currentSample.gain = CalculateGain(liveTrade, currentSample.price);
-  currentSample.vwap = CalculateVWAP();
-  currentSample.maxVWAPMark = GetVWAPMarkMax();
-  currentSample.minVWAPMark = GetVWAPMarkMin();
-  currentSample.vwapMark = GetVWAPMark();
-  currentSample.vwapSlopeAngle = GetVWAPSlopeAngle();
   liveTrade.monitoredPrices.push(currentSample); // Update the local copy.
-  currentSample.slope1 = CalculateUnderlyingPriceAverageSlope(liveTrade.slope1Samples, liveTrade.monitoredPrices);
-  currentSample.slope2 = CalculateUnderlyingPriceAverageSlope(liveTrade.slope2Samples, liveTrade.monitoredPrices);
+  currentSample.vixMark = GetVIXMark();
+  currentSample.vixSlopeAngle = GetVIXSlopeAngle();
+  currentSample.vixSlope = GetVIXSlope();
   // Record price value for historical reference and charting.
   Trades.update(liveTrade._id, {$addToSet: {monitoredPrices: currentSample}});
 }

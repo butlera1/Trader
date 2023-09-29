@@ -35,8 +35,9 @@ import timezone from 'dayjs/plugin/timezone';
 
 import './TDAApi/StreamEquities';
 import ScheduleEndOfDayWork from './ScheduleEndOfDayWork';
-import {GetSlopeAngleOfSymbol, LatestQuote, PrepareStreaming} from './TDAApi/StreamEquities';
+import {GetSlopeAngleOfSymbol, LatestQuote} from './TDAApi/StreamEquities';
 import {DefaultAppSettings} from '../imports/Interfaces/IAppSettings';
+import {StartBackgroundPolling} from './BackgroundPolling';
 
 dayjs.extend(utc);
 dayjs.extend(timezone);
@@ -102,20 +103,7 @@ const settings = {
 delete settings._id;
 AppSettings.upsert(Constants.appSettingsId, settings);
 
+StartBackgroundPolling();
 ScheduleStartOfDayWork();
 ScheduleEndOfDayWork();
 CheckForAnyExistingTradesAndMonitorThem();
-
-// Turn on streaming for getting SPX data and charting it.
-PrepareStreaming()
-  .then((isOn) => {
-    if (isOn) {
-      console.log(`Streaming is on.`);
-    } else {
-      console.log(`Streaming is off.`);
-    }
-  })
-  .catch((err) => {
-    console.error(`Error preparing streaming: ${err}`);
-  });
-

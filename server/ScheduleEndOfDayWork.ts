@@ -6,6 +6,7 @@ import {AppSettings} from './collections/AppSettings';
 import Constants from '../imports/Constants';
 import {EraseAllStreamedData, StopDataStreaming} from './TDAApi/StreamEquities';
 import {GetNewYorkTimeAt} from '../imports/Utils';
+import {StopBackgroundPolling} from "./BackgroundPolling";
 
 function ScheduleEndOfDayWork() {
   try {
@@ -20,6 +21,7 @@ function ScheduleEndOfDayWork() {
     const timerHandle = Meteor.setTimeout(() => {
       try {
         Meteor.clearTimeout(timerHandle);
+        StopBackgroundPolling();
         StopDataStreaming();
         EraseAllStreamedData();
         ScheduleEndOfDayWork();
