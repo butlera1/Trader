@@ -76,21 +76,24 @@ async function poll() {
 
 function GetVIXSlope() {
   if (data['$VIX.X']) {
-    return data['$VIX.X'][data['$VIX.X'].length - 1].slope;
+    const lastIndex = data['$VIX.X'].length - 1;
+    return data['$VIX.X'][lastIndex].slope;
   }
   return 0;
 }
 
 function GetVIXMark() {
   if (data['$VIX.X']) {
-    return data['$VIX.X'][data['$VIX.X'].length - 1].mark;
+    const lastIndex = data['$VIX.X'].length - 1;
+    return data['$VIX.X'][lastIndex].mark;
   }
   return 0;
 }
 
 function GetVIXSlopeAngle() {
   if (data['$VIX.X']) {
-    return data['$VIX.X'][data['$VIX.X'].length - 1].slopeAngle;
+    const lastIndex = data['$VIX.X'].length - 1;
+    return data['$VIX.X'][lastIndex].slopeAngle;
   }
   return 0;
 }
