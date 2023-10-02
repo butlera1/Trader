@@ -15,7 +15,7 @@ import isoWeek from 'dayjs/plugin/isoWeek';
 import {Trades} from './collections/Trades';
 import ITradeSettings, {
   BadDefaultIPrice,
-  DefaultIPrice,
+  DefaultIPrice, GetDescription,
   IPrice,
   whyClosedEnum
 } from '../imports/Interfaces/ITradeSettings';
@@ -710,6 +710,7 @@ async function ExecuteTrade(tradeSettings: ITradeSettings, forceTheTrade = false
       tradeSettings.isPrerunning = isPrerun;
       tradeSettings.isPrerunningVIXSlope = isPrerunVIXSlope;
       tradeSettings.isMocked = tradeSettings.isMocked || isPrerun || isPrerunVIXSlope;
+      tradeSettings.description = GetDescription(tradeSettings);
       LogData(tradeSettings, `Trading for ${tradeSettings.userName} @ ${nowNYText} (NY) with ${JSON.stringify(tradeSettings)}`);
       // Place the opening trade and monitor it to later close it out.
       const chains = await GetATMOptionChains(tradeSettings);
