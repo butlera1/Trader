@@ -70,7 +70,7 @@ function TradeResultsView() {
       query['isMocked'] = false;
     }
     if (isPrerunTradesOnly) {
-      query['$or'] = [{isPrerunning: true}, {isPrerunningVWAPSlope: true}];
+      query['$or'] = [{isPrerunning: true}, {isPrerunningVWAPSlope: true}, {isPrerunningVIXSlope: true}];
       setIsGraphPrerunningTrades(true);
     } else {
       setIsGraphPrerunningTrades(false);

@@ -33,7 +33,16 @@ const columns: ColumnsType<ITradeSettings> = [
     key: 'description',
     width: 150,
     render: (_, record) => {
-      const prerunText = record.isPrerunning ? ' (Prerun)' : record.isPrerunningVWAPSlope ? ' (Prerun VWAP Slope)' : '';
+      let prerunText = '';
+      if (record.isPrerunning) {
+        prerunText = ' (Prerun)';
+      }
+      if (record.isPrerunningVWAPSlope) {
+        prerunText = ' (Prerun VWAP Slope)';
+      }
+      if (record.isPrerunVIXSlope) {
+        prerunText = ' (Prerun VIX Slope)';
+      }
       const description = `${GetDescription(record)}${prerunText}`;
       let color = (record.isMocked) ? 'white' : 'pink';
       return (

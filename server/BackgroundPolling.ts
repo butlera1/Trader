@@ -22,7 +22,7 @@ function getAverageMark(data: IStreamerData[]): number {
 }
 
 function getSlope(data: IStreamerData[], samples: number, numberOfSamplesToAverage: number): number {
-  if (data && data.length > samples && samples >= numberOfSamplesToAverage * 2) {
+  if (data && data.length > samples && samples >= numberOfSamplesToAverage) {
     const firstIndex = data.length - samples;
     const secondIndex = data.length - numberOfSamplesToAverage;
     const firstAvgMark = getAverageMark(data.slice(firstIndex, firstIndex + numberOfSamplesToAverage - 1));
@@ -99,11 +99,17 @@ function GetVIXSlopeAngle() {
 }
 
 function StartBackgroundPolling() {
-  if (InTradeHours()) {
-    isPolling = true;
-    poll().then();
-  } else {
-    console.error('Not starting background polling because it is outside of trade hours.');
+  try {
+    if (InTradeHours()) {
+      isPolling = true;
+      poll().then();
+      console.log('Starting background polling.');
+    } else {
+      console.error('Not starting background polling because it is outside of trade hours.');
+      isPolling = false;
+    }
+  } catch (err) {
+    console.error(`StartBackgroundPolling failed with: `, err);
     isPolling = false;
   }
 };

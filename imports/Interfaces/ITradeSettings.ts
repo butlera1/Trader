@@ -6,6 +6,7 @@ import IRule3Value from './IRule3Value';
 import IRule4Value from './IRule4Value';
 import IRule5Value from './IRule5Value';
 import IPrerunVWAPSlopeValue, {defaultPrerunVWAPSlopeValue} from './IPrerunVWAPSlopeValue';
+import IPrerunVIXSlopeValue, {defaultPrerunVIXSlopeValue} from './IPrerunVIXSlopeValue';
 
 enum whyClosedEnum {
   emergencyExit = 'emergencyExit',
@@ -19,6 +20,7 @@ enum whyClosedEnum {
   rule5Exit = 'r5Exit',
   prerunExit = 'prerunExit',
   prerunVWAPSlopeExit = 'prerunVWAPSlopeExit',
+  prerunVIXSlopeExit = 'prerunVIXSlopeExit',
 }
 
 interface IPrice {
@@ -131,6 +133,9 @@ interface ITradeSettings {
   isPrerunVWAPSlope?: boolean,
   isPrerunningVWAPSlope?: boolean,
   prerunVWAPSlopeValue?: IPrerunVWAPSlopeValue,
+  isPrerunVIXSlope?: boolean,
+  isPrerunningVIXSlope?: boolean,
+  prerunVIXSlopeValue?: IPrerunVIXSlopeValue,
   rule1Value?: IRule1Value,
   rule2Value?: IRule2Value,
   rule3Value?: IRule3Value,
@@ -226,7 +231,9 @@ const DefaultTradeSettings: ITradeSettings = {
   prerunValue: {ticks: 0, amount: 0},
   isPrerunningVWAPSlope: false,
   prerunVWAPSlopeValue: {...defaultPrerunVWAPSlopeValue},
-  repeatStopHour: 13,
+  isPrerunningVIXSlope: false,
+  prerunVIXSlopeValue: {...defaultPrerunVIXSlopeValue},
+  repeatStopHour: 16,
 };
 
 function getTwoDTEValues(legs) {
@@ -261,6 +268,9 @@ function GetDescription(tradeSettings: ITradeSettings) {
   }
   if (tradeSettings.isPrerunningVWAPSlope) {
     part5 = `Mocked for Prerun VWAP Slope`;
+  }
+  if (tradeSettings.isPrerunningVIXSlope) {
+    part5 = `Mocked for Prerun VIX Slope`;
   }
   return `${part0}${part1}\n${part2}\n${part3}${part4}\n${part5}`;
 }

@@ -66,25 +66,25 @@ function Tools() {
       <OrderButton/>
       <Space style={{marginLeft: 10}}>
         <h2>System Settings:</h2>
-        <label>VWAP Sample Size:</label>
+        <label>VIX Total Ticks For Slope (3 sec./tick):</label>
         <InputNumber
-          defaultValue={appSettings?.vwapNumberOfSamples}
-          value={appSettings?.vwapNumberOfSamples}
+          defaultValue={appSettings?.totalSlopeSamples}
+          value={appSettings?.totalSlopeSamples}
           step={1}
           min={2}
           max={500}
           style={{width: '80px'}}
-          onChange={(vwapNumberOfSamples: number) => onChange({...appSettings, vwapNumberOfSamples})}
+          onChange={(totalSlopeSamples: number) => onChange({...appSettings, totalSlopeSamples})}
         />
-        <label>VWAP Slope Samples Size:</label>
+        <label>VIX Slope Samples to Average (must be less then Total Ticks):</label>
         <InputNumber
-          defaultValue={appSettings?.vwapSlopeSamplesRequired}
-          value={appSettings?.vwapSlopeSamplesRequired}
+          defaultValue={appSettings?.slopeSamplesToAverage}
+          value={appSettings?.slopeSamplesToAverage}
           step={1}
           min={2}
           max={500}
           style={{width: '80px'}}
-          onChange={(vwapSlopeSamplesRequired: number) => onChange({...appSettings, vwapSlopeSamplesRequired})}
+          onChange={(slopeSamplesToAverage: number) => onChange({...appSettings, slopeSamplesToAverage})}
         />
       </Space>
       <ShowErrorMessage/>

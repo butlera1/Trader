@@ -84,7 +84,7 @@ function GraphTrade({liveTrade}: { liveTrade: ITradeSettings }) {
       </YAxis>
       <YAxis width={70} yAxisId="slopeAxis" orientation="right" tick={{fontSize: 10,}} domain={[-0.03, 0.03]} allowDecimals={true}>
         <Label
-          value={`VIX Slope`}
+          value={`VIX Slope Angle`}
           angle={-90}
           position="outside"
           fill="#676767"
@@ -102,7 +102,7 @@ function GraphTrade({liveTrade}: { liveTrade: ITradeSettings }) {
             isAnimationActive={false} yAxisId="underlyingAxis"/>
       <Line type="monotone" strokeWidth={1} dataKey={'vixMark'} name={'VIX'} stroke="blue" dot={false}
             isAnimationActive={false} yAxisId="vixAxis"/>
-      <Line type="monotone" strokeWidth={1} dataKey={'vixSlope'} name={'VIX Slope'} stroke="grey" dot={false}
+      <Line type="monotone" strokeWidth={1} dataKey={'vixSlopeAngle'} name={'VIX Slope Angle'} stroke="grey" dot={false}
             isAnimationActive={false} yAxisId="slopeAxis"/>
       <Line type="monotone" dataKey={() => lossLine} name={'Max Loss'} stroke="cyan" dot={false}
             isAnimationActive={false} yAxisId="gainAxis"/>
