@@ -407,13 +407,13 @@ function checkPrerunVIXSlopeExit(liveTrade: ITradeSettings) {
   if (liveTrade.isPrerunningVIXSlope) {
     const numberOfDesiredVIXAnglesInARow = liveTrade.prerunVIXSlopeValue.numberOfDesiredVIXAnglesInARow ?? 4;
     if (liveTrade.monitoredPrices.length >= numberOfDesiredVIXAnglesInARow) {
-      // This approach is for checking for slope trending up (increasing in value
+      // This approach is for checking for slope trending down (decreasing in value).
       const samples = liveTrade.monitoredPrices.slice(liveTrade.monitoredPrices.length - numberOfDesiredVIXAnglesInARow);
-      let trendingUp = true;
+      let trendingDown = true;
       for (let i = 0; i < samples.length - 1; i++) {
-        trendingUp = trendingUp && samples[i].vixSlopeAngle <= samples[i + 1].vixSlopeAngle;
+        trendingDown = trendingDown && samples[i].vixSlopeAngle >= samples[i + 1].vixSlopeAngle;
       }
-      return trendingUp;
+      return trendingDown;
     }
   }
   return false;

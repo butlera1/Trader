@@ -9,7 +9,7 @@ function PrerunUntilPositiveVIXSlopeAngle({
   return (
     <>
       <Space style={{marginLeft: 10}}>
-        <label>Prerun: Until VIX Slope Angle is moving up for</label>
+        <label>Prerun: Until VIX Slope Angle is moving down for</label>
         <InputNumber
           defaultValue={value.numberOfDesiredVIXAnglesInARow ?? 10}
           min={1}
