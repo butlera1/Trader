@@ -211,8 +211,8 @@ async function CloseTrade(tradeSettings: ITradeSettings, currentPrice: number) {
       if (wasPrerunningVIXSlope && tradeSettings.whyClosed !== whyClosedEnum.gainLimit && tradeSettings.whyClosed !== whyClosedEnum.prerunVIXSlopeExit) {
         nowPrerunningVIXSlope = true; // Do another prerunSlope because we exited for loss limit or similar.
       }
-      if (tradeSettings.isPrerunVIXSlope && tradeSettings.whyClosed == whyClosedEnum.gainLimit) {
-        // If the setting is enabled and we just got a gainLimit, don't go back to prerunSlope again.
+      if (tradeSettings.isPrerunVIXSlope && tradeSettings.gainLoss > 0) {
+        // If the setting is enabled and we just had a gain, don't go back to prerunSlope again.
         nowPrerunningVIXSlope = false;
       }
       ExecuteTrade(settings, false, nowPrerunning, nowPrerunningVIXSlope)
