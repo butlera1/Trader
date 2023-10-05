@@ -84,7 +84,7 @@ const columns: ColumnsType<ITradeSettings> = [
       const under = record.monitoredPrices.length > 0 ? record.monitoredPrices[record.monitoredPrices.length - 1]?.underlyingPrice ?? 0 : 0;
       const priceDiff = record.gainLoss;
       const priceDiffAll = `${record.closingPrice?.toFixed(2)} (${(priceDiff).toFixed(3)})`;
-      const underDiff = `${under.toFixed(2)} (${(initialUnder - under).toFixed(3)})`;
+      const underDiff = `${under.toFixed(2)} (${(under - initialUnder).toFixed(3)})`;
       return RenderOpenOrClosedData(GetNewYorkTimeAsText(when), priceDiffAll, underDiff, record.whyClosed);
     },
   },

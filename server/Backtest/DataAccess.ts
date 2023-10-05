@@ -10,6 +10,38 @@ const rest = restClient('CYBLK7kpM0FSCqMVn7auHmAdpFeuvm5s');
 let straddleCache = null;
 let stockCache = null;
 
+
+
+export async function GetOptionData(ticker: string = 'QQQ', date: Dayjs = dayjs('2022-09-29'), price:number): Promise<any> {
+  try {
+    const dateStr = date.format('YYYY-MM-DD');
+    // Get underlying strike price first and use it to get options data.
+    const stockId = `${ticker}${dateStr}`;
+    const temp = String(price.toFixed(0)) + '000';
+    const strikePrice = temp.padStart(8, '0');
+    const from = dateStr;
+    const to = dateStr;
+    // Create options ticker to look like 'O:QQQ221003P00274000'
+    const optionDate = getBestOptionClosingDate(date);
+    const optionsTicker = `O:${ticker}${optionDate.format('YYMMDD')}P${strikePrice}`;
+    const puts = await rest.options.aggregates(optionsTicker, 1, 'minute', from, to, {sort: 'asc', limit: 1000});
+    const calls = await rest.options.aggregates(optionsTicker.replace('P0', 'C0'), 1, 'minute', from, to, {
+      sort: 'asc',
+      limit: 1000
+    });
+    if (puts.resultsCount === 0 || calls.resultsCount === 0) {
+      return null;
+    }
+    const firstPutTime = dayjs(puts.results[0].t).format('hh:mm:ss');
+    const firstCallTime = dayjs(calls.results[0].t).format('hh:mm:ss');
+    console.log(`First put time: ${firstPutTime}, first call time: ${firstCallTime}`);
+    console.log(`Puts:`, puts);
+    console.log(`Calls:`, calls);
+  } catch (ex) {
+    console.error(ex);
+  }
+}
+
 /**
  * Loads stock data and options data into RAM-based cache for faster processing later.
  */
