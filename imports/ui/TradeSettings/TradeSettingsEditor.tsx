@@ -26,6 +26,8 @@ import {DefaultRule5Value} from '../../Interfaces/IRule5Value';
 import PrerunUntilPositiveVIXSlopeAngle from './Rules/PrerunUntilPositiveVIXSlopeAngle';
 import Rule6 from './Rules/Rule6';
 import {DefaultRule6Value} from '../../Interfaces/IRule6Value';
+import Rule7 from './Rules/Rule7';
+import {DefaultRule7Value} from '../../Interfaces/IRule7Value';
 
 const CheckboxGroup = Checkbox.Group;
 const generalMargins = 30;
@@ -63,12 +65,14 @@ export const TradeSettingsEditor = ({tradeSettings, changeCallback}: Props) => {
   const [isRule4, setIsRule4] = React.useState(tradeSettings.isRule4 ?? false);
   const [isRule5, setIsRule5] = React.useState(tradeSettings.isRule5 ?? false);
   const [isRule6, setIsRule6] = React.useState(tradeSettings.isRule6 ?? false);
+  const [isRule7, setIsRule7] = React.useState(tradeSettings.isRule7 ?? false);
   const [rule1Value, setRule1Value] = React.useState(tradeSettings.rule1Value ?? {});
   const [rule2Value, setRule2Value] = React.useState(tradeSettings.rule2Value ?? {...DefaultRule2Value});
   const [rule3Value, setRule3Value] = React.useState(tradeSettings.rule3Value ?? {...DefaultRule3Value});
   const [rule4Value, setRule4Value] = React.useState(tradeSettings.rule4Value ?? {...DefaultRule4Value});
   const [rule5Value, setRule5Value] = React.useState(tradeSettings.rule5Value ?? {...DefaultRule5Value});
   const [rule6Value, setRule6Value] = React.useState(tradeSettings.rule6Value ?? {...DefaultRule6Value});
+  const [rule7Value, setRule7Value] = React.useState(tradeSettings.rule7Value ?? {...DefaultRule7Value});
   const [name, setName] = React.useState(tradeSettings.name ?? '');
   const [slope1Samples, setSlope1Samples] = React.useState(tradeSettings.slope1Samples ?? 0);
   const [slope2Samples, setSlope2Samples] = React.useState(tradeSettings.slope2Samples ?? 0);
@@ -104,6 +108,7 @@ export const TradeSettingsEditor = ({tradeSettings, changeCallback}: Props) => {
     isRule4: setIsRule4,
     isRule5: setIsRule5,
     isRule6: setIsRule6,
+    isRule7: setIsRule7,
     isPrerun: setIsPrerun,
     isPrerunVIXSlope: setIsPrerunVIXSlope,
     prerunValue: setPrerunValue,
@@ -114,6 +119,7 @@ export const TradeSettingsEditor = ({tradeSettings, changeCallback}: Props) => {
     rule4Value: setRule4Value,
     rule5Value: setRule5Value,
     rule6Value: setRule6Value,
+    rule7Value: setRule7Value,
     name: setName,
     slope1Samples: setSlope1Samples,
     slope2Samples: setSlope2Samples,
@@ -153,6 +159,7 @@ export const TradeSettingsEditor = ({tradeSettings, changeCallback}: Props) => {
         isRule4,
         isRule5,
         isRule6,
+        isRule7,
         isPrerun,
         prerunValue,
         isPrerunVIXSlope,
@@ -163,6 +170,7 @@ export const TradeSettingsEditor = ({tradeSettings, changeCallback}: Props) => {
         rule4Value,
         rule5Value,
         rule6Value,
+        rule7Value,
         name,
         slope1Samples: slope1Samples,
         slope2Samples: slope2Samples,
@@ -182,8 +190,8 @@ export const TradeSettingsEditor = ({tradeSettings, changeCallback}: Props) => {
     }, 1000);
   }, [isActive, isMocked, symbol, days, entryHour, entryMinute, exitHour, exitMinute, percentGain,
     percentLoss, commissionPerContract, legs, tradeType, isRepeat, repeatStopHour, useShortOnlyForLimits,
-    isRule1, isRule2, isRule3, isRule4, isRule5, isRule6, isPrerun, prerunValue, rule1Value, rule2Value, rule3Value, rule4Value,
-    rule5Value, rule6Value, name, slope1Samples, isPrerunVIXSlope, prerunVIXSlopeValue,
+    isRule1, isRule2, isRule3, isRule4, isRule5, isRule6, isRule7, isPrerun, prerunValue, rule1Value, rule2Value, rule3Value, rule4Value,
+    rule5Value, rule6Value, rule7Value, name, slope1Samples, isPrerunVIXSlope, prerunVIXSlopeValue,
     slope2Samples, percentGainIsDollar,
     percentLossIsDollar]);
 
@@ -556,6 +564,16 @@ export const TradeSettingsEditor = ({tradeSettings, changeCallback}: Props) => {
           >
           </Checkbox>
           <Rule6 value={rule6Value} onChange={(value) => onChange('rule6Value', value)}/>
+        </Col>
+      </Row>
+      <Row style={{margin: generalMargins}}>
+        <Col span={24}>
+          <Checkbox
+            onChange={(e: CheckboxChangeEvent) => onChange('isRule7', e.target.checked)}
+            checked={isRule7}
+          >
+          </Checkbox>
+          <Rule7 value={rule7Value} onChange={(value) => onChange('rule7Value', value)}/>
         </Col>
       </Row>
 

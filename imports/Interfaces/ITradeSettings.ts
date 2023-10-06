@@ -8,6 +8,7 @@ import IRule5Value from './IRule5Value';
 import IPrerunVWAPSlopeValue, {defaultPrerunVWAPSlopeValue} from './IPrerunVWAPSlopeValue';
 import IPrerunVIXSlopeValue, {defaultPrerunVIXSlopeValue} from './IPrerunVIXSlopeValue';
 import IRule6Value from './IRule6Value';
+import IRule7Value from './IRule7Value';
 
 enum whyClosedEnum {
   emergencyExit = 'emergencyExit',
@@ -20,6 +21,7 @@ enum whyClosedEnum {
   rule4Exit = 'r4Exit',
   rule5Exit = 'r5Exit',
   rule6Exit = 'r6Exit',
+  rule7Exit = 'r7Exit',
   prerunExit = 'prerunExit',
   prerunVWAPSlopeExit = 'prerunVWAPSlopeExit',
   prerunVIXSlopeExit = 'prerunVIXSlopeExit',
@@ -130,6 +132,7 @@ interface ITradeSettings {
   isRule4?: boolean,
   isRule5?: boolean,
   isRule6?: boolean,
+  isRule7?: boolean,
   isPrerun?: boolean,
   isPrerunning?: boolean,
   prerunValue?: IPrerunValue,
@@ -145,6 +148,7 @@ interface ITradeSettings {
   rule4Value?: IRule4Value,
   rule5Value?: IRule5Value,
   rule6Value?: IRule6Value,
+  rule7Value?: IRule7Value,
   totalFees?: number,
   slope1Samples?: number,
   slope2Samples?: number,

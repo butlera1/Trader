@@ -375,6 +375,21 @@ function checkRule6Exit(liveTrade: ITradeSettings, currentSample: IPrice) {
   return false;
 }
 
+function checkRule7Exit(liveTrade: ITradeSettings, currentSample: IPrice) {
+  if (liveTrade.isRule7) {
+    if (liveTrade.monitoredPrices.length > liveTrade.rule7Value?.samples) {
+      const samples = liveTrade.rule7Value?.samples ?? 0;
+      const percent = liveTrade.rule7Value?.percent ?? 1;
+      const averageGain = getAveragePrice(liveTrade.monitoredPrices, samples);
+      const index = liveTrade.monitoredPrices.length - samples - 1;
+      const previousGain = liveTrade.monitoredPrices[index].gain;
+      const desiredDrop = percent * liveTrade.lossLimit;
+      return (averageGain - previousGain) <= desiredDrop;
+    }
+  }
+  return false;
+}
+
 function checkPrerunExit(liveTrade: ITradeSettings) {
   if (liveTrade.isPrerunning) {
     const ticks = liveTrade.prerunValue?.ticks ?? 0;
@@ -490,6 +505,7 @@ function MonitorTradeToCloseItOut(liveTrade: ITradeSettings) {
       const isRule4Exit = checkRule4Exit(liveTrade, currentSamplePrice);
       const isRule5Exit = checkRule5Exit(liveTrade, currentSamplePrice);
       const isRule6Exit = checkRule6Exit(liveTrade, currentSamplePrice);
+      const isRule7Exit = checkRule7Exit(liveTrade, currentSamplePrice);
       const isPrerunExit = checkPrerunExit(liveTrade);
       const isPrerunVIXSlopeExit = checkPrerunVIXSlopeExit(liveTrade);
       if (isGainLimit || isLossLimit || isEndOfDay || isRule1Exit || isRule2Exit || isRule3Exit || isRule4Exit || isRule5Exit || isPrerunExit || isPrerunVIXSlopeExit) {
@@ -511,6 +527,9 @@ function MonitorTradeToCloseItOut(liveTrade: ITradeSettings) {
         }
         if (isRule6Exit) {
           liveTrade.whyClosed = whyClosedEnum.rule6Exit;
+        }
+        if (isRule7Exit) {
+          liveTrade.whyClosed = whyClosedEnum.rule7Exit;
         }
         if (isPrerunExit) {
           liveTrade.whyClosed = whyClosedEnum.prerunExit;
