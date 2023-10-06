@@ -5,11 +5,12 @@ import {Alert, Button, Checkbox, Input, InputNumber, Row, Space, Spin} from 'ant
 import {UserOutlined} from '@ant-design/icons';
 import Constants from '../Constants';
 import {CheckboxChangeEvent} from 'antd/lib/checkbox';
+import IUserSettings from '../Interfaces/IUserSettings';
 
 let timeoutHandle = null;
 
 function UserSettings() {
-  const [userSettings, setUserSettings] = useState(null);
+  const [userSettings, setUserSettings]: [IUserSettings, any] = useState(null);
   const [errorText, setErrorText] = useState(null);
 
   function getLatestUserSettings() {
@@ -25,8 +26,6 @@ function UserSettings() {
   useEffect(getLatestUserSettings, []);
 
   const UsingPriceText = Constants.usingMarkPrice ? 'Mark' : 'Bid/Ask';
-
-  const warningNotActive = userSettings?.accountIsActive === false ? ' (Warning: Account is not active)' : '';
 
   const onChange = (propertyName, value) => {
     userSettings[propertyName] = value;
@@ -57,6 +56,24 @@ function UserSettings() {
     }, 1000);
   };
 
+  const Warn = () => {
+    if (userSettings?.accountIsActive === false){
+      return <Row style={{paddingBottom: 20}}>
+        <h2 style={{color: 'red'}}>(Warning: Account is not active)</h2>
+      </Row>
+    }
+    return null;
+  };
+
+  const Note = () => {
+    if (userSettings?.isMaxGainAllowedMet){
+      return <Row style={{paddingBottom: 20}}>
+        <h2 style={{color: 'blue'}}>(Note: Max Daily Gain has been met so further trading is stopped for the day.)</h2>
+      </Row>
+    }
+    return null;
+  };
+
   return (
     <>
       <Space>
@@ -85,34 +102,46 @@ function UserSettings() {
         }
       </Space>
       {userSettings ?
-        <Row style={{paddingBottom: 20}}>
-          <Space>
-            <Checkbox
-              onChange={(e: CheckboxChangeEvent) => onChange('accountIsActive', e.target.checked)}
-              defaultChecked={userSettings.accountIsActive ?? false}
-              checked={userSettings.accountIsActive ?? false}
-            >
-              Account is Active
-            </Checkbox>
-            <Input defaultValue={userSettings?.accountNumber} addonBefore={'Account #'}
-                   onChange={(e) => onChange('accountNumber', e.target.value)}/>
-            <Input defaultValue={userSettings.email} addonBefore={'Email'}
-                   onChange={(e) => onChange('email', e.target.value)}/>
-            <Input defaultValue={userSettings.phone} addonBefore={'Phone #'}
-                   onChange={(e) => onChange('phone', e.target.value)}/>
+        <>
+          <Row style={{paddingBottom: 20}}>
+            <Space>
+              <Checkbox
+                onChange={(e: CheckboxChangeEvent) => onChange('accountIsActive', e.target.checked)}
+                defaultChecked={userSettings.accountIsActive ?? false}
+                checked={userSettings.accountIsActive ?? false}
+              >
+                Account is Active
+              </Checkbox>
+              <Input defaultValue={userSettings?.accountNumber} addonBefore={'Account #'}
+                     onChange={(e) => onChange('accountNumber', e.target.value)}/>
+              <Input defaultValue={userSettings.email} addonBefore={'Email'}
+                     onChange={(e) => onChange('email', e.target.value)}/>
+              <Input defaultValue={userSettings.phone} addonBefore={'Phone #'}
+                     onChange={(e) => onChange('phone', e.target.value)}/>
 
-            <InputNumber
-              defaultValue={userSettings?.maxAllowedDailyLoss ?? 1000}
-              addonBefore={'Max Allowed Daily Loss'}
-              min={0}
-              max={50000}
-              step={1}
-              style={{width: '270px'}}
-              onChange={(value) => onChange('maxAllowedDailyLoss', value)}
-            />
-            {userSettings.accountIsActive === false ? <h2 style={{color: 'red'}}>{warningNotActive}</h2> : null}
-          </Space>
-        </Row>
+              <InputNumber
+                defaultValue={userSettings?.maxAllowedDailyLoss ?? 1000}
+                addonBefore={'Max Allowed Daily Loss'}
+                min={0}
+                max={50000}
+                step={1}
+                style={{width: '270px'}}
+                onChange={(value) => onChange('maxAllowedDailyLoss', value)}
+              />
+              <InputNumber
+                defaultValue={userSettings?.maxAllowedDailyGain ?? 1000}
+                addonBefore={'Max Allowed Daily Gain'}
+                min={0}
+                max={50000}
+                step={1}
+                style={{width: '270px'}}
+                onChange={(value) => onChange('maxAllowedDailyGain', value)}
+              />
+            </Space>
+          </Row>
+          <Warn/>
+          <Note/>
+          </>
         :
         <Spin size="large"/>
       }

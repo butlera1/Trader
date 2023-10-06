@@ -7,6 +7,7 @@ import {GetNewYorkTimeAt,} from '../imports/Utils';
 import {AppSettings} from './collections/AppSettings';
 import Constants from '../imports/Constants';
 import {StartBackgroundPolling} from "./BackgroundPolling";
+import {ResetUsersMaxDailyGainSettings} from './collections/UserSettings';
 
 function ScheduleStartOfDayWork() {
   try {
@@ -25,6 +26,7 @@ function ScheduleStartOfDayWork() {
       try {
         Meteor.clearTimeout(timerHandle);
         StartBackgroundPolling();
+        ResetUsersMaxDailyGainSettings();
         PerformTradeForAllUsers();
         ScheduleStartOfDayWork();
       } catch (ex) {

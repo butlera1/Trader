@@ -95,7 +95,7 @@ Meteor.methods({
 
 console.log(`Current local time is ${new Date()}.`);
 
-// Define the AppSettings record if not there already. Let DB record valus override defaults.
+// Define the AppSettings record if not there already. Let DB record values override defaults.
 const settings = {
   ...DefaultAppSettings,
   ...AppSettings.findOne(Constants.appSettingsId),

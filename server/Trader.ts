@@ -136,6 +136,11 @@ function saveTradeToHistory(tradeSettings: ITradeSettings) {
     UserSettings.update({_id: userId}, {$set: {accountIsActive: false}});
     EmergencyCloseAllTradesForUser(userId);
   }
+  if (summary.gainLoss > Math.abs(userSettings.maxAllowedDailyGain)) {
+    // User has gained enough money today.  Disable their account.
+    UserSettings.update({_id: userId}, {$set: {isMaxGainAllowedMet: true}});
+    EmergencyCloseAllTradesForUser(userId);
+  }
   DailyTradeSummaries.upsert(id, summary);
 }
 
@@ -678,6 +683,10 @@ async function ExecuteTrade(tradeSettings: ITradeSettings, forceTheTrade = false
   const userSettings: IUserSettings = UserSettings.findOne({_id: tradeSettings.userId});
   if (!userSettings?.accountIsActive) {
     LogData(tradeSettings, `ExecuteTrade called for ${tradeSettings.userName} but account is not active.`, null);
+    return;
+  }
+  if (!userSettings?.isMaxGainAllowedMet) {
+    LogData(tradeSettings, `ExecuteTrade called for ${tradeSettings.userName} but Max Daily Gain has been met.`, null);
     return;
   }
   const now = dayjs();

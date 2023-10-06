@@ -25,7 +25,12 @@ function SaveUserSettings(userSettings) {
   return null;
 }
 
+function ResetUsersMaxDailyGainSettings() {
+  UserSettings.update({}, {$set: {isMaxGainAllowedMet: false}}, {multi: true});
+}
+
 export {
   GetUserSettings,
   SaveUserSettings,
+  ResetUsersMaxDailyGainSettings,
 };
