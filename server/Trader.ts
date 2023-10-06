@@ -358,8 +358,19 @@ function checkRule5Exit(liveTrade: ITradeSettings, currentSample: IPrice) {
     const desiredMinutes = liveTrade.rule5Value?.minutes ?? 0;
     const desiredMovement = Math.abs(liveTrade.rule5Value?.underlyingPercentOfCredit * liveTrade.openingPrice ?? 0);
     const durationInMinutes = getTradeDurationInMinutes(liveTrade);
-    const underlyingMovement = Math.abs(getUnderlyingMovement(liveTrade.monitoredPrices[0], currentSample));
+    const underlyingMovement = getUnderlyingMovement(liveTrade.monitoredPrices[0], currentSample);
     return (desiredMinutes <= durationInMinutes && underlyingMovement >= desiredMovement);
+  }
+  return false;
+}
+
+function checkRule6Exit(liveTrade: ITradeSettings, currentSample: IPrice) {
+  if (liveTrade.isRule6) {
+    const desiredMinutes = liveTrade.rule6Value?.minutes ?? 0;
+    const desiredMovement = -Math.abs(liveTrade.rule6Value?.underlyingPercentOfCredit * liveTrade.openingPrice ?? 0);
+    const durationInMinutes = getTradeDurationInMinutes(liveTrade);
+    const underlyingMovement = getUnderlyingMovement(liveTrade.monitoredPrices[0], currentSample);
+    return (desiredMinutes <= durationInMinutes && underlyingMovement <= desiredMovement);
   }
   return false;
 }
@@ -478,6 +489,7 @@ function MonitorTradeToCloseItOut(liveTrade: ITradeSettings) {
       const isRule3Exit = checkRule3Exit(liveTrade, currentSamplePrice);
       const isRule4Exit = checkRule4Exit(liveTrade, currentSamplePrice);
       const isRule5Exit = checkRule5Exit(liveTrade, currentSamplePrice);
+      const isRule6Exit = checkRule6Exit(liveTrade, currentSamplePrice);
       const isPrerunExit = checkPrerunExit(liveTrade);
       const isPrerunVIXSlopeExit = checkPrerunVIXSlopeExit(liveTrade);
       if (isGainLimit || isLossLimit || isEndOfDay || isRule1Exit || isRule2Exit || isRule3Exit || isRule4Exit || isRule5Exit || isPrerunExit || isPrerunVIXSlopeExit) {
@@ -496,6 +508,9 @@ function MonitorTradeToCloseItOut(liveTrade: ITradeSettings) {
         }
         if (isRule5Exit) {
           liveTrade.whyClosed = whyClosedEnum.rule5Exit;
+        }
+        if (isRule6Exit) {
+          liveTrade.whyClosed = whyClosedEnum.rule6Exit;
         }
         if (isPrerunExit) {
           liveTrade.whyClosed = whyClosedEnum.prerunExit;

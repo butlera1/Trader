@@ -1,18 +1,18 @@
 import React from 'react';
 import {InputNumber, Space} from 'antd';
-import IRule5Value from '../../../Interfaces/IRule5Value';
+import IRule6Value from '../../../Interfaces/IRule6Value';
 
 /**
- * Rule 5: After Z minutes, if underlying moved UP X% of credit, exit.
+ * Rule 6: After Z minutes, if underlying moved DOWN X% of credit, exit.
  * @param value
  * @param onChange
  * @constructor
  */
-function Rule5({value, onChange}: { value: IRule5Value, onChange: (value: IRule5Value) => void }) {
+function Rule6({value, onChange}: { value: IRule6Value, onChange: (value: IRule6Value) => void }) {
   return (
     <>
       <Space style={{marginLeft: 10}}>
-        <label>R5: Exit after</label>
+        <label>R6: Exit after</label>
         <InputNumber
           defaultValue={value.minutes ?? 0}
           step={1}
@@ -21,7 +21,7 @@ function Rule5({value, onChange}: { value: IRule5Value, onChange: (value: IRule5
           style={{width: '50px'}}
           onChange={(minutes: number) => onChange({...value, minutes})}
         />
-        <label>min. if underlying is UP</label>
+        <label>min. if underlying is DOWN</label>
         <InputNumber
           defaultValue={(value.underlyingPercentOfCredit * 100) ?? 0}
           step={1}
@@ -36,4 +36,4 @@ function Rule5({value, onChange}: { value: IRule5Value, onChange: (value: IRule5
   );
 }
 
-export {Rule5 as default};
+export {Rule6 as default};
