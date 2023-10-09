@@ -1,6 +1,7 @@
 import React from 'react';
-import {InputNumber, Space} from 'antd';
-import IPrerunVIXSlopeValue from '../../../Interfaces/IPrerunVIXSlopeValue';
+import {InputNumber, Select, Space} from 'antd';
+import IPrerunVIXSlopeValue, {DirectionDown, DirectionUp} from '../../../Interfaces/IPrerunVIXSlopeValue';
+import {BuySell} from '../../../Interfaces/ILegSettings';
 
 function PrerunUntilPositiveVIXSlopeAngle({
                                         value,
@@ -9,7 +10,15 @@ function PrerunUntilPositiveVIXSlopeAngle({
   return (
     <>
       <Space style={{marginLeft: 10}}>
-        <label>Prerun: Until VIX Slope Angle is moving down for</label>
+        <label>Prerun: Until VIX Slope Angle is moving</label>
+        <Select
+          defaultValue={value.direction ?? DirectionUp}
+          style={{width: 80}}
+          onChange={(direction) => onChange({...value, direction})}>
+          <Select.Option value={DirectionUp}>{DirectionUp}</Select.Option>
+          <Select.Option value={DirectionDown}>{DirectionDown}</Select.Option>
+        </Select>
+        <label>for</label>
         <InputNumber
           defaultValue={value.numberOfDesiredVIXAnglesInARow ?? 10}
           min={1}

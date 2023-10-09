@@ -37,6 +37,7 @@ import {
 import Semaphore from 'semaphore';
 import IUserSettings from '../imports/Interfaces/IUserSettings';
 import {GetVIXMark, GetVIXSlope, GetVIXSlopeAngle} from "./BackgroundPolling";
+import {DirectionUp} from '../imports/Interfaces/IPrerunVIXSlopeValue';
 
 dayjs.extend(duration);
 dayjs.extend(isoWeek);
@@ -422,13 +423,6 @@ function checkPrerunVWAPSlopeExit(liveTrade: ITradeSettings) {
         trendingUp = trendingUp && samples[i].vwapSlopeAngle <= samples[i + 1].vwapSlopeAngle;
       }
       return trendingUp;
-
-      //
-      // This is the approach for checking for positive slope.
-      // const samples = liveTrade.monitoredPrices.slice(liveTrade.monitoredPrices.length - numberOfDesiredVWAPAnglesInARow);
-      // const isPositive = samples.reduce((isPositive, sample) => isPositive && sample.vwapSlopeAngle >= 0, true);
-      // return isPositive;
-      //
     }
   }
   return false;
@@ -440,11 +434,19 @@ function checkPrerunVIXSlopeExit(liveTrade: ITradeSettings) {
     if (liveTrade.monitoredPrices.length >= numberOfDesiredVIXAnglesInARow) {
       // This approach is for checking for slope trending down (decreasing in value).
       const samples = liveTrade.monitoredPrices.slice(liveTrade.monitoredPrices.length - numberOfDesiredVIXAnglesInARow);
-      let trendingDown = true;
-      for (let i = 0; i < samples.length - 1; i++) {
-        trendingDown = trendingDown && samples[i].vixSlopeAngle >= samples[i + 1].vixSlopeAngle;
+      if (liveTrade.prerunVIXSlopeValue.direction === DirectionUp) {
+        let trendingUp = true;
+        for (let i = 0; i < samples.length - 1; i++) {
+          trendingUp = trendingUp && samples[i].vixSlopeAngle <= samples[i + 1].vixSlopeAngle;
+        }
+        return trendingUp;
+      } else {
+        let trendingDown = true;
+        for (let i = 0; i < samples.length - 1; i++) {
+          trendingDown = trendingDown && samples[i].vixSlopeAngle >= samples[i + 1].vixSlopeAngle;
+        }
+        return trendingDown;
       }
-      return trendingDown;
     }
   }
   return false;
