@@ -719,7 +719,7 @@ async function ExecuteTrade(tradeSettings: ITradeSettings, forceTheTrade = false
     LogData(tradeSettings, `ExecuteTrade called for ${tradeSettings.userName} but account is not active.`, null);
     return;
   }
-  if (!userSettings?.isMaxGainAllowedMet) {
+  if (userSettings?.isMaxGainAllowedMet) {
     LogData(tradeSettings, `ExecuteTrade called for ${tradeSettings.userName} but Max Daily Gain has been met.`, null);
     return;
   }
