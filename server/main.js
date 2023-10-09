@@ -11,7 +11,7 @@ import {
   TradeSettings
 } from './collections/TradeSettings';
 import './collections/UserSettings';
-import {GetUserSettings, SaveUserSettings} from './collections/UserSettings';
+import {GetUserSettings, ResetUsersMaxDailyGainSettings, SaveUserSettings} from './collections/UserSettings';
 import './SeedUser';
 import {
   BuyStock,
@@ -90,6 +90,7 @@ Meteor.methods({
     LatestQuote,
     GetAppSettings,
     SetAppSettings,
+    ResetUsersMaxDailyGainSettings,
   }
 );
 

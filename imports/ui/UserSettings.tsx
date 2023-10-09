@@ -12,6 +12,7 @@ let timeoutHandle = null;
 function UserSettings() {
   const [userSettings, setUserSettings]: [IUserSettings, any] = useState(null);
   const [errorText, setErrorText] = useState(null);
+  const [getData, setGetData] = useState(false);
 
   function getLatestUserSettings() {
     Meteor.call('GetUserSettings', (error, userSettingsRecord) => {
@@ -23,7 +24,18 @@ function UserSettings() {
     });
   }
 
-  useEffect(getLatestUserSettings, []);
+  const resetDaily = () => {
+    Meteor.call('ResetUsersMaxDailyGainSettings', (error) => {
+      if (error) {
+        setErrorText(`Failed calling ResetUsersMaxDailyGainSettings: ${error.toString()}`);
+      } else {
+        console.log('ResetUsersMaxDailyGainSettings called successfully');
+        setGetData(!getData);
+      }
+    });
+  };
+
+  useEffect(getLatestUserSettings, [getData]);
 
   const UsingPriceText = Constants.usingMarkPrice ? 'Mark' : 'Bid/Ask';
 
@@ -34,6 +46,8 @@ function UserSettings() {
       Meteor.call('EmergencyCloseAllTrades', (error) => {
         if (error) {
           setErrorText(`Failed calling EmergencyCloseAllTrades when account was deactivated: ${error.toString()}`);
+        } else {
+          setGetData(!getData);
         }
       });
     }
@@ -57,19 +71,23 @@ function UserSettings() {
   };
 
   const Warn = () => {
-    if (userSettings?.accountIsActive === false){
+    if (userSettings?.accountIsActive === false) {
       return <Row style={{paddingBottom: 20}}>
         <h2 style={{color: 'red'}}>(Warning: Account is not active)</h2>
-      </Row>
+      </Row>;
     }
     return null;
   };
 
   const Note = () => {
-    if (userSettings?.isMaxGainAllowedMet){
+    if (userSettings?.isMaxGainAllowedMet) {
       return <Row style={{paddingBottom: 20}}>
-        <h2 style={{color: 'blue'}}>(Note: Max Daily Gain has been met so further trading is stopped for the day.)</h2>
-      </Row>
+        <Space>
+          <h2 style={{color: 'blue'}}>(Note: Max Daily Gain has been met so further trading is stopped for the
+            day.)</h2>
+          <Button type="primary" shape="round" onClick={resetDaily}>Reset Daily Gain Being Hit</Button>
+        </Space>
+      </Row>;
     }
     return null;
   };
@@ -141,7 +159,7 @@ function UserSettings() {
           </Row>
           <Warn/>
           <Note/>
-          </>
+        </>
         :
         <Spin size="large"/>
       }
