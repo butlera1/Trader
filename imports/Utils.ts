@@ -1,14 +1,21 @@
 import ITradeSettings, {IPrice} from './Interfaces/ITradeSettings';
-import dayjs from 'dayjs';
+import dayjs, {Dayjs} from 'dayjs';
 import utc from 'dayjs/plugin/utc';
 import timezone from 'dayjs/plugin/timezone';
 import _ from 'lodash';
 import IPrerunSlopeValue from './Interfaces/IPrerunSlopeValue';
 // @ts-ignore
 import {GetNewYorkTimeAt} from '../server/Trader.ts';
+import customParseFormat from 'dayjs/plugin/customParseFormat';
+import weekday from 'dayjs/plugin/weekday';
+import locale from 'dayjs/plugin/localeData';
 
 dayjs.extend(utc);
 dayjs.extend(timezone);
+dayjs.extend(customParseFormat);
+dayjs.extend(weekday);
+dayjs.extend(locale);
+
 
 /**
  * Given an hour number 0-23 and minutes, this returns a dayjs object that is that time in New York times zone.
@@ -175,6 +182,14 @@ function CalculateUnderlyingPriceSlopeAngle(prerunSlopeValue: IPrerunSlopeValue,
   }
 }
 
+function SetEndOfDay(date: Dayjs) {
+  return date.set('hour', 23).set('minute', 59).set('second', 59);
+}
+
+function SetStartOfDay(date: Dayjs) {
+  return date.set('hour', 0).set('minute', 0).set('second', 0);
+}
+
 
 export {
   CalculateGain,
@@ -186,4 +201,6 @@ export {
   CleanupGainLossWhenFailedClosingTrade,
   CalculateUnderlyingPriceSlopeAngle,
   InTradeHours,
+  SetEndOfDay,
+  SetStartOfDay,
 };

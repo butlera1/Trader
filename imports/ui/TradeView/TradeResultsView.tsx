@@ -11,7 +11,7 @@ import weekday from 'dayjs/plugin/weekday';
 import locale from 'dayjs/plugin/localeData';
 import {Checkbox, DatePicker, Divider, Select, Space} from 'antd';
 import {CheckboxChangeEvent} from 'antd/lib/checkbox';
-import {CalculateLimitsAndFees} from '../../Utils';
+import {CalculateLimitsAndFees, SetEndOfDay, SetStartOfDay} from '../../Utils';
 // @ts-ignore
 import {Meteor} from 'meteor/meteor';
 
@@ -26,20 +26,12 @@ function sortFunction(a: ITradeSettings, b: ITradeSettings) {
   return result;
 }
 
-function setEndOfDay(date: Dayjs) {
-  return date.set('hour', 23).set('minute', 59).set('second', 59);
-}
-
-function setStartOfDay(date: Dayjs) {
-  return date.set('hour', 0).set('minute', 0).set('second', 0);
-}
-
 function TradeResultsView() {
   const [isRealTradesOnly, setIsRealTradesOnly] = React.useState(false);
   const [isPrerunTradesOnly, setIsPrerunTradesOnly] = React.useState(false);
   const [filteredRecords, setFilteredRecords] = React.useState([]);
-  const [startDate, setStartDate] = React.useState(setStartOfDay(dayjs()));
-  const [endDate, setEndDate] = React.useState(setEndOfDay(dayjs()));
+  const [startDate, setStartDate] = React.useState(SetStartOfDay(dayjs()));
+  const [endDate, setEndDate] = React.useState(SetEndOfDay(dayjs()));
   const [selectedNames, setSelectedNames] = React.useState([]);
   const [tradeSettingNames, setTradeSettingNames] = React.useState([]);
   const [isGraphPrerunningTrades, setIsGraphPrerunningTrades] = React.useState(false);
@@ -95,13 +87,13 @@ function TradeResultsView() {
 
   const onStartDateChange = (date: Dayjs) => {
     const value = date ? date : dayjs();
-    const result = setStartOfDay(value);
+    const result = SetStartOfDay(value);
     setStartDate(result);
   };
 
   const onEndDateChange = (date: Dayjs) => {
     const value = date ? date : dayjs();
-    const result = setEndOfDay(value);
+    const result = SetEndOfDay(value);
     setEndDate(result);
   };
 
@@ -141,7 +133,7 @@ function TradeResultsView() {
         <h2>Which Strategies: <NamesSelector names={tradeSettingNames}/></h2>
       </Space>
       <ChartResults records={filteredRecords} isGraphPrerunningTrades={isGraphPrerunningTrades}/>
-      <h2 style={{color:'red'}}>{warningText}</h2>
+      <h2 style={{color: 'red'}}>{warningText}</h2>
       <Divider/>
       <TradeResultsTable records={[...filteredRecords].reverse()}/>
     </Space>
