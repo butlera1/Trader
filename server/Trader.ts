@@ -437,13 +437,13 @@ function checkPrerunVIXSlopeExit(liveTrade: ITradeSettings) {
       if (liveTrade.prerunVIXSlopeValue.direction === DirectionUp) {
         let trendingUp = true;
         for (let i = 0; i < samples.length - 1; i++) {
-          trendingUp = trendingUp && samples[i].vixSlopeAngle <= samples[i + 1].vixSlopeAngle;
+          trendingUp = trendingUp && samples[i].vixSlopeAngle <= samples[i + 1].vixSlopeAngle && samples[i+1].vixSlopeAngle >= 0;
         }
         return trendingUp;
       } else {
         let trendingDown = true;
         for (let i = 0; i < samples.length - 1; i++) {
-          trendingDown = trendingDown && samples[i].vixSlopeAngle >= samples[i + 1].vixSlopeAngle;
+          trendingDown = trendingDown && samples[i].vixSlopeAngle >= samples[i + 1].vixSlopeAngle && samples[i+1].vixSlopeAngle <= 0;
         }
         return trendingDown;
       }

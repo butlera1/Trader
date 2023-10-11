@@ -73,7 +73,7 @@ function Tools() {
           step={1}
           min={2}
           max={500}
-          style={{width: '80px'}}
+          style={{width: '70px'}}
           onChange={(totalSlopeSamples: number) => onChange({...appSettings, totalSlopeSamples})}
         />
         <label>VIX Slope Samples to Average (must be less then Total Ticks):</label>
@@ -83,8 +83,18 @@ function Tools() {
           step={1}
           min={2}
           max={500}
-          style={{width: '80px'}}
+          style={{width: '70px'}}
           onChange={(slopeSamplesToAverage: number) => onChange({...appSettings, slopeSamplesToAverage})}
+        />
+        <label>Viewable completed trades:</label>
+        <InputNumber
+          defaultValue={appSettings?.maxPublishedTrades}
+          value={appSettings?.maxPublishedTrades}
+          step={1}
+          min={1}
+          max={900}
+          style={{width: '80px'}}
+          onChange={(maxPublishedTrades: number) => onChange({...appSettings, maxPublishedTrades})}
         />
       </Space>
       <ShowErrorMessage/>
