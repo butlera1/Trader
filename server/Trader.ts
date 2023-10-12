@@ -432,21 +432,18 @@ function checkPrerunVIXSlopeExit(liveTrade: ITradeSettings) {
   if (liveTrade.isPrerunningVIXSlope) {
     const numberOfDesiredVIXAnglesInARow = liveTrade.prerunVIXSlopeValue.numberOfDesiredVIXAnglesInARow ?? 4;
     if (liveTrade.monitoredPrices.length >= numberOfDesiredVIXAnglesInARow) {
-      // This approach is for checking for slope trending down (decreasing in value).
+      // This approach is for checking for VIX slope trending down (decreasing in value) or up.
       const samples = liveTrade.monitoredPrices.slice(liveTrade.monitoredPrices.length - numberOfDesiredVIXAnglesInARow);
-      if (liveTrade.prerunVIXSlopeValue.direction === DirectionUp) {
-        let trendingUp = true;
-        for (let i = 0; i < samples.length - 1; i++) {
-          trendingUp = trendingUp && samples[i].vixSlopeAngle <= samples[i + 1].vixSlopeAngle && samples[i+1].vixSlopeAngle >= 0;
+      const isUp = liveTrade.prerunVIXSlopeValue.direction === DirectionUp;
+      let trending = true;
+      for (let i = 0; i < samples.length - 1; i++) {
+        if (isUp) {
+          trending = trending && samples[i].vixSlopeAngle <= samples[i + 1].vixSlopeAngle && samples[i+1].vixSlopeAngle >= 0;
+        } else {
+          trending = trending && samples[i].vixSlopeAngle >= samples[i + 1].vixSlopeAngle && samples[i+1].vixSlopeAngle <= 0;
         }
-        return trendingUp;
-      } else {
-        let trendingDown = true;
-        for (let i = 0; i < samples.length - 1; i++) {
-          trendingDown = trendingDown && samples[i].vixSlopeAngle >= samples[i + 1].vixSlopeAngle && samples[i+1].vixSlopeAngle <= 0;
-        }
-        return trendingDown;
       }
+      return trending;
     }
   }
   return false;
@@ -510,7 +507,14 @@ function MonitorTradeToCloseItOut(liveTrade: ITradeSettings) {
       const isRule7Exit = checkRule7Exit(liveTrade, currentSamplePrice);
       const isPrerunExit = checkPrerunExit(liveTrade);
       const isPrerunVIXSlopeExit = checkPrerunVIXSlopeExit(liveTrade);
-      if (isGainLimit || isLossLimit || isEndOfDay || isRule1Exit || isRule2Exit || isRule3Exit || isRule4Exit || isRule5Exit || isPrerunExit || isPrerunVIXSlopeExit) {
+
+      // If we are prerunning, only exit with a gain or prerun rule.
+      const isPrerunning = liveTrade.isPrerunningVIXSlope || liveTrade.isPrerunning;
+      const weHaveAPrerunExit = isPrerunExit || isPrerunVIXSlopeExit;
+      const stayInTrade = isPrerunning && liveTrade.gainLoss < 0 && !weHaveAPrerunExit;
+      const weHaveAnExitReason = isGainLimit || isLossLimit || isEndOfDay || isRule1Exit || isRule2Exit || isRule3Exit || isRule4Exit || isRule5Exit || isPrerunExit || isPrerunVIXSlopeExit;
+
+      if (weHaveAnExitReason && !stayInTrade) {
         liveTrade.whyClosed = whyClosedEnum.gainLimit;
         if (isRule1Exit) {
           liveTrade.whyClosed = whyClosedEnum.rule1Exit;
@@ -683,7 +687,6 @@ async function PlaceOpeningOrderAndMonitorToClose(tradeSettings: ITradeSettings)
   CalculateLimitsAndFees(tradeSettings);
   // Record this opening order data as a new active trade.
   tradeSettings._id = Trades.insert({...tradeSettings});
-  LogData(tradeSettings, `DEBUG: Just inserted new Trades: ${tradeSettings._id} for ${tradeSettings.userName}`);
   const currentSample: IPrice = {
     ...DefaultIPrice,
     price: -tradeSettings.openingPrice, // Negative for monitoring to close the trade.
