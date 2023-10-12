@@ -460,6 +460,7 @@ function getAveragePrice(samples: IPrice[], desiredNumberOfSamples: number) {
 
 function calculateVariousValues(liveTrade: ITradeSettings, currentSample: IPrice) {
   currentSample.gain = CalculateGain(liveTrade, currentSample.price);
+  liveTrade.gainLoss = currentSample.gain;
   liveTrade.monitoredPrices.push(currentSample); // Update the local copy.
   currentSample.vixMark = GetVIXMark();
   currentSample.vixSlopeAngle = GetVIXSlopeAngle();
@@ -511,11 +512,16 @@ function MonitorTradeToCloseItOut(liveTrade: ITradeSettings) {
       // If we are prerunning, only exit with a gain or prerun rule.
       const isPrerunning = liveTrade.isPrerunningVIXSlope || liveTrade.isPrerunning;
       const weHaveAPrerunExit = isPrerunExit || isPrerunVIXSlopeExit;
-      const stayInTrade = isPrerunning && liveTrade.gainLoss < 0 && !weHaveAPrerunExit;
+      const stayInTrade = isPrerunning && liveTrade.gainLoss <= 0 && !weHaveAPrerunExit;
       const weHaveAnExitReason = isGainLimit || isLossLimit || isEndOfDay || isRule1Exit || isRule2Exit || isRule3Exit || isRule4Exit || isRule5Exit || isPrerunExit || isPrerunVIXSlopeExit;
 
       if (weHaveAnExitReason && !stayInTrade) {
-        liveTrade.whyClosed = whyClosedEnum.gainLimit;
+        if (isGainLimit) {
+          liveTrade.whyClosed = whyClosedEnum.gainLimit;
+        }
+        if (isLossLimit) {
+          liveTrade.whyClosed = whyClosedEnum.lossLimit;
+        }
         if (isRule1Exit) {
           liveTrade.whyClosed = whyClosedEnum.rule1Exit;
         }
@@ -542,9 +548,6 @@ function MonitorTradeToCloseItOut(liveTrade: ITradeSettings) {
         }
         if (isPrerunVIXSlopeExit) {
           liveTrade.whyClosed = whyClosedEnum.prerunVIXSlopeExit;
-        }
-        if (isLossLimit) {
-          liveTrade.whyClosed = whyClosedEnum.lossLimit;
         }
         if (isEndOfDay) {
           liveTrade.whyClosed = whyClosedEnum.timedExit;
