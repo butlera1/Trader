@@ -52,7 +52,8 @@ function ChartResults({records, isGraphPrerunningTrades}: { records: ITradeSetti
   let sumLosses = 0;
 
   const resultSum = records.reduce((sum, record) => {
-    if ((!record.isPrerunning && !record.isPrerunningVWAPSlope && !record.isPrerunningVIXSlope) || isGraphPrerunningTrades) {
+    const isAnyPrerunning = record.isPrerunning || record.isPrerunningVWAPSlope || record.isPrerunningVIXSlope || record.isPrerunningGainLimit;
+    if (!isAnyPrerunning || isGraphPrerunningTrades) {
       const description = getDescription(record);
       CleanupGainLossWhenFailedClosingTrade(record);
       const actualGainLoss = record.gainLoss - CalculateTotalFees(record);
