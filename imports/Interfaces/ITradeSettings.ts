@@ -133,6 +133,8 @@ interface ITradeSettings {
   isRule5?: boolean,
   isRule6?: boolean,
   isRule7?: boolean,
+  isPrerunGainLimit?: boolean,
+  isPrerunningGainLimit?: boolean,
   isPrerun?: boolean,
   isPrerunning?: boolean,
   prerunValue?: IPrerunValue,
@@ -279,6 +281,9 @@ function GetDescription(tradeSettings: ITradeSettings) {
   }
   if (tradeSettings.isPrerunningVIXSlope) {
     part5 = `Mocked for Prerun VIX Slope`;
+  }
+  if (tradeSettings.isPrerunningGainLimit) {
+    part5 = `Mocked for Prerun Gain Limit`;
   }
   return `${part0}${part1}\n${part2}\n${part3}${part4}\n${part5}`;
 }

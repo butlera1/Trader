@@ -15,7 +15,8 @@ import isoWeek from 'dayjs/plugin/isoWeek';
 import {Trades} from './collections/Trades';
 import ITradeSettings, {
   BadDefaultIPrice,
-  DefaultIPrice, GetDescription,
+  DefaultIPrice,
+  GetDescription,
   IPrice,
   whyClosedEnum
 } from '../imports/Interfaces/ITradeSettings';
@@ -28,12 +29,7 @@ import _ from 'lodash';
 import {LogData} from './collections/Logs';
 import {SendTextToAdmin} from './SendOutInfo';
 import PollingMutex from './PollingMutex';
-import {
-  CalculateGain,
-  CalculateLimitsAndFees,
-  CalculateUnderlyingPriceAverageSlope,
-  GetNewYorkTimeAt
-} from '../imports/Utils';
+import {CalculateGain, CalculateLimitsAndFees, GetNewYorkTimeAt} from '../imports/Utils';
 import Semaphore from 'semaphore';
 import IUserSettings from '../imports/Interfaces/IUserSettings';
 import {GetVIXMark, GetVIXSlope, GetVIXSlopeAngle} from "./BackgroundPolling";
@@ -188,6 +184,8 @@ async function CloseTrade(tradeSettings: ITradeSettings, currentPrice: number) {
   saveTradeToHistory(tradeSettings);
   const wasPrerunning = tradeSettings.isPrerunning;
   const wasPrerunningVIXSlope = tradeSettings.isPrerunningVIXSlope;
+  const wasPrerunningGainLimit = tradeSettings.isPrerunningGainLimit;
+
   const message = `${tradeSettings.userName}: Trade closed (${tradeSettings.whyClosed}): Entry: $${openingPrice.toFixed(2)}, ` +
     `Exit: $${tradeSettings.closingPrice?.toFixed(2)}, ` +
     `G/L $${tradeSettings.gainLoss?.toFixed(2)} at ${tradeSettings.whenClosed} NY, _ID: ${tradeSettings._id}`;
@@ -200,7 +198,7 @@ async function CloseTrade(tradeSettings: ITradeSettings, currentPrice: number) {
   const okToRepeat = (tradeSettings.whyClosed !== whyClosedEnum.emergencyExit) &&
     (tradeSettings.whyClosed !== whyClosedEnum.timedExit) &&
     (notTooLate);
-  if ((tradeSettings.isRepeat || wasPrerunning || wasPrerunningVIXSlope) && okToRepeat) {
+  if ((tradeSettings.isRepeat || wasPrerunning || wasPrerunningVIXSlope || wasPrerunningGainLimit) && okToRepeat) {
     // Get fresh copy of the settings without values for whyClosed, openingPrice, closingPrice, gainLoss, etc.
     const settings = TradeSettings.findOne(tradeSettings.originalTradeSettingsId);
     if (!settings) {
@@ -212,6 +210,7 @@ async function CloseTrade(tradeSettings: ITradeSettings, currentPrice: number) {
       if (wasPrerunning && tradeSettings.whyClosed !== whyClosedEnum.gainLimit && tradeSettings.whyClosed !== whyClosedEnum.prerunExit) {
         nowPrerunning = true; // Do another prerun because we exited for loss limit or similar.
       }
+
       let nowPrerunningVIXSlope = wasPrerunningVIXSlope ? false : settings.isPrerunVIXSlope;
       // If wasPrerunningVIXSlope and we exited for something other than (gainLimit or prerunSlopeExit), restart a prerun.
       if (wasPrerunningVIXSlope && tradeSettings.whyClosed !== whyClosedEnum.gainLimit && tradeSettings.whyClosed !== whyClosedEnum.prerunVIXSlopeExit) {
@@ -221,7 +220,16 @@ async function CloseTrade(tradeSettings: ITradeSettings, currentPrice: number) {
         // If the setting is enabled and we just had a gain, don't go back to prerunSlope again.
         nowPrerunningVIXSlope = false;
       }
-      ExecuteTrade(settings, false, nowPrerunning, nowPrerunningVIXSlope)
+
+      // Decide what to do about isPrerunGainLimit. Always rerun PrerunGainLimit if we did not hit GainLimit.
+      let nowPrerunningGainLimit = tradeSettings.isPrerunGainLimit;
+      if (tradeSettings.isPrerunGainLimit && (tradeSettings.whyClosed === whyClosedEnum.gainLimit)) {
+        // Do real trade since if isPrerunGainLimit is one and got GainLimitExit.
+        // This will do repeated real trade wins even with isPrerunGainLimit set to true.
+        nowPrerunningGainLimit = false;
+      }
+
+      ExecuteTrade(settings, false, nowPrerunning, nowPrerunningVIXSlope, nowPrerunningGainLimit)
         .then()
         .catch((reason) => LogData(tradeSettings, `Failed doing a repeat ExecuteTrade ${reason}`, new Error(reason)));
     }
@@ -438,9 +446,9 @@ function checkPrerunVIXSlopeExit(liveTrade: ITradeSettings) {
       let trending = true;
       for (let i = 0; i < samples.length - 1; i++) {
         if (isUp) {
-          trending = trending && samples[i].vixSlopeAngle <= samples[i + 1].vixSlopeAngle && samples[i+1].vixSlopeAngle >= 0;
+          trending = trending && samples[i].vixSlopeAngle <= samples[i + 1].vixSlopeAngle && samples[i + 1].vixSlopeAngle >= 0;
         } else {
-          trending = trending && samples[i].vixSlopeAngle >= samples[i + 1].vixSlopeAngle && samples[i+1].vixSlopeAngle <= 0;
+          trending = trending && samples[i].vixSlopeAngle >= samples[i + 1].vixSlopeAngle && samples[i + 1].vixSlopeAngle <= 0;
         }
       }
       return trending;
@@ -509,13 +517,10 @@ function MonitorTradeToCloseItOut(liveTrade: ITradeSettings) {
       const isPrerunExit = checkPrerunExit(liveTrade);
       const isPrerunVIXSlopeExit = checkPrerunVIXSlopeExit(liveTrade);
 
-      // If we are prerunning, only exit with a gain or prerun rule.
-      const isPrerunning = liveTrade.isPrerunningVIXSlope || liveTrade.isPrerunning;
-      const weHaveAPrerunExit = isPrerunExit || isPrerunVIXSlopeExit;
-      const stayInTrade = isPrerunning && liveTrade.gainLoss <= 0 && !weHaveAPrerunExit;
-      const weHaveAnExitReason = isGainLimit || isLossLimit || isEndOfDay || isRule1Exit || isRule2Exit || isRule3Exit || isRule4Exit || isRule5Exit || isPrerunExit || isPrerunVIXSlopeExit;
+      const weHaveAnExitReason = isGainLimit || isLossLimit || isEndOfDay || isRule1Exit ||
+        isRule2Exit || isRule3Exit || isRule4Exit || isRule5Exit || isPrerunExit || isPrerunVIXSlopeExit;
 
-      if (weHaveAnExitReason && !stayInTrade) {
+      if (weHaveAnExitReason) {
         if (isGainLimit) {
           liveTrade.whyClosed = whyClosedEnum.gainLimit;
         }
@@ -716,7 +721,13 @@ function IsNotDuplicateTrade(tradeSettings: ITradeSettings) {
   return !existingTrade;
 }
 
-async function ExecuteTrade(tradeSettings: ITradeSettings, forceTheTrade = false, isPrerun = false, isPrerunVIXSlope = false) {
+async function ExecuteTrade(
+  tradeSettings: ITradeSettings,
+  forceTheTrade:boolean = false,
+  isPrerun:boolean = false,
+  isPrerunVIXSlope :boolean = false,
+  isPrerunGainLimit: boolean = false
+) {
   if (!tradeSettings) {
     const msg = `ExecuteTrade called without 'tradeSettings'.`;
     LogData(null, msg, new Error(msg));
@@ -760,7 +771,8 @@ async function ExecuteTrade(tradeSettings: ITradeSettings, forceTheTrade = false
       tradeSettings.emailAddress = userSettings.email;
       tradeSettings.isPrerunning = isPrerun;
       tradeSettings.isPrerunningVIXSlope = isPrerunVIXSlope;
-      tradeSettings.isMocked = tradeSettings.isMocked || isPrerun || isPrerunVIXSlope;
+      tradeSettings.isPrerunningGainLimit = isPrerunGainLimit;
+      tradeSettings.isMocked = tradeSettings.isMocked || isPrerun || isPrerunVIXSlope || isPrerunGainLimit;
       tradeSettings.description = GetDescription(tradeSettings);
       LogData(tradeSettings, `Trading for ${tradeSettings.userName} @ ${nowNYText} (NY) with ${JSON.stringify(tradeSettings)}`);
       // Place the opening trade and monitor it to later close it out.
@@ -804,7 +816,7 @@ function scheduleUsersTrade(tradeSettings, user) {
     if (delayInMilliseconds > 0 && tradeSettings.isActive) {
       const timeoutHandle = Meteor.setTimeout(async function timerMethodToOpenTrade() {
         Meteor.clearTimeout(timeoutHandle);
-        await ExecuteTrade(tradeSettings, false, tradeSettings.isPrerun, tradeSettings.isPrerunVIXSlope)
+        await ExecuteTrade(tradeSettings, false, tradeSettings.isPrerun, tradeSettings.isPrerunVIXSlope, tradeSettings.isPrerunGainLimit)
           .catch((reason) => {
             LogData(tradeSettings, `Failed to ExecuteTrade ${user.username}. Reason: ${reason}`);
           });

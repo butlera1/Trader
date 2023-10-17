@@ -55,7 +55,7 @@ function TestStrategy(tradeSettingsId) {
   }
   const forceTheTrade = true;
   const tradeSettings = TradeSettings.findOne(tradeSettingsId);
-  ExecuteTrade(tradeSettings, forceTheTrade, tradeSettings.isPrerun, tradeSettings.isPrerunVIXSlope).then();
+  ExecuteTrade(tradeSettings, forceTheTrade, tradeSettings.isPrerun, tradeSettings.isPrerunVIXSlope, tradeSettings.isPrerunGainLimit).then();
 }
 
 function CheckForAnyExistingTradesAndMonitorThem() {
