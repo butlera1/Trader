@@ -156,6 +156,7 @@ interface ITradeSettings {
   slope2Samples?: number,
   isCopiedOpenPriceToClosePrice?: boolean,
   openingUnderlyingPrice?: number,
+  showVixAndSlopeInGraphs?: boolean,
 }
 
 const DefaultIronCondorLegsSettings = [

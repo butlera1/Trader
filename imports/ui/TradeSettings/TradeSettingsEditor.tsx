@@ -84,6 +84,7 @@ export const TradeSettingsEditor = ({tradeSettings, changeCallback}: Props) => {
   const [prerunValue, setPrerunValue] = React.useState(tradeSettings.prerunValue ?? {});
   const [prerunVIXSlopeValue, setPrerunVIXSlopeValue] = React.useState(tradeSettings.prerunVIXSlopeValue ?? {});
   const [isPrerunGainLimit, setIsPrerunGainLimit] = React.useState(tradeSettings.isPrerunGainLimit ?? false);
+  const [showVixAndSlopeInGraphs, setShowVixAndSlopeInGraphs] = React.useState(tradeSettings.showVixAndSlopeInGraphs ?? false);
 
   const setMap = {
     isActive: setIsActive,
@@ -128,6 +129,7 @@ export const TradeSettingsEditor = ({tradeSettings, changeCallback}: Props) => {
     slope2Samples: setSlope2Samples,
     percentGainIsDollar: setPercentGainIsDollar,
     percentLossIsDollar: setPercentLossIsDollar,
+    showVixAndSlopeInGraphs: setShowVixAndSlopeInGraphs,
   };
 
   useEffect(() => {
@@ -180,6 +182,7 @@ export const TradeSettingsEditor = ({tradeSettings, changeCallback}: Props) => {
         slope2Samples: slope2Samples,
         percentGainIsDollar: percentGainIsDollar,
         percentLossIsDollar: percentLossIsDollar,
+        showVixAndSlopeInGraphs,
       };
       strategy.description = GetDescription(strategy);
       Meteor.call('SetUserTradeSettings', strategy, (error, result) => {
@@ -197,7 +200,7 @@ export const TradeSettingsEditor = ({tradeSettings, changeCallback}: Props) => {
     isRule1, isRule2, isRule3, isRule4, isRule5, isRule6, isRule7, isPrerun, prerunValue, rule1Value, rule2Value, rule3Value, rule4Value,
     rule5Value, rule6Value, rule7Value, name, slope1Samples, isPrerunVIXSlope, isPrerunGainLimit, prerunVIXSlopeValue,
     slope2Samples, percentGainIsDollar,
-    percentLossIsDollar]);
+    percentLossIsDollar, showVixAndSlopeInGraphs]);
 
   const RunNow = () => {
     return (
@@ -475,6 +478,15 @@ export const TradeSettingsEditor = ({tradeSettings, changeCallback}: Props) => {
               checked={useShortOnlyForLimits}
             >
               ShortsOnly for Gain Limit Calcs
+            </Checkbox>
+          </Col>
+          <Col span={24}>
+            <Checkbox
+              style={{marginLeft: 50}}
+              onChange={(e: CheckboxChangeEvent) => onChange('showVixAndSlopeInGraphs', e.target.checked)}
+              checked={showVixAndSlopeInGraphs}
+            >
+              Include VIX and Slope Graph Lines
             </Checkbox>
           </Col>
         </Space>
