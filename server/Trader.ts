@@ -460,12 +460,11 @@ function checkPrerunVIXSlopeExit(liveTrade: ITradeSettings) {
   return false;
 }
 
-function checkPrerunGainLimitExit(liveTrade: ITradeSettings) {
+function checkPrerunGainLimitExit(liveTrade: ITradeSettings, isGainLimitMet: boolean) {
   if (liveTrade.isPrerunningGainLimit) {
     const tradeDurationInSeconds = getTradeDurationInMinutes(liveTrade)*60;
     const isSpeedMet = tradeDurationInSeconds <= liveTrade.prerunGainLimitValue.seconds;
-    const isGainMet = liveTrade.gainLoss >= liveTrade.gainLimit;
-    return isSpeedMet && isGainMet;
+    return isSpeedMet && isGainLimitMet;
   }
   return false;
 }
@@ -529,7 +528,7 @@ function MonitorTradeToCloseItOut(liveTrade: ITradeSettings) {
       const isRule7Exit = checkRule7Exit(liveTrade, currentSamplePrice);
       const isPrerunExit = checkPrerunExit(liveTrade);
       const isPrerunVIXSlopeExit = checkPrerunVIXSlopeExit(liveTrade);
-      const isPrerunGainLimitExit = checkPrerunGainLimitExit(liveTrade);
+      const isPrerunGainLimitExit = checkPrerunGainLimitExit(liveTrade, isGainLimit);
 
       const weHaveAnExitReason = isGainLimit || isLossLimit || isEndOfDay || isRule1Exit ||
         isRule2Exit || isRule3Exit || isRule4Exit || isRule5Exit || isPrerunExit || isPrerunVIXSlopeExit || isPrerunGainLimitExit;
