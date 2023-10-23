@@ -84,6 +84,7 @@ export const TradeSettingsEditor = ({tradeSettings, changeCallback}: Props) => {
   const [prerunValue, setPrerunValue] = React.useState(tradeSettings.prerunValue ?? {});
   const [prerunVIXSlopeValue, setPrerunVIXSlopeValue] = React.useState(tradeSettings.prerunVIXSlopeValue ?? {});
   const [isPrerunGainLimit, setIsPrerunGainLimit] = React.useState(tradeSettings.isPrerunGainLimit ?? false);
+  const [prerunGainLimitValue, setPrerunGainLimitValue] = React.useState(tradeSettings.prerunGainLimitValue ?? {});
   const [showVixAndSlopeInGraphs, setShowVixAndSlopeInGraphs] = React.useState(tradeSettings.showVixAndSlopeInGraphs ?? false);
 
   const setMap = {
@@ -117,6 +118,7 @@ export const TradeSettingsEditor = ({tradeSettings, changeCallback}: Props) => {
     prerunValue: setPrerunValue,
     prerunVIXSlopeValue: setPrerunVIXSlopeValue,
     isPrerunGainLimit: setIsPrerunGainLimit,
+    prerunGainLimitValue: setPrerunGainLimitValue,
     rule1Value: setRule1Value,
     rule2Value: setRule2Value,
     rule3Value: setRule3Value,
@@ -170,6 +172,7 @@ export const TradeSettingsEditor = ({tradeSettings, changeCallback}: Props) => {
         isPrerunVIXSlope,
         prerunVIXSlopeValue,
         isPrerunGainLimit,
+        prerunGainLimitValue,
         rule1Value,
         rule2Value,
         rule3Value,
@@ -198,7 +201,7 @@ export const TradeSettingsEditor = ({tradeSettings, changeCallback}: Props) => {
   }, [isActive, isMocked, symbol, days, entryHour, entryMinute, exitHour, exitMinute, percentGain,
     percentLoss, commissionPerContract, legs, tradeType, isRepeat, repeatStopHour, useShortOnlyForLimits,
     isRule1, isRule2, isRule3, isRule4, isRule5, isRule6, isRule7, isPrerun, prerunValue, rule1Value, rule2Value, rule3Value, rule4Value,
-    rule5Value, rule6Value, rule7Value, name, slope1Samples, isPrerunVIXSlope, isPrerunGainLimit, prerunVIXSlopeValue,
+    rule5Value, rule6Value, rule7Value, name, slope1Samples, isPrerunVIXSlope, isPrerunGainLimit, prerunGainLimitValue, prerunVIXSlopeValue,
     slope2Samples, percentGainIsDollar,
     percentLossIsDollar, showVixAndSlopeInGraphs]);
 
@@ -524,7 +527,8 @@ export const TradeSettingsEditor = ({tradeSettings, changeCallback}: Props) => {
             checked={isPrerunGainLimit}
           >
           </Checkbox>
-          <PrerunGainLimitRule />
+          <PrerunGainLimitRule value={prerunGainLimitValue}
+                               onChange={(value) => onChange('prerunGainLimitValue', value)}/>
         </Col>
       </Row>
       <Row>

@@ -9,6 +9,7 @@ import IPrerunVWAPSlopeValue, {defaultPrerunVWAPSlopeValue} from './IPrerunVWAPS
 import IPrerunVIXSlopeValue, {defaultPrerunVIXSlopeValue} from './IPrerunVIXSlopeValue';
 import IRule6Value from './IRule6Value';
 import IRule7Value from './IRule7Value';
+import IPrerunGainAndTime, {defaultPrerunGainLimitValue} from './IPrerunGainLimitValue';
 
 enum whyClosedEnum {
   emergencyExit = 'emergencyExit',
@@ -25,6 +26,7 @@ enum whyClosedEnum {
   prerunExit = 'prerunExit',
   prerunVWAPSlopeExit = 'prerunVWAPSlopeExit',
   prerunVIXSlopeExit = 'prerunVIXSlopeExit',
+  prerunGainLimitExit = 'prerunGainLimitExit',
 }
 
 interface IPrice {
@@ -135,6 +137,7 @@ interface ITradeSettings {
   isRule7?: boolean,
   isPrerunGainLimit?: boolean,
   isPrerunningGainLimit?: boolean,
+  prerunGainLimitValue?: IPrerunGainAndTime,
   isPrerun?: boolean,
   isPrerunning?: boolean,
   prerunValue?: IPrerunValue,
@@ -245,6 +248,7 @@ const DefaultTradeSettings: ITradeSettings = {
   isPrerunningVIXSlope: false,
   prerunVIXSlopeValue: {...defaultPrerunVIXSlopeValue},
   repeatStopHour: 16,
+  prerunGainLimitValue: {...defaultPrerunGainLimitValue},
 };
 
 function getTwoDTEValues(legs) {

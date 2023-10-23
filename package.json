@@ -25,11 +25,13 @@
     "mutexify": "^1.4.0",
     "react": "^17.0.2",
     "react-dom": "^17.0.2",
-    "recharts": "^2.1.16",
+    "recharts": "^2.9.0",
     "semaphore": "^1.1.0",
     "sib-api-v3-sdk": "^8.4.2",
     "twilio": "^3.83.1",
-    "ws": "^8.12.1"
+    "write-csv": "^1.0.0",
+    "ws": "^8.12.1",
+    "xlsx": "^0.18.5"
   },
   "meteor": {
     "mainModule": {

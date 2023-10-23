@@ -221,11 +221,14 @@ async function CloseTrade(tradeSettings: ITradeSettings, currentPrice: number) {
         nowPrerunningVIXSlope = false;
       }
 
-      // Decide what to do about isPrerunGainLimit. Always rerun PrerunGainLimit if we did not hit GainLimit.
+      // Decide what to do about isPrerunGainLimit. Always rerun PrerunGainLimit if we did not hit prerunGainLimitExit.
       let nowPrerunningGainLimit = tradeSettings.isPrerunGainLimit;
-      if (tradeSettings.isPrerunGainLimit && (tradeSettings.whyClosed === whyClosedEnum.gainLimit)) {
-        // Do real trade since if isPrerunGainLimit is one and got GainLimitExit.
-        // This will do repeated real trade wins even with isPrerunGainLimit set to true.
+      if (wasPrerunningGainLimit && (tradeSettings.whyClosed === whyClosedEnum.prerunGainLimitExit)) {
+        // Do a real trade is we were in prerunGainLimit and we just exited for prerunGainLimitExit.
+        nowPrerunningGainLimit = false;
+      }
+      if (tradeSettings.isPrerunGainLimit && !wasPrerunningGainLimit && tradeSettings.gainLoss > 0) {
+        // If PrerunGainLimit is enabled and we just had a gain on real trade, do another real trade.
         nowPrerunningGainLimit = false;
       }
 
@@ -457,6 +460,16 @@ function checkPrerunVIXSlopeExit(liveTrade: ITradeSettings) {
   return false;
 }
 
+function checkPrerunGainLimitExit(liveTrade: ITradeSettings) {
+  if (liveTrade.isPrerunningGainLimit) {
+    const tradeDurationInSeconds = getTradeDurationInMinutes(liveTrade)*60;
+    const isSpeedMet = tradeDurationInSeconds <= liveTrade.prerunGainLimitValue.seconds;
+    const isGainMet = liveTrade.gainLoss >= liveTrade.gainLimit;
+    return isSpeedMet && isGainMet;
+  }
+  return false;
+}
+
 function getAveragePrice(samples: IPrice[], desiredNumberOfSamples: number) {
   const numberOfSamples = Math.min(desiredNumberOfSamples, samples.length);
   if (numberOfSamples === 0) return 0;
@@ -516,9 +529,10 @@ function MonitorTradeToCloseItOut(liveTrade: ITradeSettings) {
       const isRule7Exit = checkRule7Exit(liveTrade, currentSamplePrice);
       const isPrerunExit = checkPrerunExit(liveTrade);
       const isPrerunVIXSlopeExit = checkPrerunVIXSlopeExit(liveTrade);
+      const isPrerunGainLimitExit = checkPrerunGainLimitExit(liveTrade);
 
       const weHaveAnExitReason = isGainLimit || isLossLimit || isEndOfDay || isRule1Exit ||
-        isRule2Exit || isRule3Exit || isRule4Exit || isRule5Exit || isPrerunExit || isPrerunVIXSlopeExit;
+        isRule2Exit || isRule3Exit || isRule4Exit || isRule5Exit || isPrerunExit || isPrerunVIXSlopeExit || isPrerunGainLimitExit;
 
       if (weHaveAnExitReason) {
         if (isGainLimit) {
@@ -553,6 +567,9 @@ function MonitorTradeToCloseItOut(liveTrade: ITradeSettings) {
         }
         if (isPrerunVIXSlopeExit) {
           liveTrade.whyClosed = whyClosedEnum.prerunVIXSlopeExit;
+        }
+        if (isPrerunGainLimitExit) {
+          liveTrade.whyClosed = whyClosedEnum.prerunGainLimitExit;
         }
         if (isEndOfDay) {
           liveTrade.whyClosed = whyClosedEnum.timedExit;
