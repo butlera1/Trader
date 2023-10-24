@@ -92,8 +92,8 @@ function Tools() {
           value={appSettings?.maxPublishedTrades}
           step={1}
           min={1}
-          max={900}
-          style={{width: '80px'}}
+          max={10000}
+          style={{width: '100px'}}
           onChange={(maxPublishedTrades: number) => onChange({...appSettings, maxPublishedTrades})}
         />
       </Space>
