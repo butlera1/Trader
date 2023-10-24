@@ -30,8 +30,12 @@ function TradeResultsView() {
   const [isRealTradesOnly, setIsRealTradesOnly] = React.useState(false);
   const [isPrerunTradesOnly, setIsPrerunTradesOnly] = React.useState(false);
   const [filteredRecords, setFilteredRecords] = React.useState([]);
-  const [startDate, setStartDate] = React.useState(SetStartOfDay(dayjs()));
-  const [endDate, setEndDate] = React.useState(SetEndOfDay(dayjs()));
+  const [startDate, setStartDate] = React.useState(dayjs());
+  const [startHour, setStartHour] = React.useState(9);
+  const [startMinute, setStartMinute] = React.useState(30);
+  const [endDate, setEndDate] = React.useState(dayjs());
+  const [endHour, setEndHour] = React.useState(16);
+  const [endMinute, setEndMinute] = React.useState(0);
   const [selectedNames, setSelectedNames] = React.useState([]);
   const [tradeSettingNames, setTradeSettingNames] = React.useState([]);
   const [isGraphPrerunningTrades, setIsGraphPrerunningTrades] = React.useState(false);
@@ -73,10 +77,12 @@ function TradeResultsView() {
       setIsGraphPrerunningTrades(false);
     }
     if (startDate) {
-      query['whenOpened'] = {$gte: startDate.toDate()};
+      const start = startDate.hour(startHour).minute(startMinute).toDate();
+      query['whenOpened'] = {$gte: start};
     }
     if (endDate) {
-      query['whenClosed'] = {$lte: endDate.toDate()};
+      const end = endDate.hour(endHour).minute(endMinute).toDate();
+      query['whenClosed'] = {$lte: end};
     }
     if (selectedNames.length > 0) {
       query['name'] = {$in: selectedNames};
@@ -88,19 +94,7 @@ function TradeResultsView() {
     records.forEach(cleanupTrade);
 
     setFilteredRecords([...records]);
-  }, [Trades, isRealTradesOnly, startDate, endDate, selectedNames, isPrerunTradesOnly]);
-
-  const onStartDateChange = (date: Dayjs) => {
-    const value = date ? date : dayjs();
-    const result = SetStartOfDay(value);
-    setStartDate(result);
-  };
-
-  const onEndDateChange = (date: Dayjs) => {
-    const value = date ? date : dayjs();
-    const result = SetEndOfDay(value);
-    setEndDate(result);
-  };
+  }, [Trades, isRealTradesOnly, startDate, endDate, selectedNames, isPrerunTradesOnly,startHour,startMinute,endHour,endMinute]);
 
   const NamesSelector = ({names}: { names: string[] }) => {
     // @ts-ignore
@@ -133,8 +127,42 @@ function TradeResultsView() {
             checked={isPrerunTradesOnly}
           />
         </h2>
-        <h2>Start Date: <DatePicker onChange={onStartDateChange} defaultValue={startDate}/></h2>
-        <h2>End Date: <DatePicker onChange={onEndDateChange} defaultValue={endDate}/></h2>
+        <Space>
+          <h2>Start Date: <DatePicker onChange={setStartDate} defaultValue={dayjs()}/></h2>
+          <h3>Time: <Select defaultValue={startHour} onChange={setStartHour}>
+            <Select.Option value={9}>9</Select.Option>
+            <Select.Option value={10}>10</Select.Option>
+            <Select.Option value={11}>11</Select.Option>
+            <Select.Option value={12}>12</Select.Option>
+            <Select.Option value={13}>1</Select.Option>
+            <Select.Option value={14}>2</Select.Option>
+            <Select.Option value={15}>3</Select.Option>
+            <Select.Option value={16}>4</Select.Option>
+          </Select>:<Select defaultValue={startMinute} onChange={setStartMinute}>
+            <Select.Option value={0}>00</Select.Option>
+            <Select.Option value={15}>15</Select.Option>
+            <Select.Option value={30}>30</Select.Option>
+            <Select.Option value={45}>45</Select.Option>
+          </Select></h3>
+        </Space>
+        <Space>
+          <h2>End Date: <DatePicker onChange={setEndDate} defaultValue={dayjs()}/></h2>
+          <h3>Time: <Select defaultValue={endHour} onChange={setEndHour}>
+            <Select.Option value={9}>9</Select.Option>
+            <Select.Option value={10}>10</Select.Option>
+            <Select.Option value={11}>11</Select.Option>
+            <Select.Option value={12}>12</Select.Option>
+            <Select.Option value={13}>1</Select.Option>
+            <Select.Option value={14}>2</Select.Option>
+            <Select.Option value={15}>3</Select.Option>
+            <Select.Option value={16}>4</Select.Option>
+          </Select>:<Select defaultValue={endMinute} onChange={setEndMinute}>
+            <Select.Option value={0}>00</Select.Option>
+            <Select.Option value={15}>15</Select.Option>
+            <Select.Option value={30}>30</Select.Option>
+            <Select.Option value={45}>45</Select.Option>
+          </Select></h3>
+        </Space>
         <h2>Which Strategies: <NamesSelector names={tradeSettingNames}/></h2>
       </Space>
       <ChartResults records={filteredRecords} isGraphPrerunningTrades={isGraphPrerunningTrades}/>
