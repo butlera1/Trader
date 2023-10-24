@@ -77,11 +77,17 @@ function TradeResultsView() {
       setIsGraphPrerunningTrades(false);
     }
     if (startDate) {
-      const start = startDate.hour(startHour).minute(startMinute).toDate();
+      let start = startDate.hour(startHour).minute(startMinute).toDate();
+      //start = new Date(start.toLocaleString('en-US', {timeZone: 'Zulu'}));
+
+      start = SetStartOfDay(startDate).toDate();
       query['whenOpened'] = {$gte: start};
     }
     if (endDate) {
-      const end = endDate.hour(endHour).minute(endMinute).toDate();
+      let end = endDate.hour(endHour).minute(endMinute).toDate();
+      //end = new Date(end.toLocaleString('en-US', {timeZone: 'Zulu'}));
+
+      end = SetEndOfDay(endDate).toDate();
       query['whenClosed'] = {$lte: end};
     }
     if (selectedNames.length > 0) {
@@ -154,8 +160,8 @@ function TradeResultsView() {
             <Select.Option value={12}>12</Select.Option>
             <Select.Option value={13}>1</Select.Option>
             <Select.Option value={14}>2</Select.Option>
-            <Select.Option value={15}>3</Select.Option>
-            <Select.Option value={16}>4</Select.Option>
+            <Select.Option value={16}>3</Select.Option>
+            <Select.Option value={21}>4</Select.Option>
           </Select>:<Select defaultValue={endMinute} onChange={setEndMinute}>
             <Select.Option value={0}>00</Select.Option>
             <Select.Option value={15}>15</Select.Option>
