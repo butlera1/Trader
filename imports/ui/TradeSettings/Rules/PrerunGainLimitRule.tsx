@@ -13,9 +13,9 @@ function PrerunGainLimitRule({
         <InputNumber
           defaultValue={value?.seconds ?? defaultPrerunGainLimitValue.seconds}
           min={1}
-          max={1000}
+          max={100000}
           step={1}
-          style={{width: '60px'}}
+          style={{width: '100px'}}
           onChange={(seconds: number) => onChange({...value, seconds})}
         />
         <label>seconds. Any other trade exit will rerun trade with Prerun on again.</label>

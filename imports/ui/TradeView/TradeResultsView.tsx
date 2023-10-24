@@ -140,9 +140,17 @@ function TradeResultsView() {
             <Select.Option value={16}>4</Select.Option>
           </Select>:<Select defaultValue={startMinute} onChange={setStartMinute}>
             <Select.Option value={0}>00</Select.Option>
+            <Select.Option value={5}>05</Select.Option>
+            <Select.Option value={10}>10</Select.Option>
             <Select.Option value={15}>15</Select.Option>
+            <Select.Option value={20}>20</Select.Option>
+            <Select.Option value={25}>25</Select.Option>
             <Select.Option value={30}>30</Select.Option>
+            <Select.Option value={35}>35</Select.Option>
+            <Select.Option value={40}>40</Select.Option>
             <Select.Option value={45}>45</Select.Option>
+            <Select.Option value={50}>50</Select.Option>
+            <Select.Option value={55}>55</Select.Option>
           </Select></h3>
         </Space>
         <Space>
@@ -158,9 +166,17 @@ function TradeResultsView() {
             <Select.Option value={21}>4</Select.Option>
           </Select>:<Select defaultValue={endMinute} onChange={setEndMinute}>
             <Select.Option value={0}>00</Select.Option>
+            <Select.Option value={5}>05</Select.Option>
+            <Select.Option value={10}>10</Select.Option>
             <Select.Option value={15}>15</Select.Option>
+            <Select.Option value={20}>20</Select.Option>
+            <Select.Option value={25}>25</Select.Option>
             <Select.Option value={30}>30</Select.Option>
+            <Select.Option value={35}>35</Select.Option>
+            <Select.Option value={40}>40</Select.Option>
             <Select.Option value={45}>45</Select.Option>
+            <Select.Option value={50}>50</Select.Option>
+            <Select.Option value={55}>55</Select.Option>
           </Select></h3>
         </Space>
         <h2>Which Strategies: <NamesSelector names={tradeSettingNames}/></h2>

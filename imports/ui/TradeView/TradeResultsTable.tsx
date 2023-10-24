@@ -23,9 +23,10 @@ function deleteTradeResults(record: ITradeSettings) {
 }
 
 function RenderOpenOrClosedData(when, price, under, whyClosed) {
+  const nyWhen = GetNewYorkTimeAsText(when);
   return (
     <Space direction="vertical">
-      <span>{when}</span>
+      <span>{nyWhen}</span>
       <span>${price}</span>
       <span>${under}</span>
       <span>{whyClosed}</span>
@@ -65,7 +66,7 @@ const columns: ColumnsType<ITradeSettings> = [
     },
     render: (when, record) => {
       const under = record.monitoredPrices.length > 0 ? record.monitoredPrices[0]?.underlyingPrice ?? 0 : 0;
-      return RenderOpenOrClosedData(GetNewYorkTimeAsText(when), record.openingPrice.toFixed(2), under.toFixed(2), '');
+      return RenderOpenOrClosedData(when, record.openingPrice.toFixed(2), under.toFixed(2), '');
     }
   },
   {
@@ -85,7 +86,7 @@ const columns: ColumnsType<ITradeSettings> = [
       const priceDiff = record.gainLoss;
       const priceDiffAll = `${record.closingPrice?.toFixed(2)} (${(priceDiff).toFixed(3)})`;
       const underDiff = `${under.toFixed(2)} (${(under - initialUnder).toFixed(3)})`;
-      return RenderOpenOrClosedData(GetNewYorkTimeAsText(when), priceDiffAll, underDiff, record.whyClosed);
+      return RenderOpenOrClosedData(when, priceDiffAll, underDiff, record.whyClosed);
     },
   },
   {

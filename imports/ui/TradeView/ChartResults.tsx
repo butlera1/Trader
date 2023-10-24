@@ -3,9 +3,9 @@ import {CartesianGrid, Line, LineChart, Tooltip, XAxis, YAxis} from 'recharts';
 // @ts-ignore
 import {useTracker} from 'meteor/react-meteor-data';
 import {Space} from 'antd';
-import ITradeSettings, {whyClosedEnum} from '../../Interfaces/ITradeSettings';
+import ITradeSettings from '../../Interfaces/ITradeSettings';
 import dayjs from 'dayjs';
-import {CalculateGain, CalculateTotalFees, CleanupGainLossWhenFailedClosingTrade} from '../../Utils';
+import {CalculateTotalFees, CleanupGainLossWhenFailedClosingTrade, GetNewYorkTimeAsText} from '../../Utils';
 
 interface ISumResults {
   description: string,
@@ -19,7 +19,7 @@ function getDescription(record) {
 }
 
 function getDateTime(record) {
-  return dayjs(record.whenClosed).format('MM/DD h:mm:ss');
+  return GetNewYorkTimeAsText(record.whenClosed);
 }
 
 function getTradeDurationMinutes(trade: ITradeSettings) {
@@ -33,13 +33,18 @@ interface ITotalsProps {
   losses: number,
   totalGains: number,
 }
-function Totals({numberOfTrades, winnings, losses, totalGains}: ITotalsProps){
+
+function Totals({numberOfTrades, winnings, losses, totalGains}: ITotalsProps) {
   const color = totalGains >= 0 ? 'green' : 'red';
-  const ColoredStuff = <span >Result: ${totalGains.toFixed(2)}</span>;
-  return <h2 style={{color}}>{numberOfTrades} trades, Wins: ${winnings.toFixed(2)} - Losses: ${Math.abs(losses).toFixed(2)} = {ColoredStuff}</h2>
+  const ColoredStuff = <span>Result: ${totalGains.toFixed(2)}</span>;
+  return <h2 style={{color}}>{numberOfTrades} trades, Wins: ${winnings.toFixed(2)} - Losses:
+    ${Math.abs(losses).toFixed(2)} = {ColoredStuff}</h2>;
 }
 
-function ChartResults({records, isGraphPrerunningTrades}: { records: ITradeSettings[], isGraphPrerunningTrades: boolean }) {
+function ChartResults({records, isGraphPrerunningTrades}: {
+  records: ITradeSettings[],
+  isGraphPrerunningTrades: boolean
+}) {
   const sumResults: ISumResults[] = [];
   let wins = 0.0;
   let losses = 0.0;
