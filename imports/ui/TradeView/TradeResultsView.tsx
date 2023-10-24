@@ -77,11 +77,11 @@ function TradeResultsView() {
       setIsGraphPrerunningTrades(false);
     }
     if (startDate) {
-      const ny = GetNewYorkTimeAt(startHour, startMinute).date(startDate.date());
+      const ny = GetNewYorkTimeAt(startHour, startMinute).date(startDate.date()).month(startDate.month()).year(startDate.year());
       query['whenOpened'] = {$gte: ny.toDate()};
     }
     if (endDate) {
-      const ny = GetNewYorkTimeAt(endHour, endMinute).date(endDate.date());
+      const ny = GetNewYorkTimeAt(endHour, endMinute).date(endDate.date()).month(endDate.month()).year(endDate.year());
       query['whenClosed'] = {$lte: ny.toDate()};
     }
     if (selectedNames.length > 0) {
