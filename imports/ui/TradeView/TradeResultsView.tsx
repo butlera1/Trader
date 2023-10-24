@@ -11,7 +11,7 @@ import weekday from 'dayjs/plugin/weekday';
 import locale from 'dayjs/plugin/localeData';
 import {Checkbox, DatePicker, Divider, Select, Space} from 'antd';
 import {CheckboxChangeEvent} from 'antd/lib/checkbox';
-import {CalculateLimitsAndFees, SetEndOfDay, SetStartOfDay} from '../../Utils';
+import {CalculateLimitsAndFees, GetNewYorkTimeAt, SetEndOfDay, SetStartOfDay} from '../../Utils';
 // @ts-ignore
 import {Meteor} from 'meteor/meteor';
 
@@ -77,18 +77,12 @@ function TradeResultsView() {
       setIsGraphPrerunningTrades(false);
     }
     if (startDate) {
-      let start = startDate.hour(startHour).minute(startMinute).toDate();
-      //start = new Date(start.toLocaleString('en-US', {timeZone: 'Zulu'}));
-
-      start = SetStartOfDay(startDate).toDate();
-      query['whenOpened'] = {$gte: start};
+      const ny = GetNewYorkTimeAt(startHour, startMinute).date(startDate.date());
+      query['whenOpened'] = {$gte: ny.toDate()};
     }
     if (endDate) {
-      let end = endDate.hour(endHour).minute(endMinute).toDate();
-      //end = new Date(end.toLocaleString('en-US', {timeZone: 'Zulu'}));
-
-      end = SetEndOfDay(endDate).toDate();
-      query['whenClosed'] = {$lte: end};
+      const ny = GetNewYorkTimeAt(endHour, endMinute).date(endDate.date());
+      query['whenClosed'] = {$lte: ny.toDate()};
     }
     if (selectedNames.length > 0) {
       query['name'] = {$in: selectedNames};
