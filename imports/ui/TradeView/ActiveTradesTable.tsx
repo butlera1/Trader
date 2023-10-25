@@ -144,7 +144,7 @@ function ActiveTradesTable() {
   return (
     <Table
       style={{border: 'solid 1px red'}}
-      pagination={{pageSize: 5}}
+      pagination={false}
       title={title}
       size="small"
       columns={columns}

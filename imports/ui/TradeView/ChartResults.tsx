@@ -53,6 +53,8 @@ function ChartResults({records, isGraphPrerunningTrades}: {
   let maxWin = 0;
   let maxLoss = 0;
   let avgDuration = 0;
+  let avgWinDuration = 0;
+  let avgLossDuration = 0;
   let sumWins = 0;
   let sumLosses = 0;
 
@@ -69,10 +71,13 @@ function ChartResults({records, isGraphPrerunningTrades}: {
         sum,
         gainLoss: actualGainLoss,
       });
+      const currentTradeDuration = getTradeDurationMinutes(record);
+      avgDuration += currentTradeDuration;
       if (actualGainLoss >= 0.0) {
         wins++;
         sumWins += actualGainLoss;
         avgWinTmp += actualGainLoss;
+        avgWinDuration += currentTradeDuration;
         if (actualGainLoss > maxWin) {
           maxWin = actualGainLoss;
         }
@@ -80,11 +85,11 @@ function ChartResults({records, isGraphPrerunningTrades}: {
         losses++;
         sumLosses += actualGainLoss;
         avgLossTmp += actualGainLoss;
+        avgLossDuration += currentTradeDuration;
         if (actualGainLoss < maxLoss) {
           maxLoss = actualGainLoss;
         }
       }
-      avgDuration += getTradeDurationMinutes(record);
     }
     return sum;
   }, 0.0);
@@ -93,12 +98,14 @@ function ChartResults({records, isGraphPrerunningTrades}: {
   const winRate = sumResults.length ? (((wins / sumResults.length) * 100).toFixed(1)) : '0.0';
   const lossRate = sumResults.length ? (((losses / sumResults.length) * 100).toFixed(1)) : '0.0';
   avgDuration = records.length ? avgDuration / records.length : 0;
+  avgLossDuration = losses ? avgLossDuration / losses : 0;
+  avgWinDuration = wins ? avgWinDuration / wins : 0;
 
   return (
-    <Space>
-      <LineChart width={600} height={300} data={sumResults ?? []} margin={{top: 5, right: 20, bottom: 5, left: 0}}>
-        <Line type="monotone" dataKey="sum" stroke="blue" dot={false}/>
-        <Line type="monotone" dataKey="gainLoss" stroke="pink" dot={false}/>
+    <>
+      <LineChart width={1600} height={600} data={sumResults ?? []} margin={{top: 5, right: 20, bottom: 5, left: 0}}>
+        <Line type="monotone" dataKey="sum" stroke="blue" dot={false} strokeWidth={2}/>
+        <Line type="monotone" dataKey="gainLoss" stroke="red" dot={false} strokeWidth={1}/>
         <CartesianGrid stroke="#ccc" strokeDasharray="5 5"/>
         <XAxis dataKey={getDateTime}/>
         <YAxis/>
@@ -106,10 +113,11 @@ function ChartResults({records, isGraphPrerunningTrades}: {
       </LineChart>
       <div>
         <Space>
-          <h1>WINS:</h1>
+          <h1>Wins:</h1>
           <h2>{wins}/{sumResults.length} for {winRate}% win rate.</h2>
           <h2>Avg: ${avgWinText}</h2>
           <h2>Max: ${maxWin.toFixed(2)}</h2>
+          <h2>Avg Time: {avgWinDuration.toFixed(1)} min</h2>
           <h2>Total: ${sumWins.toFixed(2)}</h2>
         </Space>
         <br/>
@@ -118,6 +126,7 @@ function ChartResults({records, isGraphPrerunningTrades}: {
           <h2>{losses}/{sumResults.length} for {lossRate}% loss rate.</h2>
           <h2>Avg: ${avgLossText}</h2>
           <h2>Max: ${maxLoss.toFixed(2)}</h2>
+          <h2>Avg Time: {avgLossDuration.toFixed(1)} min</h2>
           <h2>Total: ${sumLosses.toFixed(2)}</h2>
         </Space>
         <br/>
@@ -131,7 +140,7 @@ function ChartResults({records, isGraphPrerunningTrades}: {
           <Totals numberOfTrades={sumResults.length} winnings={sumWins} losses={sumLosses} totalGains={resultSum}/>
         </Space>
       </div>
-    </Space>
+    </>
   );
 }
 
