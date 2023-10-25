@@ -26,6 +26,34 @@ function sortFunction(a: ITradeSettings, b: ITradeSettings) {
   return result;
 }
 
+function EditTime({ hour, setHour, minute, setMinute}) {
+  return (
+    <h3>Time: <Select defaultValue={hour} onChange={setHour}>
+      <Select.Option value={9}>9</Select.Option>
+      <Select.Option value={10}>10</Select.Option>
+      <Select.Option value={11}>11</Select.Option>
+      <Select.Option value={12}>12</Select.Option>
+      <Select.Option value={13}>1</Select.Option>
+      <Select.Option value={14}>2</Select.Option>
+      <Select.Option value={15}>3</Select.Option>
+      <Select.Option value={16}>4</Select.Option>
+    </Select>:<Select defaultValue={minute} onChange={setMinute}>
+      <Select.Option value={0}>00</Select.Option>
+      <Select.Option value={5}>05</Select.Option>
+      <Select.Option value={10}>10</Select.Option>
+      <Select.Option value={15}>15</Select.Option>
+      <Select.Option value={20}>20</Select.Option>
+      <Select.Option value={25}>25</Select.Option>
+      <Select.Option value={30}>30</Select.Option>
+      <Select.Option value={35}>35</Select.Option>
+      <Select.Option value={40}>40</Select.Option>
+      <Select.Option value={45}>45</Select.Option>
+      <Select.Option value={50}>50</Select.Option>
+      <Select.Option value={55}>55</Select.Option>
+    </Select></h3>
+  );
+}
+
 function TradeResultsView() {
   const [isRealTradesOnly, setIsRealTradesOnly] = React.useState(false);
   const [isPrerunTradesOnly, setIsPrerunTradesOnly] = React.useState(false);
@@ -129,55 +157,11 @@ function TradeResultsView() {
         </h2>
         <Space>
           <h2>Start Date: <DatePicker onChange={setStartDate} defaultValue={dayjs()}/></h2>
-          <h3>Time: <Select defaultValue={startHour} onChange={setStartHour}>
-            <Select.Option value={9}>9</Select.Option>
-            <Select.Option value={10}>10</Select.Option>
-            <Select.Option value={11}>11</Select.Option>
-            <Select.Option value={12}>12</Select.Option>
-            <Select.Option value={13}>1</Select.Option>
-            <Select.Option value={14}>2</Select.Option>
-            <Select.Option value={15}>3</Select.Option>
-            <Select.Option value={16}>4</Select.Option>
-          </Select>:<Select defaultValue={startMinute} onChange={setStartMinute}>
-            <Select.Option value={0}>00</Select.Option>
-            <Select.Option value={5}>05</Select.Option>
-            <Select.Option value={10}>10</Select.Option>
-            <Select.Option value={15}>15</Select.Option>
-            <Select.Option value={20}>20</Select.Option>
-            <Select.Option value={25}>25</Select.Option>
-            <Select.Option value={30}>30</Select.Option>
-            <Select.Option value={35}>35</Select.Option>
-            <Select.Option value={40}>40</Select.Option>
-            <Select.Option value={45}>45</Select.Option>
-            <Select.Option value={50}>50</Select.Option>
-            <Select.Option value={55}>55</Select.Option>
-          </Select></h3>
+          <EditTime hour={startHour} minute={startMinute} setHour={setStartHour} setMinute={setStartMinute}/>
         </Space>
         <Space>
           <h2>End Date: <DatePicker onChange={setEndDate} defaultValue={dayjs()}/></h2>
-          <h3>Time: <Select defaultValue={endHour} onChange={setEndHour}>
-            <Select.Option value={9}>9</Select.Option>
-            <Select.Option value={10}>10</Select.Option>
-            <Select.Option value={11}>11</Select.Option>
-            <Select.Option value={12}>12</Select.Option>
-            <Select.Option value={13}>1</Select.Option>
-            <Select.Option value={14}>2</Select.Option>
-            <Select.Option value={16}>3</Select.Option>
-            <Select.Option value={21}>4</Select.Option>
-          </Select>:<Select defaultValue={endMinute} onChange={setEndMinute}>
-            <Select.Option value={0}>00</Select.Option>
-            <Select.Option value={5}>05</Select.Option>
-            <Select.Option value={10}>10</Select.Option>
-            <Select.Option value={15}>15</Select.Option>
-            <Select.Option value={20}>20</Select.Option>
-            <Select.Option value={25}>25</Select.Option>
-            <Select.Option value={30}>30</Select.Option>
-            <Select.Option value={35}>35</Select.Option>
-            <Select.Option value={40}>40</Select.Option>
-            <Select.Option value={45}>45</Select.Option>
-            <Select.Option value={50}>50</Select.Option>
-            <Select.Option value={55}>55</Select.Option>
-          </Select></h3>
+          <EditTime hour={endHour} minute={endMinute} setHour={setEndHour} setMinute={setEndMinute}/>
         </Space>
         <h2>Which Strategies: <NamesSelector names={tradeSettingNames}/></h2>
       </Space>
