@@ -60,6 +60,7 @@ async function poll() {
           data[currentQuote.symbol] = [];
         }
         data[currentQuote.symbol].push(currentQuote);
+        currentQuote.whenNY = new Date();
         const settings = AppSettings.findOne(Constants.appSettingsId);
         const slopeSamplesToAverage = settings?.slopeSamplesToAverage ?? 5;
         const totalSlopeSamples = settings?.totalSlopeSamples ?? 10;
@@ -88,6 +89,20 @@ function GetVIXMark() {
     return data['$VIX.X'][lastIndex].mark;
   }
   return 0;
+}
+
+/**
+ * Meteor Method used to chart SPX data on UI.
+ */
+function GetSPXData() {
+  try {
+    if (!Meteor.userId()) {
+      return new Meteor.Error('Must have valid user in GetSPXData.');
+    }
+    return data[Constants.SPXSymbol] ?? [{mark: 25, whenNY: new Date()}];
+  } catch (e) {
+    return new Meteor.Error(e.message);
+  }
 }
 
 function GetVIXSlopeAngle() {
@@ -124,4 +139,5 @@ export {
   GetVIXSlope,
   GetVIXMark,
   GetVIXSlopeAngle,
+  GetSPXData,
 };

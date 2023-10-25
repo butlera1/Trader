@@ -1,11 +1,13 @@
 import React from 'react';
-import {CartesianGrid, Line, LineChart, Tooltip, XAxis, YAxis} from 'recharts';
+import {CartesianGrid, Label, Line, LineChart, Tooltip, XAxis, YAxis} from 'recharts';
 // @ts-ignore
 import {useTracker} from 'meteor/react-meteor-data';
 import {Space} from 'antd';
 import ITradeSettings from '../../Interfaces/ITradeSettings';
 import dayjs from 'dayjs';
 import {CalculateTotalFees, CleanupGainLossWhenFailedClosingTrade, GetNewYorkTimeAsText} from '../../Utils';
+// @ts-ignore
+import {Meteor} from 'meteor/meteor';
 
 interface ISumResults {
   description: string,
@@ -46,6 +48,7 @@ function ChartResults({records, isGraphPrerunningTrades}: {
   isGraphPrerunningTrades: boolean
 }) {
   const sumResults: ISumResults[] = [];
+  const [spxData, setSPXData] = React.useState([]);
   let wins = 0.0;
   let losses = 0.0;
   let avgLossTmp = 0;
@@ -57,6 +60,16 @@ function ChartResults({records, isGraphPrerunningTrades}: {
   let avgLossDuration = 0;
   let sumWins = 0;
   let sumLosses = 0;
+
+  React.useEffect(() => {
+    Meteor.call('GetSPXData', (error, result) => {
+      if (error) {
+        console.error(error);
+      } else {
+        setSPXData(result);
+      }
+    });
+  }, [records]);
 
   const resultSum = records.reduce((sum, record) => {
     const isAnyPrerunning = record.isPrerunning || record.isPrerunningVWAPSlope || record.isPrerunningVIXSlope || record.isPrerunningGainLimit;
@@ -103,12 +116,35 @@ function ChartResults({records, isGraphPrerunningTrades}: {
 
   return (
     <>
+      <LineChart width={1600} height={600} data={spxData ?? []} margin={{top: 5, right: 20, bottom: 5, left: 0}}>
+        <Line type="monotone" dataKey="mark" stroke="red" dot={false} strokeWidth={2}/>
+        <CartesianGrid stroke="#ccc" strokeDasharray="5 5"/>
+        <XAxis dataKey={(record) => GetNewYorkTimeAsText(record.whenNY)}/>
+        <YAxis width={90} tick={{fontSize: 10,}} allowDecimals={false}>
+          <Label
+            value={`SPX`}
+            angle={-90}
+            position="outside"
+            fill="#676767"
+            fontSize={14}
+          />
+        </YAxis>
+        <Tooltip/>
+      </LineChart>
       <LineChart width={1600} height={600} data={sumResults ?? []} margin={{top: 5, right: 20, bottom: 5, left: 0}}>
         <Line type="monotone" dataKey="sum" stroke="blue" dot={false} strokeWidth={2}/>
         <Line type="monotone" dataKey="gainLoss" stroke="red" dot={false} strokeWidth={1}/>
         <CartesianGrid stroke="#ccc" strokeDasharray="5 5"/>
         <XAxis dataKey={getDateTime}/>
-        <YAxis/>
+        <YAxis width={90} tick={{fontSize: 10,}} allowDecimals={false}>
+          <Label
+            value={`Results`}
+            angle={-90}
+            position="outside"
+            fill="#676767"
+            fontSize={14}
+          />
+        </YAxis>
         <Tooltip/>
       </LineChart>
       <div>

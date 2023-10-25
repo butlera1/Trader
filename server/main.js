@@ -37,7 +37,7 @@ import './TDAApi/StreamEquities';
 import ScheduleEndOfDayWork from './ScheduleEndOfDayWork';
 import {GetSlopeAngleOfSymbol, LatestQuote} from './TDAApi/StreamEquities';
 import {DefaultAppSettings} from '../imports/Interfaces/IAppSettings';
-import {StartBackgroundPolling} from './BackgroundPolling';
+import {GetSPXData, StartBackgroundPolling} from './BackgroundPolling';
 
 dayjs.extend(utc);
 dayjs.extend(timezone);
@@ -91,6 +91,7 @@ Meteor.methods({
     GetAppSettings,
     SetAppSettings,
     ResetUsersMaxDailyGainSettings,
+    GetSPXData,
   }
 );
 
