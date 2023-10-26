@@ -21,7 +21,7 @@ import {
   SellStraddle,
   SetUserAccessInfo
 } from './TDAApi/TDAApi';
-import {EmergencyCloseAllTrades, ExecuteTrade, MonitorTradeToCloseItOut} from './Trader';
+import {EmergencyCloseAllTrades, EmergencyCloseSingleTrade, ExecuteTrade, MonitorTradeToCloseItOut} from './Trader';
 import {WebApp} from 'meteor/webapp';
 import {Trades} from './collections/Trades';
 import {LogData} from './collections/Logs';
@@ -86,6 +86,7 @@ Meteor.methods({
     GetATMOptionChains,
     TestStrategy,
     EmergencyCloseAllTrades,
+    EmergencyCloseSingleTrade,
     GetSlopeAngleOfSymbol,
     LatestQuote,
     GetAppSettings,

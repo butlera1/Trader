@@ -43,6 +43,43 @@ function Totals({numberOfTrades, winnings, losses, totalGains}: ITotalsProps) {
     ${Math.abs(losses).toFixed(2)} = {ColoredStuff}</h2>;
 }
 
+function getSPXMinMax(spxData) {
+  let spxMin = 99999;
+  let spxMax = 0;
+  spxData.forEach((item) => {
+    if (item.mark < spxMin) {
+      spxMin = item.mark;
+    }
+    if (item.mark > spxMax) {
+      spxMax = item.mark;
+    }
+  });
+  return {spxMin, spxMax};
+}
+
+/**
+ * Reduces the SPX data set to the same time range as the trades data set.
+ *
+ * @param spxData
+ * @param records
+ */
+function timeSliceSPXData(spxData, records) {
+  if (!records || records.length === 0 || !spxData || spxData.length === 0) {
+    return spxData;
+  }
+  let startIndex = 0;
+  let endIndex = spxData.length - 1;
+  const firstTime = records[0].whenOpened.getTime();
+  const lastTime = records[records.length - 1].whenClosed.getTime();
+  while (startIndex < spxData.length && spxData[startIndex].whenNY.getTime() < firstTime) {
+    startIndex++;
+  }
+  while (endIndex >= 0 && spxData[endIndex].whenNY.getTime() > lastTime) {
+    endIndex--;
+  }
+  return spxData.slice(startIndex, endIndex);
+}
+
 function ChartResults({records, isGraphPrerunningTrades}: {
   records: ITradeSettings[],
   isGraphPrerunningTrades: boolean
@@ -66,7 +103,7 @@ function ChartResults({records, isGraphPrerunningTrades}: {
       if (error) {
         console.error(error);
       } else {
-        setSPXData(result);
+        setSPXData(timeSliceSPXData(result, records));
       }
     });
   }, [records]);
@@ -113,24 +150,10 @@ function ChartResults({records, isGraphPrerunningTrades}: {
   avgDuration = records.length ? avgDuration / records.length : 0;
   avgLossDuration = losses ? avgLossDuration / losses : 0;
   avgWinDuration = wins ? avgWinDuration / wins : 0;
+  const {spxMin, spxMax} = getSPXMinMax(spxData);
 
   return (
     <>
-      <LineChart width={1600} height={600} data={spxData ?? []} margin={{top: 5, right: 20, bottom: 5, left: 0}}>
-        <Line type="monotone" dataKey="mark" stroke="red" dot={false} strokeWidth={2}/>
-        <CartesianGrid stroke="#ccc" strokeDasharray="5 5"/>
-        <XAxis dataKey={(record) => GetNewYorkTimeAsText(record.whenNY)}/>
-        <YAxis width={90} tick={{fontSize: 10,}} allowDecimals={false}>
-          <Label
-            value={`SPX`}
-            angle={-90}
-            position="outside"
-            fill="#676767"
-            fontSize={14}
-          />
-        </YAxis>
-        <Tooltip/>
-      </LineChart>
       <LineChart width={1600} height={600} data={sumResults ?? []} margin={{top: 5, right: 20, bottom: 5, left: 0}}>
         <Line type="monotone" dataKey="sum" stroke="blue" dot={false} strokeWidth={2}/>
         <Line type="monotone" dataKey="gainLoss" stroke="red" dot={false} strokeWidth={1}/>
@@ -143,6 +166,21 @@ function ChartResults({records, isGraphPrerunningTrades}: {
             position="outside"
             fill="#676767"
             fontSize={14}
+          />
+        </YAxis>
+        <Tooltip/>
+      </LineChart>
+      <LineChart width={1600} height={300} data={spxData ?? []} margin={{top: 5, right: 20, bottom: 5, left: 0}}>
+        <Line type="monotone" dataKey="mark" stroke="red" dot={false} strokeWidth={2}/>
+        <CartesianGrid stroke="#ccc" strokeDasharray="5 5"/>
+        <XAxis dataKey={(record) => GetNewYorkTimeAsText(record.whenNY)}/>
+        <YAxis width={90} tick={{fontSize: 10,}} allowDecimals={false} domain={[spxMin, spxMax]}>
+          <Label
+            value={`SPX`}
+            angle={-90}
+            position="outside"
+            fill="#676767"
+            fontSize={16}
           />
         </YAxis>
         <Tooltip/>

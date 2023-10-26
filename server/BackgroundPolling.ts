@@ -8,7 +8,7 @@ import {AppSettings} from './collections/AppSettings';
 import IStreamerData from "../imports/Interfaces/IStreamData";
 
 
-let csvSymbols: string = '$VIX.X';
+let csvSymbols: string = '$VIX.X,$SPX.X';
 let data = {};
 let isPolling: boolean = false;
 const userId = Meteor.users.findOne({username: 'Arch'})?._id;

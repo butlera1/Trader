@@ -239,24 +239,27 @@ async function CloseTrade(tradeSettings: ITradeSettings, currentPrice: number) {
   }
 }
 
+async function forceCloseATrade(tradeSettings: ITradeSettings) {
+  // Get the last recorded price for this trade and use it for the exit price if in mocked mode.
+  // Note the closingPrice defaults to the NEGATIVE of the openingPrice.
+  let exitPrice = -tradeSettings.openingPrice;
+  if (tradeSettings.monitoredPrices?.length > 0) {
+    exitPrice = tradeSettings.monitoredPrices[tradeSettings.monitoredPrices.length - 1].price;
+  }
+  tradeSettings.whyClosed = whyClosedEnum.emergencyExit;
+  await CloseTrade(tradeSettings, exitPrice).catch(reason => {
+    LogData(tradeSettings, reason.toString(), reason);
+  });
+}
+
+
 function EmergencyCloseAllTradesForUser(userId: string) {
   let result = '';
   try {
     // Find all live trades for this user.
     const liveTrades = Trades.find({userId: userId, whyClosed: {$exists: false}}).fetch();
     result = `Found ${liveTrades.label} trades.`;
-    liveTrades.forEach(async (tradeSettings) => {
-      // Get the last recorded price for this trade and use it for the exit price if in mocked mode.
-      // Note the closingPrice defaults to the NEGATIVE of the openingPrice.
-      let exitPrice = -tradeSettings.openingPrice;
-      if (tradeSettings.monitoredPrices?.length > 0) {
-        exitPrice = tradeSettings.monitoredPrices[tradeSettings.monitoredPrices.length - 1].price;
-      }
-      tradeSettings.whyClosed = whyClosedEnum.emergencyExit;
-      await CloseTrade(tradeSettings, exitPrice).catch(reason => {
-        LogData(tradeSettings, reason.toString(), reason);
-      });
-    });
+    liveTrades.forEach(forceCloseATrade);
     return `${result} Closed them all down.`;
   } catch (ex) {
     throw new Meteor.Error(`EmergencyCloseAllTrades: ${result}. Closing them failed with ${ex}`);
@@ -268,6 +271,24 @@ function EmergencyCloseAllTrades() {
     throw new Meteor.Error('EmergencyCloseAllTrades: Must have valid user.');
   } else {
     EmergencyCloseAllTradesForUser(Meteor.userId());
+  }
+}
+
+function EmergencyCloseSingleTrade(_id: string) {
+  try {
+    if (!Meteor.userId()) {
+      throw new Meteor.Error('EmergencyCloseSingleTrade: Must have valid user.');
+    } else {
+      const liveTrade = Trades.findOne({_id, whyClosed: {$exists: false}});
+      if (liveTrade) {
+        forceCloseATrade(liveTrade).then().catch(reason => {
+          throw new Meteor.Error(`EmergencyCloseSingleTrade: Closing ${_id} failed with ${reason}}`);
+        });
+      }
+      return `Closed trade ${_id}.`;
+    }
+  } catch (ex) {
+    throw new Meteor.Error(`EmergencyCloseSingleTrade: Closing ${_id} failed with ${ex}}`);
   }
 }
 
@@ -462,7 +483,7 @@ function checkPrerunVIXSlopeExit(liveTrade: ITradeSettings) {
 
 function checkPrerunGainLimitExit(liveTrade: ITradeSettings, isGainLimitMet: boolean) {
   if (liveTrade.isPrerunningGainLimit) {
-    const tradeDurationInSeconds = getTradeDurationInMinutes(liveTrade)*60;
+    const tradeDurationInSeconds = getTradeDurationInMinutes(liveTrade) * 60;
     const isSpeedMet = tradeDurationInSeconds <= liveTrade.prerunGainLimitValue.seconds;
     return isSpeedMet && isGainLimitMet;
   }
@@ -739,9 +760,9 @@ function IsNotDuplicateTrade(tradeSettings: ITradeSettings) {
 
 async function ExecuteTrade(
   tradeSettings: ITradeSettings,
-  forceTheTrade:boolean = false,
-  isPrerun:boolean = false,
-  isPrerunVIXSlope :boolean = false,
+  forceTheTrade: boolean = false,
+  isPrerun: boolean = false,
+  isPrerunVIXSlope: boolean = false,
   isPrerunGainLimit: boolean = false
 ) {
   if (!tradeSettings) {
@@ -894,5 +915,6 @@ export {
   PerformTradeForAllUsers,
   ExecuteTrade,
   EmergencyCloseAllTrades,
+  EmergencyCloseSingleTrade,
   QueueUsersTradesForTheDay,
 };

@@ -4,7 +4,7 @@ import {useTracker} from 'meteor/react-meteor-data';
 import Trades from '../../Collections/Trades';
 import ITradeSettings, {GetDescription} from '../../Interfaces/ITradeSettings';
 import {ColumnsType} from 'antd/lib/table';
-import {Space, Table} from 'antd';
+import {Button, Popconfirm, Space, Table} from 'antd';
 import EmergencyCloseActiveTrades from '../EmergencyCloseActiveTrades';
 import GraphTrade from './GraphTrade';
 import './graphTrade.css';
@@ -12,8 +12,40 @@ import dayjs from 'dayjs';
 import duration from 'dayjs/plugin/duration';
 import './CssActiveTradesTable';
 import {GetNewYorkTimeAsText} from '../../Utils';
+import {QuestionCircleOutlined} from '@ant-design/icons';
+// @ts-ignore
+import {Meteor} from 'meteor/meteor';
 
 dayjs.extend(duration);
+
+function CloseThisTrade(id: string) {
+  Meteor.call('EmergencyCloseSingleTrade', id, (error, result) => {
+    if (error) {
+      console.log(`Failed calling EmergencyCloseSingleTrade (_id=${id}). ${error.toString()}`);
+    }
+  });
+}
+
+function ExitSingleTrade({id}) {
+  return (
+    <Popconfirm
+      title="Are you sure: CLOSE THIS TRADE?"
+      icon={<QuestionCircleOutlined style={{color: 'red'}}/>}
+      onConfirm={() => CloseThisTrade(id)}
+      okText="Yes"
+      cancelText="No"
+    >
+      <Button
+        type="primary"
+        shape="round"
+        size={'small'}
+        danger
+      >
+        Close This Trade
+      </Button>
+    </Popconfirm>
+  );
+}
 
 function calculateGainLossAndPriceDiff(record: ITradeSettings) {
   let gainLoss = 0;
@@ -120,11 +152,19 @@ const columns: ColumnsType<ITradeSettings> = [
     },
   },
   {
-    title: 'Gain/time',
-    key: 'Gain/time',
+    title: 'Graph',
+    key: 'Graph',
     dataIndex: 'monitoredPrices',
-    align: 'left',
+    align: 'center',
+    width: 100,
     render: (monitoredPrices, record) => <GraphTrade liveTrade={record}/>,
+  },
+  {
+    title: 'Actions',
+    key: 'Actions',
+    dataIndex: '_id',
+    align: 'left',
+    render: (_id) => <ExitSingleTrade id={_id}/>,
   },
 ];
 
