@@ -1,1 +1,3 @@
 node_modules/
+/server/Backtest/SimpleBacktester/longResults.csv
+/server/Backtest/SimpleBacktester/shortResults.csv

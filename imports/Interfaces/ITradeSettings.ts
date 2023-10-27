@@ -269,7 +269,9 @@ function GetDescription(tradeSettings: ITradeSettings) {
   const part0 = tradeSettings.name ? `${tradeSettings.name}: \n` : '';
   const part1 = `${tradeSettings.symbol} ${type}`;
   const part2 = `${entryHour}:${tradeSettings.entryMinute}-${exitHour}:${tradeSettings.exitMinute}`;
-  const part3 = `${(tradeSettings.percentGain * 100).toFixed(1)}/${(tradeSettings.percentLoss * 100).toFixed(1)} %`;
+  const gainText = `${tradeSettings.percentGainIsDollar ? '$' : ''}${(tradeSettings.percentGain * 100).toFixed(1)}${tradeSettings.percentGainIsDollar ? '' : '%'}`;
+  const lossText = `${tradeSettings.percentLossIsDollar ? '$' : ''}${(tradeSettings.percentLoss * 100).toFixed(1)}${tradeSettings.percentLossIsDollar ? '' : '%'}`;
+  const part3 = `${gainText}/${lossText}`;
   let part4 = '';
   if (tradeSettings.csvSymbols) {
     let regex = new RegExp(`${tradeSettings.symbol}_......`, 'g');
