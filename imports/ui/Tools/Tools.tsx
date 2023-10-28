@@ -3,7 +3,7 @@ import React, {useEffect} from 'react';
 import {Meteor} from 'meteor/meteor';
 import _ from 'lodash';
 import {Button, InputNumber, Space} from 'antd';
-import {DefaultAppSettings, IAppSettings} from '../Interfaces/IAppSettings';
+import {DefaultAppSettings, IAppSettings} from '../../Interfaces/IAppSettings';
 
 function Tools() {
   const [appSettings, setAppSettings] = React.useState<IAppSettings>({...DefaultAppSettings});
