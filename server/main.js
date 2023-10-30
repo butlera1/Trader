@@ -113,7 +113,7 @@ ScheduleStartOfDayWork();
 ScheduleEndOfDayWork();
 CheckForAnyExistingTradesAndMonitorThem();
 
-const date = dayjs('2023-10-26');
-console.log('DATE:', date.format('YYYY-MM-DD hh:mm:ss'));
-GetHistoricalData('g7gpWRiEBDqjysDFQ', Constants.SPXSymbol, date).then(r => console.log('RESULTS:', r.length));
+// const date = dayjs('2023-10-26');
+// console.log('DATE:', date.format('YYYY-MM-DD hh:mm:ss'));
+// GetHistoricalData('g7gpWRiEBDqjysDFQ', Constants.SPXSymbol, date).then(r => console.log('RESULTS:', r.length));
 
