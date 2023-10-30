@@ -1,4 +1,4 @@
-import {GetDaysOptionValues, GetDaysStraddleValues} from "./DataAccess";
+import {GetDaysOptionValues, GetDaysStraddleValues} from "./PolygonIODataAccess";
 import dayjs, {Dayjs} from "dayjs";
 import fs from 'fs';
 import ITradeSettings from '../../imports/Interfaces/ITradeSettings';

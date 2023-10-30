@@ -25,11 +25,11 @@ Meteor.publish('liveTrades', publishLiveTrades);
 
 /********************* Publish tradeResults **********************************/
 function publishTradeResults() {
-  // Default to today's date only so we don't ship too much data to the client at start up time.
+  // Default to today's date (minus 1 day since server is running in GMT time) only so we don't ship too much data to the client at start up time.
   const query = {
     userId: this.userId,
     whyClosed: {$exists: true},
-    whenOpened: {$gte: SetStartOfDay(dayjs()).toDate()},
+    whenOpened: {$gte: SetStartOfDay(dayjs().subtract(1, 'day')).toDate()},
     whenClosed: {$lte: SetEndOfDay(dayjs()).toDate()},
   };
   const settings = AppSettings.findOne(Constants.appSettingsId);

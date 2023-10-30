@@ -140,7 +140,7 @@ const columns: ColumnsType<ITradeSettings> = [
     key: 'gainLimitMinusFees',
     dataIndex: 'gainLimit',
     align: 'center',
-    width: 70,
+    width: 150,
     render: (_, record) => {
       let {gainLoss, priceDiff} = calculateGainLossAndPriceDiff(record);
       const resultGainLoss = gainLoss - (record.totalFees ?? 0);

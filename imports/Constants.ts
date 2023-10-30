@@ -1,5 +1,5 @@
 const Constants = {
-  version: '8.7',
+  version: '8.8',
   appSettingsId: 'AppSettings',
   defaultCommission: 0.50,
   streamedDataId: 'StreamedData',

@@ -23,20 +23,21 @@ export async function GetOptionData(ticker: string = 'QQQ', date: Dayjs = dayjs(
     const to = dateStr;
     // Create options ticker to look like 'O:QQQ221003P00274000'
     const optionDate = getBestOptionClosingDate(date);
-    const optionsTicker = `O:${ticker}${optionDate.format('YYMMDD')}P${strikePrice}`;
-    const puts = await rest.options.aggregates(optionsTicker, 1, 'minute', from, to, {sort: 'asc', limit: 1000});
-    const calls = await rest.options.aggregates(optionsTicker.replace('P0', 'C0'), 1, 'minute', from, to, {
-      sort: 'asc',
-      limit: 1000
-    });
+    const putOptionsTicker = `O:${ticker}${optionDate.format('YYMMDD')}P${strikePrice}`;
+    const callOptionsTicker = `O:${ticker}${optionDate.format('YYMMDD')}C${strikePrice}`;
+    const calls = await rest.options.aggregates(callOptionsTicker, 1, 'minute', from, to, {sort: 'asc', limit: 1000});
+    const puts = await rest.options.aggregates(putOptionsTicker, 1, 'minute', from, to, {sort: 'asc', limit: 1000});
     if (puts.resultsCount === 0 || calls.resultsCount === 0) {
       return null;
     }
     const firstPutTime = dayjs(puts.results[0].t).format('hh:mm:ss');
     const firstCallTime = dayjs(calls.results[0].t).format('hh:mm:ss');
     console.log(`First put time: ${firstPutTime}, first call time: ${firstCallTime}`);
-    console.log(`Puts:`, puts);
-    console.log(`Calls:`, calls);
+    const lastPutTime = dayjs(puts.results[puts.resultsCount - 1].t).format('YYYY-MM-DD hh:mm:ss');
+    const lastCallTime = dayjs(calls.results[calls.resultsCount - 1].t).format('YYYY-MM-DD hh:mm:ss');
+    console.log(`Last put time: ${lastPutTime}, last call time: ${lastCallTime}`);
+    console.log(`Puts:`, puts.resultsCount);
+    console.log(`Calls:`, calls.resultsCount);
   } catch (ex) {
     console.error(ex);
   }

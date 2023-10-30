@@ -16,7 +16,7 @@ import './SeedUser';
 import {
   BuyStock,
   GetAccessToken,
-  GetATMOptionChains,
+  GetATMOptionChains, GetHistoricalData,
   GetOrders,
   SellStraddle,
   SetUserAccessInfo
@@ -38,6 +38,8 @@ import ScheduleEndOfDayWork from './ScheduleEndOfDayWork';
 import {GetSlopeAngleOfSymbol, LatestQuote} from './TDAApi/StreamEquities';
 import {DefaultAppSettings} from '../imports/Interfaces/IAppSettings';
 import {GetSPXData, StartBackgroundPolling} from './BackgroundPolling';
+import {GetOptionData} from './Backtest/PolygonIODataAccess';
+import {SetEndOfDay, SetStartOfDay} from '../imports/Utils';
 
 dayjs.extend(utc);
 dayjs.extend(timezone);
@@ -110,3 +112,8 @@ StartBackgroundPolling();
 ScheduleStartOfDayWork();
 ScheduleEndOfDayWork();
 CheckForAnyExistingTradesAndMonitorThem();
+
+const date = dayjs('2023-10-26');
+console.log('DATE:', date.format('YYYY-MM-DD hh:mm:ss'));
+GetHistoricalData('g7gpWRiEBDqjysDFQ', Constants.SPXSymbol, date).then(r => console.log('RESULTS:', r.length));
+

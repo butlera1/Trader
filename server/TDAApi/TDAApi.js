@@ -218,6 +218,48 @@ export async function GetOrders(userId, accountNumber = '755541528', orderId) {
   }
 }
 
+export async function GetHistoricalData(userId, symbol, date) {
+  try {
+    const token = await GetAccessToken(userId);
+    if (!token) {
+      return null;
+    }
+    const queryParams = new URLSearchParams({
+      startDate: date.toDate().getTime(),
+      endDate: date.toDate().getTime(),
+      periodType: 'day',
+      frequencyType: 'minute',
+      frequency: '1',
+      needExtendedHoursData: 'false',
+    });
+    const url = `https://api.tdameritrade.com/v1/marketdata/${symbol}/pricehistory?${queryParams}`;
+    const options = {
+      method: 'GET',
+      headers: {
+        Authorization: `Bearer ${token}`,
+      },
+
+    };
+    const response = await fetch(url, options);
+    if (response.status !== 200) {
+      LogData(null, `TDAApi.GetHistoricalData fetch returned: userId:${userId}, ${response.status} ${response}.`);
+      return null;
+    }
+    const data = await response.json();
+    if (data?.empty) {
+      return null;
+    }
+    const firstTime = dayjs(data.candles[0].datetime).format('YYYY-MM-DD hh:mm:ss');
+    console.log(`First time: ${firstTime}, first time: ${firstTime}`);
+    const lastTime = dayjs(data.candles[data.candles.length - 1].datetime).format('YYYY-MM-DD hh:mm:ss');
+    console.log(`Last time: ${lastTime}, last time: ${lastTime}`);
+    return data?.candles ?? null;
+  } catch (error) {
+    LogData(null, `TDAApi.GetHistoricalData: userId:${userId}:`, error);
+    return null;
+  }
+}
+
 // Returns a Promise that resolves after "ms" Milliseconds
 export const WaitMs = ms => new Promise(res => setTimeout(res, ms));
 

@@ -83,10 +83,13 @@ function GraphTrade({liveTrade}: { liveTrade: ITradeSettings }) {
   vixMarkMin = clipNumber(vixMarkMin);
   vixMarkMax = clipNumber(vixMarkMax);
 
+  const chartWidth = liveTrade.whyClosed ? 900 : 400;
+  const chartHeight = liveTrade.whyClosed ? 500 : 200;
+
   return (
     <LineChart
-      width={900}
-      height={500}
+      width={chartWidth}
+      height={chartHeight}
       data={monitoredPrices}
     >
       <CartesianGrid strokeDasharray="3 3"/>

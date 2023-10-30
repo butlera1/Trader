@@ -126,8 +126,8 @@ const columns: ColumnsType<ITradeSettings> = [
     },
   },
   {
-    title: 'Gain/time',
-    key: 'Gain/time',
+    title: 'Graph',
+    key: 'Graph',
     dataIndex: 'monitoredPrices',
     align: 'left',
     render: (_, record) => <GraphTrade liveTrade={record}/>,
