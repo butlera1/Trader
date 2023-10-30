@@ -241,6 +241,9 @@ export async function GetHistoricalData(userId, symbol, date) {
 
     };
     const response = await fetch(url, options);
+    if (response.status === 400) {
+      return null; // No data for this date (weekend or holiday).
+    }
     if (response.status !== 200) {
       LogData(null, `TDAApi.GetHistoricalData fetch returned: userId:${userId}, ${response.status} ${response}.`);
       return null;
@@ -249,10 +252,6 @@ export async function GetHistoricalData(userId, symbol, date) {
     if (data?.empty) {
       return null;
     }
-    const firstTime = dayjs(data.candles[0].datetime).format('YYYY-MM-DD hh:mm:ss');
-    console.log(`First time: ${firstTime}, first time: ${firstTime}`);
-    const lastTime = dayjs(data.candles[data.candles.length - 1].datetime).format('YYYY-MM-DD hh:mm:ss');
-    console.log(`Last time: ${lastTime}, last time: ${lastTime}`);
     return data?.candles ?? null;
   } catch (error) {
     LogData(null, `TDAApi.GetHistoricalData: userId:${userId}:`, error);

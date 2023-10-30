@@ -40,6 +40,7 @@ import {DefaultAppSettings} from '../imports/Interfaces/IAppSettings';
 import {GetSPXData, StartBackgroundPolling} from './BackgroundPolling';
 import {GetOptionData} from './Backtest/PolygonIODataAccess';
 import {SetEndOfDay, SetStartOfDay} from '../imports/Utils';
+import {TestBackTestCode} from './Backtest/SingleCallPutBacktest';
 
 dayjs.extend(utc);
 dayjs.extend(timezone);
@@ -113,7 +114,4 @@ ScheduleStartOfDayWork();
 ScheduleEndOfDayWork();
 CheckForAnyExistingTradesAndMonitorThem();
 
-// const date = dayjs('2023-10-26');
-// console.log('DATE:', date.format('YYYY-MM-DD hh:mm:ss'));
-// GetHistoricalData('g7gpWRiEBDqjysDFQ', Constants.SPXSymbol, date).then(r => console.log('RESULTS:', r.length));
-
+TestBackTestCode();
