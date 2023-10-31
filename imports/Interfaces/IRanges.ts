@@ -15,6 +15,10 @@ interface IRanges {
 
   startDate: Dayjs,
   endDate: Dayjs,
+
+  entryHours: number[],
+  exitHours: number[],
+
 }
 
 export {IRanges as default} ;

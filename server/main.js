@@ -109,9 +109,15 @@ const settings = {
 delete settings._id;
 AppSettings.upsert(Constants.appSettingsId, settings);
 
-StartBackgroundPolling();
-ScheduleStartOfDayWork();
-ScheduleEndOfDayWork();
-CheckForAnyExistingTradesAndMonitorThem();
 
 TestBackTestCode();
+
+
+
+
+
+// StartBackgroundPolling();
+// ScheduleStartOfDayWork();
+// ScheduleEndOfDayWork();
+// CheckForAnyExistingTradesAndMonitorThem();
+
