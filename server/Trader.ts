@@ -38,7 +38,7 @@ import {DirectionUp} from '../imports/Interfaces/IPrerunVIXSlopeValue';
 dayjs.extend(duration);
 dayjs.extend(isoWeek);
 
-const isoWeekdayNames = ['skip', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'];
+export const isoWeekdayNames = ['skip', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'];
 
 const oneSeconds = 1000;
 
