@@ -147,7 +147,7 @@ function ChartResults({records, isGraphPrerunningTrades}: {
   const avgWinText = wins ? ((avgWinTmp / wins).toFixed(2)) : '0.00';
   const winRate = sumResults.length ? (((wins / sumResults.length) * 100).toFixed(1)) : '0.0';
   const lossRate = sumResults.length ? (((losses / sumResults.length) * 100).toFixed(1)) : '0.0';
-  avgDuration = records.length ? avgDuration / records.length : 0;
+  avgDuration = wins+losses ? avgDuration / (wins+losses) : 0;
   avgLossDuration = losses ? avgLossDuration / losses : 0;
   avgWinDuration = wins ? avgWinDuration / wins : 0;
   const {spxMin, spxMax} = getSPXMinMax(spxData);
