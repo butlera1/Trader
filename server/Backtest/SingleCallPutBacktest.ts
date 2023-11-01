@@ -1,11 +1,15 @@
 import dayjs, {Dayjs} from 'dayjs';
-import ITradeSettings, {DefaultTradeSettings, whyClosedEnum} from '../../imports/Interfaces/ITradeSettings';
+import ITradeSettings, {
+  DefaultIronCondorLegsSettings,
+  DefaultTradeSettings,
+  whyClosedEnum
+} from '../../imports/Interfaces/ITradeSettings';
 import IRanges from '../../imports/Interfaces/IRanges';
 import ICandle from '../../imports/Interfaces/ICandle';
 import {GetHistoricalData} from '../TDAApi/TDAApi';
 import {GetNewYorkTimeAt} from '../../imports/Utils';
 import Constants from '../../imports/Constants';
-import {OptionType} from '../../imports/Interfaces/ILegSettings';
+import {BuySell, OptionType} from '../../imports/Interfaces/ILegSettings';
 import {defaultPrerunGainLimitValue} from '../../imports/Interfaces/IPrerunGainLimitValue';
 
 const startOfTradeTime = GetNewYorkTimeAt(9, 30);
@@ -33,10 +37,78 @@ interface ISummary {
   prerunGainLimitSeconds: number,
   numberOfDaysTraded: number,
   isPrerunGainLimit: boolean,
+  tradeType: string,
+  startDate: Date,
+  endDate: Date,
 }
 
-function checkForLossAndSet(low, tradeSetting: ITradeSettings): boolean {
-  if (low <= -tradeSetting.lossLimit) {
+function buildSummary(results: IBacktestResult[], numberOfDaysTraded: number): ISummary {
+  if (!results || results.length === 0) {
+    return null;
+  }
+  let totalGain = 0;
+  let totalLoss = 0;
+  let wins = 0;
+  let losses = 0;
+  let averageDurationMin = 0;
+  let averageWinsDurationMin = 0;
+  let averageLossesDurationMin = 0;
+  let totalNumberOfTrades = 0;
+
+  for (const result of results) {
+    const {tradeSetting} = result;
+    if (tradeSetting.isPrerunningGainLimit) {
+      // Skip all prerun trades.
+      continue;
+    }
+    totalNumberOfTrades++;
+    const duration = dayjs(tradeSetting.whenClosed).diff(dayjs(tradeSetting.whenOpened), 'minute');
+    averageDurationMin += duration;
+
+    if (tradeSetting.gainLoss > 0) {
+      totalGain += tradeSetting.gainLoss;
+      wins++;
+      averageWinsDurationMin += duration;
+    } else {
+      totalLoss += tradeSetting.gainLoss;
+      losses++;
+      averageLossesDurationMin += duration;
+    }
+  }
+  const tradeSetting = results[0].tradeSetting;
+  const tradeType = results[0].tradeSetting.legs[0].callPut;
+  averageDurationMin /= totalNumberOfTrades;
+  averageWinsDurationMin /= wins;
+  averageLossesDurationMin /= losses;
+  const startDate = dayjs().subtract(numberOfDaysTraded, 'day').toDate();
+  const endDate = dayjs().subtract(1, 'day').toDate();
+  const summary: ISummary = {
+    gainLossTotal: totalGain + totalLoss,
+    totalGain,
+    totalLoss,
+    wins,
+    losses,
+    winRate: wins / totalNumberOfTrades,
+    lossRate: losses / totalNumberOfTrades,
+    averageDurationMin,
+    averageWinsDurationMin,
+    averageLossesDurationMin,
+    entryTime: tradeSetting.entryHour + ':' + tradeSetting.entryMinute,
+    exitTime: tradeSetting.exitHour + ':' + tradeSetting.exitMinute,
+    gainLimit: tradeSetting.gainLimit,
+    lossLimit: tradeSetting.lossLimit,
+    isPrerunGainLimit: tradeSetting.isPrerunGainLimit,
+    prerunGainLimitSeconds: tradeSetting.prerunGainLimitValue.seconds,
+    numberOfDaysTraded,
+    tradeType,
+    startDate,
+    endDate,
+  };
+  return summary;
+}
+
+function checkForLossAndSet(lowPositive, tradeSetting: ITradeSettings): boolean {
+  if (lowPositive >= tradeSetting.lossLimit) {
     tradeSetting.whyClosed = whyClosedEnum.lossLimit;
     tradeSetting.gainLoss = -tradeSetting.lossLimit;
     return true;
@@ -44,8 +116,8 @@ function checkForLossAndSet(low, tradeSetting: ITradeSettings): boolean {
   return false;
 }
 
-function checkForGainAndSet(high, tradeSetting: ITradeSettings): boolean {
-  if (high >= tradeSetting.gainLimit) {
+function checkForGainAndSet(highPositive, tradeSetting: ITradeSettings): boolean {
+  if (highPositive >= tradeSetting.gainLimit) {
     tradeSetting.whyClosed = whyClosedEnum.gainLimit;
     tradeSetting.gainLoss = tradeSetting.gainLimit;
     return true;
@@ -55,19 +127,25 @@ function checkForGainAndSet(high, tradeSetting: ITradeSettings): boolean {
 
 function seeIfTradeIsClosed(tradeSetting: ITradeSettings, data: ICandle, isCall): void {
   const checkLowFirst = Math.random() > 0.5;
-  const low = isCall ? data.low : data.high;
-  const high = isCall ? data.high : data.low;
-  const loss = (low - tradeSetting.openingPrice) / 2; // Take 1/2 assuming delta 50 options.
-  const gain = (high - tradeSetting.openingPrice) / 2; // Take 1/2 assuming delta 50 options.
+  const openingPrice = tradeSetting.openingPrice;
+  // Calculate potential loss and potential gain for a CALL.
+  let potentialLossPositive = data.low < openingPrice ? openingPrice - data.low : 0;
+  let potentialGainPositive = data.high > openingPrice ? data.high - openingPrice: 0;
+  if (!isCall) {
+    // If PUT, then reverse the loss and gain.
+    const tempGain = potentialGainPositive;
+    potentialGainPositive = potentialLossPositive;
+    potentialLossPositive = tempGain;
+  }
   if (checkLowFirst) {
-    if (checkForLossAndSet(loss, tradeSetting)) {
+    if (checkForLossAndSet(potentialLossPositive, tradeSetting)) {
     } else {
-      checkForGainAndSet(gain, tradeSetting);
+      checkForGainAndSet(potentialGainPositive, tradeSetting);
     }
   } else {
-    if (checkForGainAndSet(gain, tradeSetting)) {
+    if (checkForGainAndSet(potentialGainPositive, tradeSetting)) {
     } else {
-      checkForLossAndSet(loss, tradeSetting);
+      checkForLossAndSet(potentialLossPositive, tradeSetting);
     }
   }
 }
@@ -91,6 +169,7 @@ function SingleCallPutBacktest(data: [ICandle], index: number, tradeSetting: ITr
   }
   tradeSetting.whenClosed = new Date(data[index - 1].datetime);
   const durationSeconds = dayjs(tradeSetting.whenClosed).diff(dayjs(tradeSetting.whenOpened), 'second');
+  const wasIsPrerunningGainLimit = tradeSetting.isPrerunningGainLimit;
   if (
     tradeSetting.isPrerunningGainLimit &&
     tradeSetting.whyClosed === whyClosedEnum.gainLimit &&
@@ -103,8 +182,10 @@ function SingleCallPutBacktest(data: [ICandle], index: number, tradeSetting: ITr
   // If the trade did not make a gain, switch back to prerun gain limit mode if it is on.
   tradeSetting.isPrerunningGainLimit = (tradeSetting.gainLoss <= 0 && tradeSetting.isPrerunGainLimit);
 
-  // return trade result as a copy so results are all unique.
-  return {nextIndex: index, tradeSetting: {...tradeSetting, prerunGainLimitValue: {...tradeSetting.prerunGainLimitValue}}};
+  // return trade result as a copy so results are all unique objects.
+  const copyTradeSetting = {...tradeSetting, isPrerunningGainLimit: wasIsPrerunningGainLimit, prerunGainLimitValue: {...tradeSetting.prerunGainLimitValue}};
+
+  return {nextIndex: index, tradeSetting: copyTradeSetting};
 }
 
 function getStartIndex(tradeSetting: ITradeSettings): number {
@@ -117,60 +198,6 @@ function getEndIndex(tradeSetting: ITradeSettings): number {
   const startTrade = GetNewYorkTimeAt(tradeSetting.exitHour, tradeSetting.exitMinute);
   const minutes = startTrade.diff(startOfTradeTime, 'minute');
   return minutes;
-}
-
-function buildSummary(results: IBacktestResult[], numberOfDaysTraded: number): ISummary {
-  if (!results || results.length === 0) {
-    return null;
-  }
-  let totalGain = 0;
-  let totalLoss = 0;
-  let wins = 0;
-  let losses = 0;
-  let averageDurationMin = 0;
-  let averageWinsDurationMin = 0;
-  let averageLossesDurationMin = 0;
-
-  for (const result of results) {
-    const {tradeSetting} = result;
-    const duration = dayjs(tradeSetting.whenClosed).diff(dayjs(tradeSetting.whenOpened), 'minute');
-    averageDurationMin += duration;
-
-    if (result.tradeSetting.gainLoss > 0) {
-      totalGain += result.tradeSetting.gainLoss;
-      wins++;
-      averageWinsDurationMin += duration;
-    } else {
-      totalLoss += result.tradeSetting.gainLoss;
-      losses++;
-      averageLossesDurationMin += duration;
-    }
-  }
-  const tradeSetting = results[0].tradeSetting;
-  averageDurationMin /= results.length;
-  averageWinsDurationMin /= wins;
-  averageLossesDurationMin /= losses;
-  const whenOpened = dayjs(results[0].tradeSetting.whenOpened);
-  const summary: ISummary = {
-    gainLossTotal: totalGain + totalLoss,
-    totalGain,
-    totalLoss,
-    wins,
-    losses,
-    winRate: wins / results.length,
-    lossRate: losses / results.length,
-    averageDurationMin,
-    averageWinsDurationMin,
-    averageLossesDurationMin,
-    entryTime: tradeSetting.entryHour + ':' + tradeSetting.entryMinute,
-    exitTime: tradeSetting.exitHour + ':' + tradeSetting.exitMinute,
-    gainLimit: tradeSetting.gainLimit,
-    lossLimit: tradeSetting.lossLimit,
-    isPrerunGainLimit: tradeSetting.isPrerunGainLimit,
-    prerunGainLimitSeconds: tradeSetting.prerunGainLimitValue.seconds,
-    numberOfDaysTraded,
-  };
-  return summary;
 }
 
 const maxSummaries = 50;
@@ -244,9 +271,6 @@ export async function BacktestLoop(tradeSetting: ITradeSettings, ranges: IRanges
           }
         }
       }
-      console.log('Time: ' + entryHour + ':' + tradeSetting.entryMinute + ' to ' + exitHour + ':' + tradeSetting.exitMinute);
-      const sumText = `BacktestLoop: ${dayjs().diff(start, 'second')} seconds, for ${totalTradeCount.toLocaleString()} results.`;
-      console.log(sumText);
     }
   }
 
@@ -256,29 +280,50 @@ export async function BacktestLoop(tradeSetting: ITradeSettings, ranges: IRanges
 }
 
 export async function TestBackTestCode(): Promise<void> {
+
   const ranges: IRanges = {
-    startGain: 1,
-    endGain: 5,
-    gainIncrement: 0.5,
-    startLoss: 1,
-    endLoss: 5,
-    lossIncrement: 0.5,
-    startGainLimitPrerunAllowedDurationSeconds: 60,
-    endGainLimitPrerunAllowedDurationSeconds: 180,
-    gainLimitPrerunAllowedDurationSecondsIncrement: 20,
+    recordId: 'test',
+    startGain: 0.01,
+    endGain: 1,
+    gainIncrement: 0.2,
+    startLoss: 0.01,
+    endLoss: 1,
+    lossIncrement: 0.2,
+    startGainLimitPrerunAllowedDurationSeconds: 180,
+    endGainLimitPrerunAllowedDurationSeconds: 300,
+    gainLimitPrerunAllowedDurationSecondsIncrement: 60,
     startDate: dayjs().subtract(10, 'day'),
-    endDate: dayjs(),
+    endDate: dayjs().subtract(1, 'day'),
     entryHours: [9],
-    exitHours: [15],
+    exitHours: [10],
   };
+  const DefaultCallLegsSettings = [
+    {
+      buySell: BuySell.BUY,
+      callPut: OptionType.CALL,
+      delta: 0.5,
+      dte: 0,
+      quantity: 1,
+    },
+  ];
+
+  const DefaultPutLegsSettings = [
+    {
+      buySell: BuySell.BUY,
+      callPut: OptionType.PUT,
+      delta: 0.5,
+      dte: 0,
+      quantity: 1,
+    },
+  ];
 
   const tradeSetting: ITradeSettings = {
     ...DefaultTradeSettings,
     userId: 'g7gpWRiEBDqjysDFQ',
     symbol: Constants.SPXSymbol,
     entryHour: 9,
-    entryMinute: 32,
-    exitHour: 15,
+    entryMinute: 30,
+    exitHour: 11,
     exitMinute: 55,
     gainLimit: 0.1,
     lossLimit: 0.1,
@@ -287,11 +332,16 @@ export async function TestBackTestCode(): Promise<void> {
     prerunGainLimitValue: {
       seconds: 20,
     },
+    legs: [...DefaultCallLegsSettings],
   };
-  const {sumText, summaries} = await BacktestLoop(tradeSetting, ranges);
+
+  tradeSetting.legs = [...DefaultPutLegsSettings];
+  let {sumText, summaries} = await BacktestLoop(tradeSetting, ranges);
   console.log(summaries[0]);
-  console.log(summaries[1]);
-  console.log(summaries[2]);
-  console.log(summaries[3]);
+  console.log(sumText);
+
+  tradeSetting.legs = [...DefaultCallLegsSettings];
+  ({sumText, summaries} = await BacktestLoop(tradeSetting, ranges));
+  console.log(summaries[0]);
   console.log(sumText);
 }

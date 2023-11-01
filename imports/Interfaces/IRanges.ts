@@ -1,6 +1,7 @@
 import {Dayjs} from 'dayjs';
 
 interface IRanges {
+  recordId: string,
   startGain: number,
   endGain: number,
   gainIncrement: number,
