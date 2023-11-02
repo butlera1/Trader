@@ -85,6 +85,16 @@ async function GetOptionsPriceLoop(tradeSettings: ITradeSettings): Promise<IPric
 }
 
 async function GetSmartOptionsPrice(tradeSettings: ITradeSettings): Promise<IPrice> {
+  if (tradeSettings.isBacktesting) {
+    // This approach in backtesting only uses the close value and not the HIGH / LOW range in any way.
+    const {minuteData, index} = tradeSettings.backtestingData;
+    return {
+      ...DefaultIPrice,
+      price: minuteData[index].close,
+      whenNY: new Date(minuteData[index].datetime)
+    };
+  }
+
   const sampleSize = 1;
   let prices = [];
   let lastSample: IPrice = {...BadDefaultIPrice};
@@ -506,101 +516,115 @@ function calculateVariousValues(liveTrade: ITradeSettings, currentSample: IPrice
   currentSample.vixMark = GetVIXMark();
   currentSample.vixSlopeAngle = GetVIXSlopeAngle();
   currentSample.vixSlope = GetVIXSlope();
-  // Record price value for historical reference and charting.
-  Trades.update(liveTrade._id, {$addToSet: {monitoredPrices: currentSample}});
+  if (!liveTrade.isBacktesting) {
+    // Record price value for historical reference and charting.
+    Trades.update(liveTrade._id, {$addToSet: {monitoredPrices: currentSample}});
+  }
 }
 
+async function checkForTradeCompletion(liveTrade: ITradeSettings, currentSamplePrice: IPrice, localEarlyExitTime: dayjs.Dayjs) {
+  calculateVariousValues(liveTrade, currentSamplePrice);
+  const localNow = dayjs();
+  const isEndOfDay = localEarlyExitTime.isBefore(localNow);
+  const absAveragePrice = Math.abs(getAveragePrice(liveTrade.monitoredPrices, 2));
+  const absCurrentPrice = Math.abs(currentSamplePrice.price);
+  let isGainLimit = (absCurrentPrice <= liveTrade.gainLimit);
+  // Using average on loss to make sure a spike does not trigger a loss exit.
+  let isLossLimit = (absAveragePrice >= liveTrade.lossLimit);
+  if (liveTrade.openingPrice > 0) { // Means we are long the trade (we want values to go up).
+    isGainLimit = (absCurrentPrice >= liveTrade.gainLimit);
+    isLossLimit = (absAveragePrice <= liveTrade.lossLimit);
+  }
+  const isRule1Exit = checkRule1Exit(liveTrade, currentSamplePrice);
+  const isRule2Exit = checkRule2Exit(liveTrade, currentSamplePrice);
+  const isRule3Exit = checkRule3Exit(liveTrade, currentSamplePrice);
+  const isRule4Exit = checkRule4Exit(liveTrade, currentSamplePrice);
+  const isRule5Exit = checkRule5Exit(liveTrade, currentSamplePrice);
+  const isRule6Exit = checkRule6Exit(liveTrade, currentSamplePrice);
+  const isRule7Exit = checkRule7Exit(liveTrade, currentSamplePrice);
+  const isPrerunExit = checkPrerunExit(liveTrade);
+  const isPrerunVIXSlopeExit = checkPrerunVIXSlopeExit(liveTrade);
+  const isPrerunGainLimitExit = checkPrerunGainLimitExit(liveTrade, isGainLimit);
+
+  const weHaveAnExitReason = isGainLimit || isLossLimit || isEndOfDay || isRule1Exit ||
+    isRule2Exit || isRule3Exit || isRule4Exit || isRule5Exit || isPrerunExit || isPrerunVIXSlopeExit || isPrerunGainLimitExit;
+
+  if (weHaveAnExitReason) {
+    if (isGainLimit) {
+      liveTrade.whyClosed = whyClosedEnum.gainLimit;
+    }
+    if (isLossLimit) {
+      liveTrade.whyClosed = whyClosedEnum.lossLimit;
+    }
+    if (isRule1Exit) {
+      liveTrade.whyClosed = whyClosedEnum.rule1Exit;
+    }
+    if (isRule2Exit) {
+      liveTrade.whyClosed = whyClosedEnum.rule2Exit;
+    }
+    if (isRule3Exit) {
+      liveTrade.whyClosed = whyClosedEnum.rule3Exit;
+    }
+    if (isRule4Exit) {
+      liveTrade.whyClosed = whyClosedEnum.rule4Exit;
+    }
+    if (isRule5Exit) {
+      liveTrade.whyClosed = whyClosedEnum.rule5Exit;
+    }
+    if (isRule6Exit) {
+      liveTrade.whyClosed = whyClosedEnum.rule6Exit;
+    }
+    if (isRule7Exit) {
+      liveTrade.whyClosed = whyClosedEnum.rule7Exit;
+    }
+    if (isPrerunExit) {
+      liveTrade.whyClosed = whyClosedEnum.prerunExit;
+    }
+    if (isPrerunVIXSlopeExit) {
+      liveTrade.whyClosed = whyClosedEnum.prerunVIXSlopeExit;
+    }
+    if (isPrerunGainLimitExit) {
+      liveTrade.whyClosed = whyClosedEnum.prerunGainLimitExit;
+    }
+    if (isEndOfDay) {
+      liveTrade.whyClosed = whyClosedEnum.timedExit;
+    }
+    await CloseTrade(liveTrade, currentSamplePrice.price).catch(reason => {
+      const msg = `Exception with MonitorTradeToCloseItOut waiting CloseTrade: ${reason}.`;
+      LogData(liveTrade, msg, new Meteor.Error(reason, msg));
+    });
+    return true;
+  }
+  return false;
+}
+
+const loopOnTimer = (liveTrade: ITradeSettings, monitorMethod: any) => {
+  // If backtesting, loop asap otherwise loop every one second.
+  const delay = (liveTrade.isBacktesting) ? oneSeconds : 1;
+  Meteor.setTimeout(monitorMethod, delay);
+};
+
 function MonitorTradeToCloseItOut(liveTrade: ITradeSettings) {
-  const localEarlyExitTime = GetNewYorkTimeAt(liveTrade.exitHour, liveTrade.exitMinute);
   const monitorMethod = async () => {
+    const localEarlyExitTime = GetNewYorkTimeAt(liveTrade.exitHour, liveTrade.exitMinute);
     try {
       // The latestActiveTradeRecord can be updated via an 'Emergency Exit' call so check it along with the liveTrade.
       const latestActiveTradeRecord = Trades.findOne(liveTrade._id) ?? {};
       const isClosedAlready = !!(latestActiveTradeRecord.whyClosed || liveTrade.whyClosed);
       if (isClosedAlready) {
         // trade has been completed already (probably emergency exit) so stop the interval timer and exit.
-        LogData(liveTrade, `MonitorTradeToCloseItOut: Trade ${liveTrade._id} closed async, so stopping monitoring.`);
         return;
       }
       // Get the current price for the trade.
       const currentSamplePrice: IPrice = await GetSmartOptionsPrice(liveTrade);
       if (currentSamplePrice.price === Number.NaN || currentSamplePrice.price === 0) {
-        Meteor.setTimeout(monitorMethod, oneSeconds);
+        loopOnTimer(liveTrade, monitorMethod);
         return; // Try again on next interval timeout.
       }
-      calculateVariousValues(liveTrade, currentSamplePrice);
-      const localNow = dayjs();
-      const isEndOfDay = localEarlyExitTime.isBefore(localNow);
-      const absAveragePrice = Math.abs(getAveragePrice(liveTrade.monitoredPrices, 2));
-      const absCurrentPrice = Math.abs(currentSamplePrice.price);
-      let isGainLimit = (absCurrentPrice <= liveTrade.gainLimit);
-      // Using average on loss to make sure a spike does not trigger a loss exit.
-      let isLossLimit = (absAveragePrice >= liveTrade.lossLimit);
-      if (liveTrade.openingPrice > 0) { // Means we are long the trade (we want values to go up).
-        isGainLimit = (absCurrentPrice >= liveTrade.gainLimit);
-        isLossLimit = (absAveragePrice <= liveTrade.lossLimit);
-      }
-      const isRule1Exit = checkRule1Exit(liveTrade, currentSamplePrice);
-      const isRule2Exit = checkRule2Exit(liveTrade, currentSamplePrice);
-      const isRule3Exit = checkRule3Exit(liveTrade, currentSamplePrice);
-      const isRule4Exit = checkRule4Exit(liveTrade, currentSamplePrice);
-      const isRule5Exit = checkRule5Exit(liveTrade, currentSamplePrice);
-      const isRule6Exit = checkRule6Exit(liveTrade, currentSamplePrice);
-      const isRule7Exit = checkRule7Exit(liveTrade, currentSamplePrice);
-      const isPrerunExit = checkPrerunExit(liveTrade);
-      const isPrerunVIXSlopeExit = checkPrerunVIXSlopeExit(liveTrade);
-      const isPrerunGainLimitExit = checkPrerunGainLimitExit(liveTrade, isGainLimit);
-
-      const weHaveAnExitReason = isGainLimit || isLossLimit || isEndOfDay || isRule1Exit ||
-        isRule2Exit || isRule3Exit || isRule4Exit || isRule5Exit || isPrerunExit || isPrerunVIXSlopeExit || isPrerunGainLimitExit;
-
-      if (weHaveAnExitReason) {
-        if (isGainLimit) {
-          liveTrade.whyClosed = whyClosedEnum.gainLimit;
-        }
-        if (isLossLimit) {
-          liveTrade.whyClosed = whyClosedEnum.lossLimit;
-        }
-        if (isRule1Exit) {
-          liveTrade.whyClosed = whyClosedEnum.rule1Exit;
-        }
-        if (isRule2Exit) {
-          liveTrade.whyClosed = whyClosedEnum.rule2Exit;
-        }
-        if (isRule3Exit) {
-          liveTrade.whyClosed = whyClosedEnum.rule3Exit;
-        }
-        if (isRule4Exit) {
-          liveTrade.whyClosed = whyClosedEnum.rule4Exit;
-        }
-        if (isRule5Exit) {
-          liveTrade.whyClosed = whyClosedEnum.rule5Exit;
-        }
-        if (isRule6Exit) {
-          liveTrade.whyClosed = whyClosedEnum.rule6Exit;
-        }
-        if (isRule7Exit) {
-          liveTrade.whyClosed = whyClosedEnum.rule7Exit;
-        }
-        if (isPrerunExit) {
-          liveTrade.whyClosed = whyClosedEnum.prerunExit;
-        }
-        if (isPrerunVIXSlopeExit) {
-          liveTrade.whyClosed = whyClosedEnum.prerunVIXSlopeExit;
-        }
-        if (isPrerunGainLimitExit) {
-          liveTrade.whyClosed = whyClosedEnum.prerunGainLimitExit;
-        }
-        if (isEndOfDay) {
-          liveTrade.whyClosed = whyClosedEnum.timedExit;
-        }
-        await CloseTrade(liveTrade, currentSamplePrice.price).catch(reason => {
-          const msg = `Exception with MonitorTradeToCloseItOut waiting CloseTrade: ${reason}.`;
-          LogData(liveTrade, msg, new Meteor.Error(reason, msg));
-        });
-      } else {
+      const isClosed = await checkForTradeCompletion(liveTrade, currentSamplePrice, localEarlyExitTime);
+      if (!isClosed) {
         // Loop again waiting for one of the close patterns to get hit.
-        Meteor.setTimeout(monitorMethod, oneSeconds);
+        loopOnTimer(liveTrade, monitorMethod);
       }
     } catch (ex) {
       // We have an emergency if this happens, so send communications.
@@ -608,7 +632,7 @@ function MonitorTradeToCloseItOut(liveTrade: ITradeSettings) {
       LogData(liveTrade, message, ex);
     }
   };
-  Meteor.setTimeout(monitorMethod, oneSeconds);
+  loopOnTimer(liveTrade, monitorMethod);
 }
 
 function CalculateGrossOrderBuysAndSells(order) {
@@ -708,7 +732,26 @@ async function WaitForOrderCompleted(userId, accountNumber, orderId) {
   });
 }
 
+async function backTestLoop(tradeSettings: ITradeSettings, currentSample: IPrice) {
+  let isClosed = false;
+  const localEarlyExitTime = GetNewYorkTimeAt(tradeSettings.exitHour, tradeSettings.exitMinute);
+  do {
+    isClosed = await checkForTradeCompletion(tradeSettings, currentSample, localEarlyExitTime);
+    // Need to fix closure method or add one here.......
+    tradeSettings.backtestingData.index++;
+    if (!isClosed) {
+      // Get the current price for the trade.
+      currentSample = await GetSmartOptionsPrice(tradeSettings);
+    }
+  }while (!isClosed)
+}
+
 async function PlaceOpeningOrderAndMonitorToClose(tradeSettings: ITradeSettings) {
+  if (tradeSettings.isBacktesting) {
+    tradeSettings.openingOrderId = Random.id() + '_backtest';
+    // tradeSettings.openingPrice has already been estimated when orders were created.
+    // tradeSettings.openingShortOnlyPrice has already been estimated when orders were created.
+  }
   if (tradeSettings.isMocked) {
     tradeSettings.openingOrderId = Random.id() + '_MOCKED';
     // tradeSettings.openingPrice has already been estimated when orders were created.
@@ -727,23 +770,29 @@ async function PlaceOpeningOrderAndMonitorToClose(tradeSettings: ITradeSettings)
 
   tradeSettings.originalTradeSettingsId = tradeSettings._id;
   delete tradeSettings._id; // Remove the old _id for so when storing into Trades collection, a new _id is created.
-  tradeSettings.whenOpened = new Date();
+  tradeSettings.whenOpened = tradeSettings.isBacktesting ? tradeSettings.whenOpened : new Date();
   tradeSettings.monitoredPrices = [];
   CalculateLimitsAndFees(tradeSettings);
-  // Record this opening order data as a new active trade.
-  tradeSettings._id = Trades.insert({...tradeSettings});
-  const currentSample: IPrice = {
+  if (!tradeSettings.isBacktesting) {
+    // Record this opening order data as a new active trade.
+    tradeSettings._id = Trades.insert({...tradeSettings});
+  }
+  let currentSample: IPrice = {
     ...DefaultIPrice,
     price: -tradeSettings.openingPrice, // Negative for monitoring to close the trade.
     whenNY: tradeSettings.whenOpened,
     underlyingPrice: tradeSettings.openingUnderlyingPrice,
   };
   calculateVariousValues(tradeSettings, currentSample);
-
-  if (_.isFinite(tradeSettings.openingPrice)) {
-    MonitorTradeToCloseItOut(tradeSettings);
-  } else {
+  if (!_.isFinite(tradeSettings.openingPrice)) {
     LogData(tradeSettings, `Error: Opening order for trade: ${tradeSettings._id}, ${tradeSettings.userName} has bad opening price.`, null);
+    return;
+  }
+
+  if (tradeSettings.isBacktesting) {
+    await backTestLoop(tradeSettings, currentSample);
+  } else {
+    MonitorTradeToCloseItOut(tradeSettings);
   }
   return;
 }

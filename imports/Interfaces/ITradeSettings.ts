@@ -10,6 +10,7 @@ import IPrerunVIXSlopeValue, {defaultPrerunVIXSlopeValue} from './IPrerunVIXSlop
 import IRule6Value from './IRule6Value';
 import IRule7Value from './IRule7Value';
 import IPrerunGainAndTime, {defaultPrerunGainLimitValue} from './IPrerunGainLimitValue';
+import ICandle from './ICandle';
 
 enum whyClosedEnum {
   emergencyExit = 'emergencyExit',
@@ -82,6 +83,16 @@ const BadDefaultIPrice = {
   slope1: 0,
   slope2: 0,
   underlyingSlopeAngle: 0,
+};
+
+interface  IBacktestingData {
+  index: number,
+  minuteData: ICandle[],
+}
+
+export const DefaultIBacktestingData = {
+  minuteData: [],
+  index: 0,
 };
 
 interface ITradeSettings {
@@ -160,6 +171,8 @@ interface ITradeSettings {
   isCopiedOpenPriceToClosePrice?: boolean,
   openingUnderlyingPrice?: number,
   showVixAndSlopeInGraphs?: boolean,
+  isBacktesting?: boolean,
+  backtestingData?: IBacktestingData,
 }
 
 const DefaultIronCondorLegsSettings = [

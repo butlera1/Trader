@@ -382,6 +382,9 @@ export async function GetPriceForSymbols(userId, symbols) {
 }
 
 export async function GetATMOptionChains(tradeSettings) {
+  if (tradeSettings.isBacktesing) {
+    return [];
+  }
   const {symbol, userId} = tradeSettings;
   const token = await GetAccessToken(userId);
   if (!token) {
@@ -549,6 +552,16 @@ function getOptionChainsAtOrNearDTE(chains, dte) {
 }
 
 export function CreateOpenAndCloseOrders(chains, tradeSettings) {
+  if (tradeSettings.isBacktesting) {
+    // If backtesting, set the opening price to the open price of the current minute data.
+    const {minuteData, index} = tradeSettings.backtestingData;
+    tradeSettings.openingPrice = minuteData[index].open;
+    tradeSettings.csvSymbols = Constants.SPXSymbol;
+    tradeSettings.openingShortOnlyPrice = 0;
+    tradeSetting.whenOpened = new Date(minuteData[index].datetime);
+    return true;
+  }
+
   let csvSymbols = ``;
   let openingPrice = 0.0;
   let shortOnlyPrice = 0.0;
