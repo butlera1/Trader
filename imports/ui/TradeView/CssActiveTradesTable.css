@@ -1,7 +1,0 @@
-.table-row-prerunning {
-    background-color: lightcyan;
-}
-
-.table-row-prerunning:hover td {
-    background: lightcyan!important;
-}

@@ -182,16 +182,18 @@ async function CloseTrade(tradeSettings: ITradeSettings, currentPrice: number) {
   }
   tradeSettings.whenClosed = new Date();
   tradeSettings.gainLoss = CalculateGain(tradeSettings, tradeSettings.closingPrice);
-  Trades.update(tradeSettings._id, {
-    $set: {
-      closingOrderId: tradeSettings.closingOrderId,
-      closingPrice: tradeSettings.closingPrice,
-      whyClosed: tradeSettings.whyClosed,
-      whenClosed: tradeSettings.whenClosed,
-      gainLoss: tradeSettings.gainLoss,
-    }
-  });
-  saveTradeToHistory(tradeSettings);
+  if (!tradeSettings.isBacktesting) {
+    Trades.update(tradeSettings._id, {
+      $set: {
+        closingOrderId: tradeSettings.closingOrderId,
+        closingPrice: tradeSettings.closingPrice,
+        whyClosed: tradeSettings.whyClosed,
+        whenClosed: tradeSettings.whenClosed,
+        gainLoss: tradeSettings.gainLoss,
+      }
+    });
+    saveTradeToHistory(tradeSettings);
+  }
   const wasPrerunning = tradeSettings.isPrerunning;
   const wasPrerunningVIXSlope = tradeSettings.isPrerunningVIXSlope;
   const wasPrerunningGainLimit = tradeSettings.isPrerunningGainLimit;
@@ -522,10 +524,21 @@ function calculateVariousValues(liveTrade: ITradeSettings, currentSample: IPrice
   }
 }
 
-async function checkForTradeCompletion(liveTrade: ITradeSettings, currentSamplePrice: IPrice, localEarlyExitTime: dayjs.Dayjs) {
+function isExitTimeBeforeSampleTime(exitTime: dayjs.Dayjs, currentSampleTime: dayjs.Dayjs) {
+  // With back testing we can have different dates for the current sample so compare only the hours and minutes.
+  if (exitTime.hour() < currentSampleTime.hour()) {
+    return true;
+  }
+  if (exitTime.hour() === currentSampleTime.hour() && exitTime.minute() <= currentSampleTime.minute()) {
+    return true;
+  }
+  return false;
+}
+
+async function checkForTradeCompletion(liveTrade: ITradeSettings, currentSamplePrice: IPrice, exitTime: dayjs.Dayjs) {
   calculateVariousValues(liveTrade, currentSamplePrice);
-  const localNow = dayjs();
-  const isEndOfDay = localEarlyExitTime.isBefore(localNow);
+  const sampleTime = dayjs(currentSamplePrice.whenNY);
+  const isEndOfDay = isExitTimeBeforeSampleTime(exitTime, sampleTime);
   const absAveragePrice = Math.abs(getAveragePrice(liveTrade.monitoredPrices, 2));
   const absCurrentPrice = Math.abs(currentSamplePrice.price);
   let isGainLimit = (absCurrentPrice <= liveTrade.gainLimit);
@@ -734,11 +747,10 @@ async function WaitForOrderCompleted(userId, accountNumber, orderId) {
 
 async function backTestLoop(tradeSettings: ITradeSettings, currentSample: IPrice) {
   let isClosed = false;
-  const localEarlyExitTime = GetNewYorkTimeAt(tradeSettings.exitHour, tradeSettings.exitMinute);
+  const exitTime = GetNewYorkTimeAt(tradeSettings.exitHour, tradeSettings.exitMinute);
+
   do {
-    isClosed = await checkForTradeCompletion(tradeSettings, currentSample, localEarlyExitTime);
-    // Need to fix closure method or add one here.......
-    tradeSettings.backtestingData.index++;
+    isClosed = await checkForTradeCompletion(tradeSettings, currentSample, exitTime);
     if (!isClosed) {
       // Get the current price for the trade.
       currentSample = await GetSmartOptionsPrice(tradeSettings);
