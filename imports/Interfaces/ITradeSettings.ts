@@ -92,17 +92,22 @@ interface IBacktestResult {
   whenClosed: Date,
   whyClosed: whyClosedEnum,
   gainLoss: number,
+  isAnyPrerun: boolean,
 };
 
 interface IBacktestingData {
   index: number,
   minuteData: ICandle[],
+  isHighUsed: boolean,
+  isLowUsed: boolean,
   results: IBacktestResult[],
 }
 
 export const DefaultIBacktestingData = {
   minuteData: [],
   index: 0,
+  isHighUsed: false,
+  isLowUsed: false,
   results: [],
 };
 
@@ -324,6 +329,7 @@ export {
   whyClosedEnum,
   ITradeSettings as default,
   IPrice,
+  IBacktestResult,
   GetDescription,
   DefaultTradeSettings,
   DefaultIronCondorLegsSettings,

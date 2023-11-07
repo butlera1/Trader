@@ -382,7 +382,7 @@ export async function GetPriceForSymbols(userId, symbols) {
 }
 
 export async function GetATMOptionChains(tradeSettings) {
-  if (tradeSettings.isBacktesing) {
+  if (tradeSettings.isBacktesting) {
     return [];
   }
   const {symbol, userId} = tradeSettings;

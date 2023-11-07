@@ -36,6 +36,7 @@ import './TDAApi/StreamEquities';
 import {GetSlopeAngleOfSymbol, LatestQuote} from './TDAApi/StreamEquities';
 import {DefaultAppSettings} from '../imports/Interfaces/IAppSettings';
 import {GetSPXData} from './BackgroundPolling';
+import {TestBackTestCode} from './Backtest/SingleCallPutBacktest';
 
 dayjs.extend(utc);
 dayjs.extend(timezone);
@@ -104,7 +105,7 @@ const settings = {
 delete settings._id;
 AppSettings.upsert(Constants.appSettingsId, settings);
 
-// TestBackTestCode().then(r => {});
+TestBackTestCode().then(r => {});
 
 // StartBackgroundPolling();
 // ScheduleStartOfDayWork();
