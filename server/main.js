@@ -16,7 +16,7 @@ import './SeedUser';
 import {
   BuyStock,
   GetAccessToken,
-  GetATMOptionChains, GetHistoricalData,
+  GetATMOptionChains,
   GetOrders,
   SellStraddle,
   SetUserAccessInfo
@@ -25,7 +25,6 @@ import {EmergencyCloseAllTrades, EmergencyCloseSingleTrade, ExecuteTrade, Monito
 import {WebApp} from 'meteor/webapp';
 import {Trades} from './collections/Trades';
 import {LogData} from './collections/Logs';
-import ScheduleStartOfDayWork from './ScheduleStartOfDayWork';
 import {AppSettings, GetAppSettings, SetAppSettings} from './collections/AppSettings';
 import Constants from '../imports/Constants';
 
@@ -34,13 +33,9 @@ import utc from 'dayjs/plugin/utc';
 import timezone from 'dayjs/plugin/timezone';
 
 import './TDAApi/StreamEquities';
-import ScheduleEndOfDayWork from './ScheduleEndOfDayWork';
 import {GetSlopeAngleOfSymbol, LatestQuote} from './TDAApi/StreamEquities';
 import {DefaultAppSettings} from '../imports/Interfaces/IAppSettings';
-import {GetSPXData, StartBackgroundPolling} from './BackgroundPolling';
-import {GetOptionData} from './Backtest/PolygonIODataAccess';
-import {SetEndOfDay, SetStartOfDay} from '../imports/Utils';
-import {TestBackTestCode} from './Backtest/SingleCallPutBacktest';
+import {GetSPXData} from './BackgroundPolling';
 
 dayjs.extend(utc);
 dayjs.extend(timezone);
