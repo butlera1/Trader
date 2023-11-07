@@ -85,14 +85,25 @@ const BadDefaultIPrice = {
   underlyingSlopeAngle: 0,
 };
 
-interface  IBacktestingData {
+interface IBacktestResult {
+  openingPrice: number,
+  whenOpened: Date,
+  closingPrice: number,
+  whenClosed: Date,
+  whyClosed: whyClosedEnum,
+  gainLoss: number,
+};
+
+interface IBacktestingData {
   index: number,
   minuteData: ICandle[],
+  results: IBacktestResult[],
 }
 
 export const DefaultIBacktestingData = {
   minuteData: [],
   index: 0,
+  results: [],
 };
 
 interface ITradeSettings {

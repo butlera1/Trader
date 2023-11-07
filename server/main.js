@@ -109,11 +109,11 @@ const settings = {
 delete settings._id;
 AppSettings.upsert(Constants.appSettingsId, settings);
 
-// TestBackTestCode();
+// TestBackTestCode().then(r => {});
 
-StartBackgroundPolling();
-ScheduleStartOfDayWork();
-ScheduleEndOfDayWork();
-CheckForAnyExistingTradesAndMonitorThem();
+// StartBackgroundPolling();
+// ScheduleStartOfDayWork();
+// ScheduleEndOfDayWork();
+// CheckForAnyExistingTradesAndMonitorThem();
 
 

@@ -558,7 +558,7 @@ export function CreateOpenAndCloseOrders(chains, tradeSettings) {
     tradeSettings.openingPrice = minuteData[index].open;
     tradeSettings.csvSymbols = Constants.SPXSymbol;
     tradeSettings.openingShortOnlyPrice = 0;
-    tradeSetting.whenOpened = new Date(minuteData[index].datetime);
+    tradeSettings.whenOpened = new Date(minuteData[index].datetime);
     return true;
   }
 
@@ -602,6 +602,7 @@ export function CreateOpenAndCloseOrders(chains, tradeSettings) {
       shortOnlyPrice = shortOnlyPrice + totalMarkPrice;
     }
   });
+  tradeSettings.whenOpened = new Date();
   tradeSettings.csvSymbols = csvSymbols.slice(1); // remove leading comma
   tradeSettings.openingPrice = openingPrice; // Expected openingPrice. Will be used if isMocked. Order filled replaces.
   tradeSettings.openingShortOnlyPrice = shortOnlyPrice;

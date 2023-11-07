@@ -34,6 +34,7 @@ import Semaphore from 'semaphore';
 import IUserSettings from '../imports/Interfaces/IUserSettings';
 import {GetVIXMark, GetVIXSlope, GetVIXSlopeAngle} from "./BackgroundPolling";
 import {DirectionUp} from '../imports/Interfaces/IPrerunVIXSlopeValue';
+import {DefaultClosedTradeInfo, IClosedTradeInfo} from '../imports/Interfaces/IClosedTradeInfo';
 
 dayjs.extend(duration);
 dayjs.extend(isoWeek);
@@ -151,17 +152,18 @@ function saveTradeToHistory(tradeSettings: ITradeSettings) {
   DailyTradeSummaries.upsert(id, summary);
 }
 
-async function CloseTrade(tradeSettings: ITradeSettings, currentPrice: number) {
-  const {isMocked, userId, accountNumber, closingOrder, openingPrice} = tradeSettings;
-  if (isMocked) {
-    tradeSettings.closingOrderId = Random.id() + '_MOCKED';
-    tradeSettings.closingPrice = currentPrice;
+async function CloseTrade(tradeSettings: ITradeSettings, currentPrice: IPrice): Promise<IClosedTradeInfo> {
+  const {isMocked, userId, accountNumber, closingOrder, openingPrice, isBacktesting} = tradeSettings;
+  const result: IClosedTradeInfo = {...DefaultClosedTradeInfo};
+  if (isMocked || isBacktesting) {
+    tradeSettings.closingOrderId = Random.id();
+    tradeSettings.closingPrice = currentPrice.price;
   } else {
     tradeSettings.closingOrderId = await PlaceOrder(userId, accountNumber, closingOrder).catch(reason => {
       const msg = `CloseTrade ERROR. FAILED to close a trade!!! ${reason.toString()}`;
       LogData(tradeSettings, msg, reason);
       SendTextToAdmin(msg, msg);
-      return null;
+      return result;
     });
     if (tradeSettings.closingOrderId) {
       const priceResults = await WaitForOrderCompleted(userId, accountNumber, tradeSettings.closingOrderId).catch(reason => {
@@ -180,9 +182,18 @@ async function CloseTrade(tradeSettings: ITradeSettings, currentPrice: number) {
     tradeSettings.closingPrice = openingPrice;
     tradeSettings.isCopiedOpenPriceToClosePrice = true;
   }
-  tradeSettings.whenClosed = new Date();
+  tradeSettings.whenClosed = currentPrice.whenNY;
   tradeSettings.gainLoss = CalculateGain(tradeSettings, tradeSettings.closingPrice);
-  if (!tradeSettings.isBacktesting) {
+  if (tradeSettings.isBacktesting) {
+    tradeSettings.backtestingData.results.push({
+      openingPrice: tradeSettings.openingPrice,
+      whenOpened: tradeSettings.whenOpened,
+      closingPrice: tradeSettings.closingPrice,
+      whenClosed: tradeSettings.whenClosed,
+      whyClosed: tradeSettings.whyClosed,
+      gainLoss: tradeSettings.gainLoss,
+    });
+  } else {
     Trades.update(tradeSettings._id, {
       $set: {
         closingOrderId: tradeSettings.closingOrderId,
@@ -243,20 +254,18 @@ async function CloseTrade(tradeSettings: ITradeSettings, currentPrice: number) {
         // If PrerunGainLimit is enabled and we just had a gain on real trade, do another real trade.
         nowPrerunningGainLimit = false;
       }
-
-      ExecuteTrade(settings, false, nowPrerunning, nowPrerunningVIXSlope, nowPrerunningGainLimit)
-        .then()
-        .catch((reason) => LogData(tradeSettings, `Failed doing a repeat ExecuteTrade ${reason}`, new Error(reason)));
+      return {isClosed: true, isRepeat: true, settings, nowPrerunning, nowPrerunningVIXSlope, nowPrerunningGainLimit};
     }
   }
+  return result;
 }
 
 async function forceCloseATrade(tradeSettings: ITradeSettings) {
   // Get the last recorded price for this trade and use it for the exit price if in mocked mode.
   // Note the closingPrice defaults to the NEGATIVE of the openingPrice.
-  let exitPrice = -tradeSettings.openingPrice;
+  let exitPrice: IPrice = {...DefaultIPrice, price: -tradeSettings.openingPrice, whenNY: new Date()};
   if (tradeSettings.monitoredPrices?.length > 0) {
-    exitPrice = tradeSettings.monitoredPrices[tradeSettings.monitoredPrices.length - 1].price;
+    exitPrice = tradeSettings.monitoredPrices[tradeSettings.monitoredPrices.length - 1];
   }
   tradeSettings.whyClosed = whyClosedEnum.emergencyExit;
   await CloseTrade(tradeSettings, exitPrice).catch(reason => {
@@ -535,7 +544,7 @@ function isExitTimeBeforeSampleTime(exitTime: dayjs.Dayjs, currentSampleTime: da
   return false;
 }
 
-async function checkForTradeCompletion(liveTrade: ITradeSettings, currentSamplePrice: IPrice, exitTime: dayjs.Dayjs) {
+async function checkForTradeCompletion(liveTrade: ITradeSettings, currentSamplePrice: IPrice, exitTime: dayjs.Dayjs): Promise<IClosedTradeInfo> {
   calculateVariousValues(liveTrade, currentSamplePrice);
   const sampleTime = dayjs(currentSamplePrice.whenNY);
   const isEndOfDay = isExitTimeBeforeSampleTime(exitTime, sampleTime);
@@ -602,20 +611,15 @@ async function checkForTradeCompletion(liveTrade: ITradeSettings, currentSampleP
     if (isEndOfDay) {
       liveTrade.whyClosed = whyClosedEnum.timedExit;
     }
-    await CloseTrade(liveTrade, currentSamplePrice.price).catch(reason => {
+    const closedTradeInfo = await CloseTrade(liveTrade, currentSamplePrice).catch(reason => {
       const msg = `Exception with MonitorTradeToCloseItOut waiting CloseTrade: ${reason}.`;
       LogData(liveTrade, msg, new Meteor.Error(reason, msg));
+      return {...DefaultClosedTradeInfo, isClosed: true, isRepeat: false};
     });
-    return true;
+    return {...closedTradeInfo, isClosed: true};
   }
-  return false;
+  return {...DefaultClosedTradeInfo, isClosed: false, isRepeat: false};
 }
-
-const loopOnTimer = (liveTrade: ITradeSettings, monitorMethod: any) => {
-  // If backtesting, loop asap otherwise loop every one second.
-  const delay = (liveTrade.isBacktesting) ? oneSeconds : 1;
-  Meteor.setTimeout(monitorMethod, delay);
-};
 
 function MonitorTradeToCloseItOut(liveTrade: ITradeSettings) {
   const monitorMethod = async () => {
@@ -631,13 +635,20 @@ function MonitorTradeToCloseItOut(liveTrade: ITradeSettings) {
       // Get the current price for the trade.
       const currentSamplePrice: IPrice = await GetSmartOptionsPrice(liveTrade);
       if (currentSamplePrice.price === Number.NaN || currentSamplePrice.price === 0) {
-        loopOnTimer(liveTrade, monitorMethod);
+        Meteor.setTimeout(monitorMethod, oneSeconds);
         return; // Try again on next interval timeout.
       }
-      const isClosed = await checkForTradeCompletion(liveTrade, currentSamplePrice, localEarlyExitTime);
-      if (!isClosed) {
+      const closedInfo: IClosedTradeInfo = await checkForTradeCompletion(liveTrade, currentSamplePrice, localEarlyExitTime);
+      if (!closedInfo.isClosed) {
         // Loop again waiting for one of the close patterns to get hit.
-        loopOnTimer(liveTrade, monitorMethod);
+        Meteor.setTimeout(monitorMethod, oneSeconds);
+      } else {
+        if (closedInfo.isRepeat) {
+          // Start another trade if IsRepeat.
+          const {settings, nowPrerunning, nowPrerunningVIXSlope, nowPrerunningGainLimit} = closedInfo;
+          ExecuteTrade(settings, false, nowPrerunning, nowPrerunningVIXSlope, nowPrerunningGainLimit)
+            .catch((reason) => LogData(settings, `Failed doing a repeat ExecuteTrade ${reason}`, new Error(reason)));
+        }
       }
     } catch (ex) {
       // We have an emergency if this happens, so send communications.
@@ -645,7 +656,7 @@ function MonitorTradeToCloseItOut(liveTrade: ITradeSettings) {
       LogData(liveTrade, message, ex);
     }
   };
-  loopOnTimer(liveTrade, monitorMethod);
+  Meteor.setTimeout(monitorMethod, oneSeconds);
 }
 
 function CalculateGrossOrderBuysAndSells(order) {
@@ -746,29 +757,21 @@ async function WaitForOrderCompleted(userId, accountNumber, orderId) {
 }
 
 async function backTestLoop(tradeSettings: ITradeSettings, currentSample: IPrice) {
-  let isClosed = false;
+  let isClosed: IClosedTradeInfo = null;
   const exitTime = GetNewYorkTimeAt(tradeSettings.exitHour, tradeSettings.exitMinute);
 
   do {
     isClosed = await checkForTradeCompletion(tradeSettings, currentSample, exitTime);
     if (!isClosed) {
-      // Get the current price for the trade.
+      // Get next price for the trade.
       currentSample = await GetSmartOptionsPrice(tradeSettings);
     }
-  }while (!isClosed)
+  } while (!isClosed);
 }
 
 async function PlaceOpeningOrderAndMonitorToClose(tradeSettings: ITradeSettings) {
-  if (tradeSettings.isBacktesting) {
-    tradeSettings.openingOrderId = Random.id() + '_backtest';
-    // tradeSettings.openingPrice has already been estimated when orders were created.
-    // tradeSettings.openingShortOnlyPrice has already been estimated when orders were created.
-  }
-  if (tradeSettings.isMocked) {
-    tradeSettings.openingOrderId = Random.id() + '_MOCKED';
-    // tradeSettings.openingPrice has already been estimated when orders were created.
-    // tradeSettings.openingShortOnlyPrice has already been estimated when orders were created.
-  } else {
+  tradeSettings.openingOrderId = Random.id(); // Fake an order id for backtesting or mocked mode.
+  if (!tradeSettings.isMocked && !tradeSettings.isBacktesting) {
     tradeSettings.openingOrderId = await PlaceOrder(tradeSettings.userId, tradeSettings.accountNumber, tradeSettings.openingOrder);
     const priceResults = await WaitForOrderCompleted(tradeSettings.userId, tradeSettings.accountNumber, tradeSettings.openingOrderId)
       .catch(() => {
@@ -777,12 +780,12 @@ async function PlaceOpeningOrderAndMonitorToClose(tradeSettings: ITradeSettings)
     if (priceResults?.orderPrice) {
       tradeSettings.openingPrice = priceResults.orderPrice;
       tradeSettings.openingShortOnlyPrice = priceResults.shortOnlyPrice;
+      tradeSettings.whenOpened = new Date(); // Live trade show use NOW for whenOpened.
     }
   }
 
   tradeSettings.originalTradeSettingsId = tradeSettings._id;
   delete tradeSettings._id; // Remove the old _id for so when storing into Trades collection, a new _id is created.
-  tradeSettings.whenOpened = tradeSettings.isBacktesting ? tradeSettings.whenOpened : new Date();
   tradeSettings.monitoredPrices = [];
   CalculateLimitsAndFees(tradeSettings);
   if (!tradeSettings.isBacktesting) {
@@ -832,13 +835,15 @@ async function ExecuteTrade(
     return;
   }
   const userSettings: IUserSettings = UserSettings.findOne({_id: tradeSettings.userId});
-  if (!userSettings?.accountIsActive) {
-    LogData(tradeSettings, `ExecuteTrade called for ${tradeSettings.userName} but account is not active.`, null);
-    return;
-  }
-  if (userSettings?.isMaxGainAllowedMet) {
-    LogData(tradeSettings, `ExecuteTrade called for ${tradeSettings.userName} but Max Daily Gain has been met.`, null);
-    return;
+  if (!tradeSettings.isBacktesting) {
+    if (!userSettings?.accountIsActive) {
+      LogData(tradeSettings, `ExecuteTrade called for ${tradeSettings.userName} but account is not active.`, null);
+      return;
+    }
+    if (userSettings?.isMaxGainAllowedMet) {
+      LogData(tradeSettings, `ExecuteTrade called for ${tradeSettings.userName} but Max Daily Gain has been met.`, null);
+      return;
+    }
   }
   const now = dayjs();
   const nowNYText = now.toDate().toLocaleString('en-US', {timeZone: 'America/New_York'});
@@ -872,7 +877,8 @@ async function ExecuteTrade(
       tradeSettings.isPrerunningGainLimit = isPrerunGainLimit;
       tradeSettings.isMocked = tradeSettings.isMocked || isPrerun || isPrerunVIXSlope || isPrerunGainLimit;
       tradeSettings.description = GetDescription(tradeSettings);
-      LogData(tradeSettings, `Trading for ${tradeSettings.userName} @ ${nowNYText} (NY) with ${JSON.stringify(tradeSettings)}`);
+      tradeSettings.gainLoss = 0;
+      delete tradeSettings.whyClosed;
       // Place the opening trade and monitor it to later close it out.
       const chains = await GetATMOptionChains(tradeSettings);
       // The trade orders are assigned to the tradeSettings object.

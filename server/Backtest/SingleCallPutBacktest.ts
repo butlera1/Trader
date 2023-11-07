@@ -215,7 +215,7 @@ function addSummaryToSummaries(summary: ISummary, summaries: ISummary[]) {
   }
 }
 
-export async function BacktestLoop(tradeSetting: ITradeSettings, ranges: IRanges): Promise<any> {
+export async function BackTestCallPut(tradeSetting: ITradeSettings, ranges: IRanges): Promise<any> {
   const start = dayjs();
   if (!tradeSetting.prerunGainLimitValue) {
     tradeSetting.prerunGainLimitValue = {...defaultPrerunGainLimitValue};
@@ -246,6 +246,7 @@ export async function BacktestLoop(tradeSetting: ITradeSettings, ranges: IRanges
             tradeSetting.lossLimit = lossLimit;
             tradeSetting.prerunGainLimitValue.seconds = seconds;
             tradeSetting.isPrerunningGainLimit = tradeSetting.isPrerunGainLimit;
+            tradeSetting.isBacktesting = true;
             const results: IBacktestResult[] = [] as IBacktestResult[];
             for (let i = 0; i < dataSet.length; i++) {
               const minuteData = dataSet[i];
@@ -256,12 +257,9 @@ export async function BacktestLoop(tradeSetting: ITradeSettings, ranges: IRanges
               const endIndex = Math.min(getEndIndex(tradeSetting) + 1, minuteData.length);
               tradeSetting.backtestingData = { ...DefaultIBacktestingData, index: timeIndex, minuteData};
               // Loop to get all the trades for this day.
-              while (timeIndex < endIndex) {
+              do {
                 await ExecuteTrade(tradeSetting, false, tradeSetting.isPrerun, tradeSetting.isPrerunVIXSlope, tradeSetting.isPrerunningGainLimit);
-                let daysResults: IBacktestResult = SingleCallPutBacktest(minuteData, timeIndex, tradeSetting, endIndex);
-                timeIndex = daysResults.nextIndex;
-                results.push(daysResults);
-              }
+              } while (tradeSetting.isRepeat && tradeSetting.backtestingData.index < endIndex)
             }
             totalTradeCount += results.length;
             const summary = buildSummary(results, dataSet.length);
@@ -336,12 +334,12 @@ export async function TestBackTestCode(): Promise<void> {
   };
 
   tradeSetting.legs = [...DefaultPutLegsSettings];
-  let {sumText, summaries} = await BacktestLoop(tradeSetting, ranges);
+  let {sumText, summaries} = await BackTestCallPut(tradeSetting, ranges);
   console.log(summaries[0]);
   console.log(sumText);
 
   tradeSetting.legs = [...DefaultCallLegsSettings];
-  ({sumText, summaries} = await BacktestLoop(tradeSetting, ranges));
+  ({sumText, summaries} = await BackTestCallPut(tradeSetting, ranges));
   console.log(summaries[0]);
   console.log(sumText);
 }
