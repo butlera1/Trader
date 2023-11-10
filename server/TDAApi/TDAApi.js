@@ -559,6 +559,10 @@ export function CreateOpenAndCloseOrders(chains, tradeSettings) {
     tradeSettings.csvSymbols = Constants.SPXSymbol;
     tradeSettings.openingShortOnlyPrice = 0;
     tradeSettings.whenOpened = new Date(minuteData[index].datetime);
+    if (tradeSettings.backtestingData.tradeType === OptionType.PUT) {
+      // If PUT, then the price is negative (like a credit) to reverse the gainLimit and lossLimit settings.
+      tradeSettings.openingPrice = -tradeSettings.openingPrice;
+    }
     return true;
   }
 

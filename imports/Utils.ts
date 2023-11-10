@@ -97,6 +97,9 @@ function CalculateGain(tradeSettings, currentPrice) {
     // We are in a long position.
     possibleGain = (Math.abs(currentPrice) - openingPrice) * 100.0;
   }
+  if (tradeSettings.isBacktesting) {
+    possibleGain = possibleGain/100.0; // Because we are working with the underlying and not option prices.
+  }
   return possibleGain;
 }
 

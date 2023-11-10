@@ -29,7 +29,7 @@ function GetUserTradeSettings(tradeSettingId) {
 
 function GetTradeSettingNames() {
   if (Meteor.userId()) {
-    return TradeSettings.find({userId: Meteor.userId()}, {fields: {name: 1}}).fetch().map(record => record.name);
+    return TradeSettings.find({userId: Meteor.userId()}, {fields: {name: 1, _id: 1}}).fetch();
   }
   throw new Meteor.Error('Must have valid user for GetTradeSettingNames.');
 }

@@ -11,7 +11,7 @@ import Constants from '../../imports/Constants';
 import {BuySell, OptionType} from '../../imports/Interfaces/ILegSettings';
 import {defaultPrerunGainLimitValue} from '../../imports/Interfaces/IPrerunGainLimitValue';
 import {ExecuteTrade} from '../Trader';
-import {IClosedTradeInfo} from '../../imports/Interfaces/IClosedTradeInfo';
+import {DefaultClosedTradeInfo} from '../../imports/Interfaces/IClosedTradeInfo';
 
 const startOfTradeTime = GetNewYorkTimeAt(9, 30);
 
@@ -35,7 +35,7 @@ interface ISummary {
   prerunGainLimitSeconds: number,
   numberOfDaysTraded: number,
   isPrerunGainLimit: boolean,
-  tradeType: string,
+  tradeType: OptionType,
   startDate: Date,
   endDate: Date,
 }
@@ -137,7 +137,7 @@ export async function BackTestCallPut(tradeSetting: ITradeSettings, ranges: IRan
     tradeSetting.prerunGainLimitValue = {...defaultPrerunGainLimitValue};
   }
   const dataSet = [];
-  // Get all the day's data for the backtest.
+  // Get all the day's data for the Backtest.
   for (let date: Dayjs = ranges.startDate; date.isBefore(ranges.endDate); date = date.add(1, 'day')) {
     const data = await GetHistoricalData(tradeSetting.userId, tradeSetting.symbol, date).catch((error) => {
     });
@@ -160,9 +160,12 @@ export async function BackTestCallPut(tradeSetting: ITradeSettings, ranges: IRan
           for (let seconds = ranges.startGainLimitPrerunAllowedDurationSeconds; seconds <= ranges.endGainLimitPrerunAllowedDurationSeconds; seconds += ranges.gainLimitPrerunAllowedDurationSecondsIncrement) {
             tradeSetting.percentGain = gainLimit;
             tradeSetting.percentLoss = lossLimit;
+            tradeSetting.percentGainIsDollar = ranges.gainIsDollar;
+            tradeSetting.percentLossIsDollar = ranges.lossIsDollar;
             tradeSetting.prerunGainLimitValue.seconds = seconds;
             tradeSetting.isBacktesting = true;
-            tradeSetting.backtestingData = {...DefaultIBacktestingData};
+            tradeSetting.backtestingData = {...DefaultIBacktestingData, tradeType: tradeSetting.legs[0].callPut};
+
             const resultsFromAllDaysTraded: IBacktestResult[] = [];
             // Loop for each day of data.
             for (let i = 0; i < dataSet.length; i++) {
@@ -171,16 +174,25 @@ export async function BackTestCallPut(tradeSetting: ITradeSettings, ranges: IRan
                 continue; // Skip this day (weekend or holiday).
               }
               let timeIndex = getStartIndex(tradeSetting);
-              const endIndex = Math.min(getEndIndex(tradeSetting), minuteData.length-1);
+              const endIndex = Math.min(getEndIndex(tradeSetting), minuteData.length - 1);
               tradeSetting.backtestingData.index = timeIndex;
               tradeSetting.backtestingData.minuteData = minuteData;
+              tradeSetting.backtestingData.results = [];
+              const start = dayjs();
+              let lastCloseTradeInfo = {...DefaultClosedTradeInfo};
+              lastCloseTradeInfo.nowPrerunning = tradeSetting.isPrerun;
+              lastCloseTradeInfo.nowPrerunningVIXSlope = tradeSetting.isPrerunVIXSlope;
+              lastCloseTradeInfo.nowPrerunningGainLimit = tradeSetting.isPrerunGainLimit;
+
               // Loop to get all the trades for this day.
               do {
-                const closeTradeInfo: IClosedTradeInfo = await ExecuteTrade(tradeSetting, false, tradeSetting.isPrerun, tradeSetting.isPrerunVIXSlope, tradeSetting.isPrerunningGainLimit);
+                lastCloseTradeInfo = await ExecuteTrade(tradeSetting, false, lastCloseTradeInfo.nowPrerunning, lastCloseTradeInfo.nowPrerunningVIXSlope, lastCloseTradeInfo.nowPrerunningGainLimit);
+                if (lastCloseTradeInfo.isClosed) {
+                  const tt = tradeSetting.whyClosed;
+                }
               } while (tradeSetting.isRepeat && tradeSetting.backtestingData.index < endIndex);
               resultsFromAllDaysTraded.push(...tradeSetting.backtestingData.results);
             }
-            //
             totalTradeCount += resultsFromAllDaysTraded.length;
             const summary: ISummary = buildSummary(tradeSetting, resultsFromAllDaysTraded, dataSet.length);
             if (summary) {
@@ -197,22 +209,24 @@ export async function BackTestCallPut(tradeSetting: ITradeSettings, ranges: IRan
 }
 
 export async function TestBackTestCode(): Promise<void> {
-
   const ranges: IRanges = {
     recordId: 'test',
-    startGain: 0.01,
+
+    startGain: 0.1,
     endGain: 1,
     gainIncrement: 0.2,
-    startLoss: 0.01,
+
+    startLoss: 0.1,
     endLoss: 1,
     lossIncrement: 0.2,
+
     startGainLimitPrerunAllowedDurationSeconds: 180,
     endGainLimitPrerunAllowedDurationSeconds: 300,
     gainLimitPrerunAllowedDurationSecondsIncrement: 60,
-    startDate: dayjs().subtract(11, 'day'),
-    endDate: dayjs().subtract(1, 'day'),
+    startDate: dayjs().subtract(10, 'day').hour(6).minute(0),
+    endDate: dayjs().hour(6).minute(0),
     entryHours: [9],
-    exitHours: [10],
+    exitHours: [12],
   };
   const DefaultCallLegsSettings = [
     {
@@ -237,15 +251,16 @@ export async function TestBackTestCode(): Promise<void> {
   const tradeSetting: ITradeSettings = {
     ...DefaultTradeSettings,
     userId: 'g7gpWRiEBDqjysDFQ',
+    userName: 'Backtest test',
     symbol: Constants.SPXSymbol,
     entryHour: 9,
     entryMinute: 30,
-    exitHour: 11,
+    exitHour: 12,
     exitMinute: 0,
     percentGain: 0.01,
     percentLoss: 0.01,
-    percentGainIsDollar: false,
-    percentLossIsDollar: false,
+    percentGainIsDollar: true,
+    percentLossIsDollar: true,
     isPrerunGainLimit: true,
     isPrerunningGainLimit: false,
     prerunGainLimitValue: {

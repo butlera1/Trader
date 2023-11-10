@@ -143,7 +143,7 @@ function UserSettings() {
                 min={0}
                 max={50000}
                 step={1}
-                style={{width: '270px'}}
+                style={{width: '325px'}}
                 onChange={(value) => onChange('maxAllowedDailyLoss', value)}
               />
               <InputNumber
@@ -152,7 +152,7 @@ function UserSettings() {
                 min={0}
                 max={50000}
                 step={1}
-                style={{width: '270px'}}
+                style={{width: '325px'}}
                 onChange={(value) => onChange('maxAllowedDailyGain', value)}
               />
             </Space>

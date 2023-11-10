@@ -35,6 +35,7 @@ import IUserSettings from '../imports/Interfaces/IUserSettings';
 import {GetVIXMark, GetVIXSlope, GetVIXSlopeAngle} from "./BackgroundPolling";
 import {DirectionUp} from '../imports/Interfaces/IPrerunVIXSlopeValue';
 import {DefaultClosedTradeInfo, IClosedTradeInfo} from '../imports/Interfaces/IClosedTradeInfo';
+import {OptionType} from '../imports/Interfaces/ILegSettings';
 
 dayjs.extend(duration);
 dayjs.extend(isoWeek);
@@ -503,7 +504,6 @@ function getAveragePrice(samples: IPrice[], desiredNumberOfSamples: number) {
 function calculateVariousValues(liveTrade: ITradeSettings, currentSample: IPrice) {
   currentSample.gain = CalculateGain(liveTrade, currentSample.price);
   liveTrade.gainLoss = currentSample.gain;
-  liveTrade.monitoredPrices.push(currentSample); // Update the local copy.
   currentSample.vixMark = GetVIXMark();
   currentSample.vixSlopeAngle = GetVIXSlopeAngle();
   currentSample.vixSlope = GetVIXSlope();
@@ -618,6 +618,8 @@ function MonitorTradeToCloseItOut(liveTrade: ITradeSettings) {
         Meteor.setTimeout(monitorMethod, oneSeconds);
         return; // Try again on next interval timeout.
       }
+      liveTrade.monitoredPrices.push(currentSamplePrice);
+
       const closedInfo: IClosedTradeInfo = await checkForTradeCompletion(liveTrade, currentSamplePrice, localEarlyExitTime);
       if (!closedInfo.isClosed) {
         // Loop again waiting for one of the close patterns to get hit.
@@ -753,7 +755,10 @@ function nextBacktestPrice(tradeSettings: ITradeSettings): IPrice {
 async function backTestLoop(tradeSettings: ITradeSettings): Promise<IClosedTradeInfo> {
   let closeTradeInfo: IClosedTradeInfo = {...DefaultClosedTradeInfo};
   const exitTime = GetNewYorkTimeAt(tradeSettings.exitHour, tradeSettings.exitMinute);
-  let currentSample = tradeSettings.monitoredPrices[0];
+  let currentSample :IPrice = tradeSettings.monitoredPrices[0];
+  if (tradeSettings.backtestingData.tradeType === OptionType.PUT) {
+    currentSample.price = Math.abs(tradeSettings.openingPrice);
+  }
   do {
     closeTradeInfo = await checkForTradeCompletion(tradeSettings, currentSample, exitTime);
     if (closeTradeInfo.isClosed) {
@@ -761,6 +766,7 @@ async function backTestLoop(tradeSettings: ITradeSettings): Promise<IClosedTrade
     } else {
       // Get next price for the trade.
       currentSample = nextBacktestPrice(tradeSettings);
+      tradeSettings.monitoredPrices.push(currentSample);
     }
   } while (closeTradeInfo.isClosed === false);
   return closeTradeInfo;
@@ -772,11 +778,13 @@ function prepareTradeForStartOfTrade(tradeSettings: ITradeSettings) {
   CalculateLimitsAndFees(tradeSettings);
   let currentSample: IPrice = {
     ...DefaultIPrice,
-    price: -tradeSettings.openingPrice, // Negative for monitoring to close the trade.
+    price: -tradeSettings.openingPrice, // Negative for calculateVariousValues below.
     whenNY: tradeSettings.whenOpened,
     underlyingPrice: tradeSettings.openingUnderlyingPrice,
   };
   calculateVariousValues(tradeSettings, currentSample);
+  currentSample.price = -currentSample.price;
+  tradeSettings.monitoredPrices.push(currentSample);
 }
 
 async function PlaceOpeningOrderAndMonitorToClose(tradeSettings: ITradeSettings) {
@@ -835,7 +843,12 @@ async function ExecuteTrade(
     LogData(tradeSettings, `ExecuteTrade called for ${tradeSettings.userName} but Max Daily Gain has been met.`, null);
     return;
   }
-  const now = dayjs();
+  let now = null;
+  if (tradeSettings.isBacktesting) {
+    now = dayjs(tradeSettings.backtestingData.minuteData[tradeSettings.backtestingData.index].datetime);
+  }else {
+    now = dayjs();
+  }
   const nowNYText = now.toDate().toLocaleString('en-US', {timeZone: 'America/New_York'});
   const currentDayOfTheWeek = isoWeekdayNames[now.isoWeekday()];
   const justBeforeClose = GetNewYorkTimeAt(15, 55);
@@ -878,7 +891,6 @@ async function ExecuteTrade(
         if (tradeSettings.isBacktesting) {
           // Perform all trades for the current day (attached to the tradeSettings object).
           prepareTradeForStartOfTrade(tradeSettings);
-          tradeSettings.openingPrice = Math.abs(tradeSettings.openingPrice);
           const closeTradeInfo: IClosedTradeInfo = await backTestLoop(tradeSettings).catch(reason => {
             LogData(tradeSettings, `Failed backTestLoop ${reason}`, new Error(reason));
             return {...DefaultClosedTradeInfo, isClosed: true, isRepeat: false};
@@ -903,6 +915,7 @@ Not This Day Of The Week: ${!tradePatternIncludesThisDayOfTheWeek}, \
 No Legs: ${!hasLegsInTrade} with ${JSON.stringify(tradeSettings)}`;
     LogData(tradeSettings, msg);
   }
+  return {...DefaultClosedTradeInfo, isClosed: true, isRepeat: false};
 }
 
 const usersTimeoutHandles = {};

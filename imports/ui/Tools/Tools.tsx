@@ -4,6 +4,7 @@ import {Meteor} from 'meteor/meteor';
 import _ from 'lodash';
 import {Button, InputNumber, Space} from 'antd';
 import {DefaultAppSettings, IAppSettings} from '../../Interfaces/IAppSettings';
+import RangesEditor from '../Backtest/RangesEditor';
 
 function Tools() {
   const [appSettings, setAppSettings] = React.useState<IAppSettings>({...DefaultAppSettings});
@@ -97,6 +98,7 @@ function Tools() {
           onChange={(maxPublishedTrades: number) => onChange({...appSettings, maxPublishedTrades})}
         />
       </Space>
+      <RangesEditor/>
       <ShowErrorMessage/>
     </>
   );

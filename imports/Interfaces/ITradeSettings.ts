@@ -101,6 +101,7 @@ interface IBacktestingData {
   isHighUsed: boolean,
   isLowUsed: boolean,
   results: IBacktestResult[],
+  tradeType: OptionType,
 }
 
 export const DefaultIBacktestingData = {
@@ -109,6 +110,7 @@ export const DefaultIBacktestingData = {
   isHighUsed: false,
   isLowUsed: false,
   results: [],
+  tradeType: OptionType.CALL,
 };
 
 interface ITradeSettings {
