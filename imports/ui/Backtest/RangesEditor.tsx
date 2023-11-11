@@ -3,17 +3,18 @@ import {Button, DatePicker, InputNumber, Popconfirm, Select, Space} from 'antd';
 import NameSelector from "../TradeView/NameSelector";
 import IRanges, {DefaultRanges} from "../../Interfaces/IRanges";
 import {QuestionCircleOutlined} from "@ant-design/icons";
-import dayjs from "dayjs";
+// @ts-ignore
+import {Meteor} from "meteor/meteor";
 
 const hours = [
-    <Select.Option value={9}>9</Select.Option>,
-    <Select.Option value={10}>10</Select.Option>,
-    <Select.Option value={11}>11</Select.Option>,
-    <Select.Option value={12}>12</Select.Option>,
-    <Select.Option value={13}>1</Select.Option>,
-    <Select.Option value={14}>2</Select.Option>,
-    <Select.Option value={15}>3</Select.Option>,
-    <Select.Option value={16}>4</Select.Option>,
+    <Select.Option key={1} value={9}>9</Select.Option>,
+    <Select.Option key={2} value={10}>10</Select.Option>,
+    <Select.Option key={3} value={11}>11</Select.Option>,
+    <Select.Option key={4} value={12}>12</Select.Option>,
+    <Select.Option key={5} value={13}>1</Select.Option>,
+    <Select.Option key={6} value={14}>2</Select.Option>,
+    <Select.Option key={7} value={15}>3</Select.Option>,
+    <Select.Option key={8} value={16}>4</Select.Option>,
 ];
 
 
@@ -70,20 +71,18 @@ function GainLossEditor({ranges, label, isGain}: { ranges: IRanges, label: strin
     );
 }
 
+let ranges: IRanges = {...DefaultRanges, recordId: null};
+
 function RangesEditor({}) {
     const [selectedName, setSelectedName] = React.useState(null);
-    let ranges: IRanges = {...DefaultRanges};
-
-    const setNames = (names) => {
-        if (names?.length > 0) {
-            setSelectedName(names[0]);
-        }
-    };
+    if (selectedName === null) {
+        ranges.recordId = null;
+    }
 
     return (
         <div style={{border: 'solid 1px red', padding: 25, marginBottom: 25}}>
             <Space direction={'vertical'} size={30}>
-                <h1 style={{marginBottom:-15}}>Back Testing</h1>
+                <h1 style={{marginBottom: -15}}>Back Testing</h1>
                 <GainLossEditor label={'Gain range:'} ranges={ranges} isGain={true}/>
                 <GainLossEditor label={'Loss range:'} ranges={ranges} isGain={false}/>
                 <Space>
@@ -97,12 +96,17 @@ function RangesEditor({}) {
                     </Select>
                 </Space>
                 <Space>
-                    <label>Start Date: <DatePicker onChange={(value) => ranges.startDate = value} defaultValue={ranges.startDate}/></label>
-                    <label>End Date: <DatePicker onChange={(value) => ranges.endDate = value} defaultValue={ranges.endDate}/></label>
+                    <label>Start Date: <DatePicker onChange={(value) => ranges.startDate = value.toDate()}
+                                                   defaultValue={ranges.startDate}/></label>
+                    <label>End Date: <DatePicker onChange={(value) => ranges.endDate = value.toDate()}
+                                                 defaultValue={ranges.endDate}/></label>
                 </Space>
                 <Space>
                     <span>Select A Trade Pattern:</span>
-                    <NameSelector width={200} isMultiple={false} setSelectedNames={(value) => ranges.recordId = value}/>
+                    <NameSelector width={200} isMultiple={false} setSelectedNames={(value) => {
+                        setSelectedName(value);
+                    }}
+                    />
                 </Space>
                 <Space>
                     <Popconfirm
@@ -110,7 +114,14 @@ function RangesEditor({}) {
                         title="Are you sure: Backtest this trade now?"
                         icon={<QuestionCircleOutlined style={{color: 'red'}}/>}
                         onConfirm={() => {
-                            console.log('Run BackTest', ranges);
+                            ranges.recordId = selectedName;
+                            Meteor.call('BackTestCallPut', ranges, (error, results) => {
+                                if (error) {
+                                    console.error(error);
+                                } else {
+                                    console.log(results);
+                                }
+                            });
                         }}
                         okText="Yes"
                         cancelText="No"

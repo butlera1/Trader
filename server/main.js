@@ -38,6 +38,7 @@ import {DefaultAppSettings} from '../imports/Interfaces/IAppSettings';
 import {GetSPXData, StartBackgroundPolling} from './BackgroundPolling';
 import ScheduleEndOfDayWork from './ScheduleEndOfDayWork';
 import ScheduleStartOfDayWork from './ScheduleStartOfDayWork';
+import {BackTestCallPut} from "./Backtest/SingleCallPutBacktest";
 
 dayjs.extend(utc);
 dayjs.extend(timezone);
@@ -93,6 +94,7 @@ Meteor.methods({
         SetAppSettings,
         ResetUsersMaxDailyGainSettings,
         GetSPXData,
+        BackTestCallPut,
     }
 );
 

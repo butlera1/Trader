@@ -17,8 +17,8 @@ interface IRanges {
     endGainLimitPrerunAllowedDurationSeconds: number,
     gainLimitPrerunAllowedDurationSecondsIncrement: number,
 
-    startDate: Dayjs,
-    endDate: Dayjs,
+    startDate: Date,
+    endDate: Date,
 
     entryHours: number[],
     exitHours: number[],

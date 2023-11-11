@@ -3,8 +3,7 @@ import {Select} from "antd";
 // @ts-ignore
 import {Meteor} from "meteor/meteor";
 
-const NameSelector = ({isMultiple, width, setSelectedNames}) => {
-    const [selectedName, setSelectedName] = React.useState(null);
+const NameSelector = ({isMultiple, width, setSelectedNames: setSelectedName}) => {
     const [namesAndIds, setTradeSettingNamesAndIds] = React.useState([]);
 
     useEffect(() => {
@@ -23,7 +22,7 @@ const NameSelector = ({isMultiple, width, setSelectedNames}) => {
     const options = namesAndIds.map(({_id, name}) => <Select.Option key={_id} value={_id}>{name}</Select.Option>);
 
     return (
-        <Select mode={modeText} style={{width: width}} defaultValue={selectedName} onChange={setSelectedNames}>
+        <Select mode={modeText} style={{width: width}} onChange={setSelectedName}>
             {options}
         </Select>);
 };
