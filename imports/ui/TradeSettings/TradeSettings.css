@@ -1,0 +1,12 @@
+
+/* Next, use class to have certain select selections colored.*/
+.ant-select-selector > span[title="Sell"] {
+    background-color: red !important;
+    color: white !important;
+}
+
+.ant-select-selector > span[title="Buy"] {
+    background-color: green !important;
+    color: white !important;
+}
+

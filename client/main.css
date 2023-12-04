@@ -1,0 +1,43 @@
+body {
+    padding: 10px;
+    font-family: sans-serif;
+}
+
+/* Override Ant Design Typography (change default font size). */
+.ant-typography,
+.ant-btn,
+.ant-input,
+.ant-input-group-addon,
+.ant-input-number-group-addon,
+span,
+label,
+.ant-space,
+.ant-select,
+.ant-select-selector,
+.ant-picker,
+.ant-tabs-tab,
+.ant-space-item,
+.ant-popover-message,
+input,
+.ant-table-cell {
+    font-size: 20px !important; /* Use !important to override existing styles */
+}
+
+
+.ant-checkbox .ant-checkbox-inner {
+    width: 25px;
+    height: 25px;
+    border-color: blue;
+}
+
+.ant-checkbox-disabled .ant-checkbox-inner {
+    width: 25px;
+    height: 25px;
+    border-color: darkgray;
+}
+
+.ant-checkbox-checked .ant-checkbox-inner {
+    width: 25px;
+    height: 25px;
+    border-color: blue;
+}

@@ -1,0 +1,10 @@
+/* This files holds CSS for live trade table. */
+
+/* For real live trades, show the row with a special background color. */
+.realTradeRow {
+    background-color: lightpink;
+}
+
+.mockedRow {
+    background-color: white;
+}
