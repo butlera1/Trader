@@ -332,6 +332,7 @@ export {
   ITradeSettings as default,
   IPrice,
   IBacktestResult,
+  IBacktestingData,
   GetDescription,
   DefaultTradeSettings,
   DefaultIronCondorLegsSettings,

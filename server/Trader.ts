@@ -9,6 +9,7 @@ import {
   PlaceOrder,
 } from './TDAApi/TDAApi.js';
 import {Users} from './collections/users';
+import {BacktestTrades} from './collections/BacktestTrades';
 import dayjs from 'dayjs';
 import duration from 'dayjs/plugin/duration';
 import isoWeek from 'dayjs/plugin/isoWeek';
@@ -16,7 +17,7 @@ import {Trades} from './collections/Trades';
 import ITradeSettings, {
   BadDefaultIPrice,
   DefaultIPrice,
-  GetDescription,
+  GetDescription, IBacktestingData,
   IPrice,
   whyClosedEnum
 } from '../imports/Interfaces/ITradeSettings';
@@ -185,6 +186,12 @@ async function CloseTrade(tradeSettings: ITradeSettings, currentPrice: IPrice): 
       gainLoss: tradeSettings.gainLoss,
       isAnyPrerun: tradeSettings.isPrerunning || tradeSettings.isPrerunningVIXSlope || tradeSettings.isPrerunningGainLimit,
     });
+    // Save the trade in a different collection dedicated to backtesting.
+    delete tradeSettings._id;
+    const holdBacktestingData :IBacktestingData = tradeSettings.backtestingData;
+    delete tradeSettings.backtestingData;
+    BacktestTrades.insert(tradeSettings);
+    tradeSettings.backtestingData = holdBacktestingData;
   } else {
     Trades.update(tradeSettings._id, {
       $set: {
@@ -513,12 +520,16 @@ function calculateVariousValues(liveTrade: ITradeSettings, currentSample: IPrice
   }
 }
 
-function isExitTimeBeforeSampleTime(exitTime: dayjs.Dayjs, currentSampleTime: dayjs.Dayjs) {
+function isExitTimeBeforeSampleTime(exitTime: dayjs.Dayjs, currentSampleTime: dayjs.Dayjs, liveTrade: ITradeSettings) {
   // With back testing we can have different dates for the current sample so compare only the hours and minutes.
   if (exitTime.hour() < currentSampleTime.hour()) {
     return true;
   }
   if (exitTime.hour() === currentSampleTime.hour() && exitTime.minute() <= currentSampleTime.minute()) {
+    return true;
+  }
+  if (liveTrade.isBacktesting && liveTrade.backtestingData.index >= liveTrade.backtestingData.minuteData.length) {
+    // Close if we reached the end of the backtesting data for the day.
     return true;
   }
   return false;
@@ -527,7 +538,7 @@ function isExitTimeBeforeSampleTime(exitTime: dayjs.Dayjs, currentSampleTime: da
 async function checkForTradeCompletion(liveTrade: ITradeSettings, currentSamplePrice: IPrice, exitTime: dayjs.Dayjs): Promise<IClosedTradeInfo> {
   calculateVariousValues(liveTrade, currentSamplePrice);
   const sampleTime = dayjs(currentSamplePrice.whenNY);
-  const isEndOfDay = isExitTimeBeforeSampleTime(exitTime, sampleTime);
+  const isEndOfDay = isExitTimeBeforeSampleTime(exitTime, sampleTime, liveTrade);
   const absAveragePrice = Math.abs(getAveragePrice(liveTrade.monitoredPrices, 2));
   const absCurrentPrice = Math.abs(currentSamplePrice.price);
   let isGainLimit = (absCurrentPrice <= liveTrade.gainLimit);

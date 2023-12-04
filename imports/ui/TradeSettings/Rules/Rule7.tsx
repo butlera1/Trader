@@ -18,7 +18,7 @@ function Rule7({value, onChange}: { value: IRule7Value, onChange: (value: IRule7
           step={1}
           min={0}
           max={100}
-          style={{width: '50px'}}
+          style={{width: '70px'}}
           onChange={(percent: number) => onChange({...value, percent: (percent / 100)})}
         />
         <label>% of max loss in </label>
@@ -27,7 +27,7 @@ function Rule7({value, onChange}: { value: IRule7Value, onChange: (value: IRule7
           step={1}
           min={0}
           max={500}
-          style={{width: '50px'}}
+          style={{width: '70px'}}
           onChange={(samples: number) => onChange({...value, samples})}
         />
         <label>averaged samples.</label>

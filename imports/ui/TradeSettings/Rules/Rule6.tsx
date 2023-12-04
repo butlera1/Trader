@@ -18,7 +18,7 @@ function Rule6({value, onChange}: { value: IRule6Value, onChange: (value: IRule6
           step={1}
           min={0}
           max={500}
-          style={{width: '50px'}}
+          style={{width: '70px'}}
           onChange={(minutes: number) => onChange({...value, minutes})}
         />
         <label>min. if underlying is DOWN</label>
@@ -27,7 +27,7 @@ function Rule6({value, onChange}: { value: IRule6Value, onChange: (value: IRule6
           step={1}
           min={0}
           max={100}
-          style={{width: '50px'}}
+          style={{width: '70px'}}
           onChange={(underlyingPercentOfCredit: number) => onChange({...value, underlyingPercentOfCredit: (underlyingPercentOfCredit / 100)})}
         />
         <label>% of total original credit/debit. </label>

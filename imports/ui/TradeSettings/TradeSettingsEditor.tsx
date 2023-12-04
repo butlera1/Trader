@@ -413,7 +413,7 @@ export const TradeSettingsEditor = ({tradeSettings, changeCallback}: Props) => {
                             step="0.01"
                             defaultValue={Math.round(percentGain * 100000) / 1000}
                             max={100000}
-                            style={{width: '80px'}}
+                            style={{width: '100px'}}
                             onChange={(value) => onChange('percentGain', (value) / 100)}
                         />
                         <Select defaultValue={percentGainIsDollar} style={{width: 60}}
@@ -428,7 +428,7 @@ export const TradeSettingsEditor = ({tradeSettings, changeCallback}: Props) => {
                             step="0.01"
                             max={100000}
                             defaultValue={Math.round(percentLoss * 100000) / 1000}
-                            style={{width: '80px'}}
+                            style={{width: '100px'}}
                             onChange={(value) => onChange('percentLoss', (value) / 100)}
                         />
                         <Select defaultValue={percentLossIsDollar} style={{width: 60}}
@@ -444,19 +444,19 @@ export const TradeSettingsEditor = ({tradeSettings, changeCallback}: Props) => {
                 <Space>
                     <Col>
                         <Space>
-                            <span>Fee Per Contract:</span>
+                            <span>Fee/Contract:</span>
                             <InputNumber
                                 min={0}
                                 step="0.01"
                                 max={1}
                                 defaultValue={commissionPerContract}
                                 addonAfter={'$'}
-                                style={{width: '100px'}}
+                                style={{width: '120px'}}
                                 onChange={(value) => onChange('commissionPerContract', value)}
                             />
                         </Space>
                     </Col>
-                    <Col span={24}>
+                    <Col span={40}>
                         <Checkbox
                             style={{marginLeft: 50}}
                             onChange={(e: CheckboxChangeEvent) => onChange('useShortOnlyForLimits', e.target.checked)}
@@ -465,13 +465,13 @@ export const TradeSettingsEditor = ({tradeSettings, changeCallback}: Props) => {
                             ShortsOnly for Gain Limit Calcs
                         </Checkbox>
                     </Col>
-                    <Col span={24}>
+                    <Col span={40}>
                         <Checkbox
                             style={{marginLeft: 50}}
                             onChange={(e: CheckboxChangeEvent) => onChange('showVixAndSlopeInGraphs', e.target.checked)}
                             checked={showVixAndSlopeInGraphs}
                         >
-                            Include VIX and Slope Graph Lines
+                            Show VIX & Slope Lines
                         </Checkbox>
                     </Col>
                 </Space>
@@ -610,7 +610,7 @@ export const TradeSettingsEditor = ({tradeSettings, changeCallback}: Props) => {
                         min={1}
                         max={16}
                         addonAfter={'hour'}
-                        style={{width: '100px'}}
+                        style={{width: '120px'}}
                         onChange={(stopHour: number) => onChange('repeatStopHour', stopHour)}
                     />
                 </Col>

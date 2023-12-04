@@ -15,10 +15,10 @@ function PrerunGainLimitRule({
           min={1}
           max={100000}
           step={1}
-          style={{width: '100px'}}
+          style={{width: '120px'}}
           onChange={(seconds: number) => onChange({...value, seconds})}
         />
-        <label>seconds. Any other trade exit will rerun trade with Prerun on again.</label>
+        <label>seconds. Any other exit reruns with Prerun on.</label>
       </Space>
     </>
   );

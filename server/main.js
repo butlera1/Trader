@@ -1,6 +1,7 @@
 import {Meteor} from 'meteor/meteor';
 import './collections/stockData';
 import './collections/straddleData';
+import './collections/BacktestTrades'
 import {
     DeleteUserTradeSettingsRecord,
     GetAllUserTradeSettings,
@@ -38,7 +39,7 @@ import {DefaultAppSettings} from '../imports/Interfaces/IAppSettings';
 import {GetSPXData, StartBackgroundPolling} from './BackgroundPolling';
 import ScheduleEndOfDayWork from './ScheduleEndOfDayWork';
 import ScheduleStartOfDayWork from './ScheduleStartOfDayWork';
-import {BackTestCallPut} from "./Backtest/SingleCallPutBacktest";
+import {BackTestCallPut, TestBackTestCode} from "./Backtest/SingleCallPutBacktest";
 
 dayjs.extend(utc);
 dayjs.extend(timezone);

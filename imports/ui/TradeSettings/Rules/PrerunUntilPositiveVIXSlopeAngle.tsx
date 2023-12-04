@@ -14,7 +14,7 @@ function PrerunUntilPositiveVIXSlopeAngle({
         <label>Prerun: Until VIX Slope Angle is</label>
         <Select
           defaultValue={value.direction ?? DirectionUp}
-          style={{width: 120}}
+          style={{width: 160}}
           onChange={(direction) => onChange({...value, direction})}>
           <Select.Option value={DirectionUp}>increasing</Select.Option>
           <Select.Option value={DirectionDown}>decreasing</Select.Option>
@@ -25,7 +25,7 @@ function PrerunUntilPositiveVIXSlopeAngle({
           min={1}
           max={600}
           step={1}
-          style={{width: '60px'}}
+          style={{width: '80px'}}
           onChange={(numberOfDesiredVIXAnglesInARow: number) => onChange({...value, numberOfDesiredVIXAnglesInARow})}
         />
         <label>{`${posNegText} samples in a row.`}</label>

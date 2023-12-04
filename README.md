@@ -1,5 +1,9 @@
 # Stock trading tool for TDAmeritrade API. Focused on daily option trading.
 
+## TDA API
+[API Link](https://developer.tdameritrade.com/)
+
+
 ## Initial API call to get access code.
 Go to the following link in a browser and log in using your TDA credentials. **NOTE: this link must include the client key!!!:**
 ```
@@ -157,3 +161,15 @@ $ sudo nginx -c /path/to/file/nginx_custom.conf -s reload
 
 Final step
 Access https://local.website.dev, you can see that little green padlock icon  in the address bar. Yes, your local website is on HTTPS now!
+
+
+# Notes
+Backtesting: saving every trade to database takes 20 seconds versus 10 seconds when not saving to database.
+
+# TODO
+1. Add a "tradeSettings" collection to the database. This will be the collection that the user will modify to define their
+   trade settings. The "trades" collection will be a copy of the "tradeSettings" collection. The "trades" collection will
+   be modified as the trade progresses. The "tradeResults" collection will be a record of all trades that have been
+   completed.
+2. Check on Schwab's API. It may be better than TDAmeritrade's API.
+3. 
