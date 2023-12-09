@@ -1,4 +1,3 @@
-// @ts-ignore
 import {Meteor} from 'meteor/meteor';
 import {
   CreateOpenAndCloseOrders,
@@ -24,7 +23,6 @@ import ITradeSettings, {
 import {TradeSettings} from './collections/TradeSettings';
 import {UserSettings} from './collections/UserSettings';
 import {DailyTradeSummaries, IDailyTradeSummary} from './collections/DailyTradeSummaries';
-// @ts-ignore
 import {Random} from 'meteor/random';
 import _ from 'lodash';
 import {LogData} from './collections/Logs';

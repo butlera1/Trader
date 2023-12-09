@@ -1,4 +1,3 @@
-// @ts-ignore
 import {Meteor} from 'meteor/meteor';
 import React, {useState} from 'react';
 import {CartesianGrid, Line, LineChart, Tooltip, XAxis, YAxis} from 'recharts';

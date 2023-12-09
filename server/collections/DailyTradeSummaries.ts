@@ -1,4 +1,3 @@
-// @ts-ignore
 import { Mongo } from 'meteor/mongo';
 
 const DailyTradeSummaries = new Mongo.Collection('dailyTradeSummaries');

@@ -1,5 +1,4 @@
 import React, {useState} from 'react';
-// @ts-ignore
 import {Meteor} from 'meteor/meteor';
 import {Alert, Button, Popconfirm, Space} from 'antd';
 import {QuestionCircleOutlined} from '@ant-design/icons';

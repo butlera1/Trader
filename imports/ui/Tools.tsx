@@ -1,5 +1,4 @@
 import React, {useEffect} from 'react';
-// @ts-ignore
 import {Meteor} from 'meteor/meteor';
 import _ from 'lodash';
 import {Button, InputNumber, Space} from 'antd';

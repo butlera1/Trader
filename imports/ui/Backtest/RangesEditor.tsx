@@ -3,7 +3,6 @@ import {Button, DatePicker, InputNumber, Popconfirm, Select, Space} from 'antd';
 import NameSelector from "../TradeView/NameSelector";
 import IRanges, {DefaultRanges} from "../../Interfaces/IRanges";
 import {QuestionCircleOutlined} from "@ant-design/icons";
-// @ts-ignore
 import {Meteor} from "meteor/meteor";
 
 const hours = [

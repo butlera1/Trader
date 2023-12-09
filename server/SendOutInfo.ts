@@ -1,8 +1,6 @@
 import SibApiV3Sdk from 'sib-api-v3-sdk';
 // import twilio from 'twilio';
 import _ from 'lodash';
-// @ts-ignore
-import process from 'process';
 import {LogData} from './collections/Logs';
 import {atob} from 'buffer';
 
@@ -12,20 +10,20 @@ const key = atob('eGtleXNpYi1mOTRjMzQxMDg4OWQzODQxMDllZTAwZjAyMTM4MTAyNDJmYzFiZW
 
 SibApiV3Sdk.ApiClient.instance.authentications['api-key'].apiKey = key;
 
-function SendEmail(toEmail, subject, text){
+function SendEmail(toEmail, subject, text) {
   try {
     const sendSmtpEmail = new SibApiV3Sdk.SendSmtpEmail();
     sendSmtpEmail.subject = subject;
     sendSmtpEmail.textContent = text;
-    sendSmtpEmail.sender = {"name": "Arch", "email": "archb@comcast.net"};
-    sendSmtpEmail.to = [{"email": toEmail, "name": toEmail}];
+    sendSmtpEmail.sender = {'name': 'Arch', 'email': 'archb@comcast.net'};
+    sendSmtpEmail.to = [{'email': toEmail, 'name': toEmail}];
 
     const apiInstance = new SibApiV3Sdk.TransactionalEmailsApi();
     apiInstance.sendTransacEmail(sendSmtpEmail).then(function () {
     }, function (error) {
       LogData(null, `Failed SendInBlue email message: ${error}`);
     });
-  } catch (e){
+  } catch (e) {
     LogData(null, `Failed attempting SendInBlue email message: ${e}`);
   }
 }
@@ -35,7 +33,6 @@ function SendOutInfo(text: string, subject: string, to?: string, phone?: string)
     // SendEmail(to, subject, text);
   }
   if (!_.isEmpty(phone)) {
-    // @ts-ignore
     // const client = new twilio(Id, pw);
     // client.messages
     //   .create({
@@ -48,8 +45,8 @@ function SendOutInfo(text: string, subject: string, to?: string, phone?: string)
   }
 }
 
-function SendTextToAdmin(text:string, subject: string){
-  SendEmail(text, subject, subject,);
+function SendTextToAdmin(text: string, subject: string) {
+  SendEmail(text, subject, subject);
 }
 
 export default SendOutInfo;

@@ -1,4 +1,3 @@
-// @ts-ignore
 import {Meteor} from "meteor/meteor";
 import dayjs, {Dayjs} from 'dayjs';
 import ITradeSettings, {

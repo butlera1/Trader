@@ -1,5 +1,4 @@
 import React from 'react';
-// @ts-ignore
 import {useTracker} from 'meteor/react-meteor-data';
 import {CartesianGrid, Legend, Line, LineChart, Tooltip, XAxis, YAxis} from 'recharts';
 import Constants from '../../Constants';
@@ -9,9 +8,9 @@ import dayjs from 'dayjs';
 import {Space} from 'antd';
 
 function GraphUnderlying({symbol}: { symbol: string }) {
-  const data = useTracker(() => {
+  const data :IStreamData[] = useTracker(() => {
     const record = StreamedData.findOne(Constants.streamedDataId);
-    const valuesArray: IStreamData = record[symbol] ?? [];
+    const valuesArray: IStreamData[] = record[symbol] ?? [];
     return valuesArray;
   }, [symbol, StreamedData]);
 
@@ -29,7 +28,7 @@ function GraphUnderlying({symbol}: { symbol: string }) {
     return dayjs(sample.when).format('HH:mm:ss');
   };
 
-  const DataFormatter = (value: number) => Math.round(value);
+  const DataFormatter = (value: any, index: number) => Math.round(value).toString();
 
   return (
     <>

@@ -1,5 +1,4 @@
 import React from 'react';
-// @ts-ignore
 import {useTracker} from 'meteor/react-meteor-data';
 import Trades from '../../Collections/Trades';
 import ITradeSettings, {GetDescription} from '../../Interfaces/ITradeSettings';
@@ -13,7 +12,6 @@ import duration from 'dayjs/plugin/duration';
 import './CssActiveTradesTable';
 import {GetNewYorkTimeAsText} from '../../Utils';
 import {QuestionCircleOutlined} from '@ant-design/icons';
-// @ts-ignore
 import {Meteor} from 'meteor/meteor';
 
 dayjs.extend(duration);

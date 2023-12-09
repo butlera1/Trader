@@ -1,5 +1,4 @@
 import WebSocket from 'ws';
-// @ts-ignore
 import {Meteor} from 'meteor/meteor';
 import {GetUserPrinciples} from './TDAApi';
 import _ from 'lodash';

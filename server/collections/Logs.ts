@@ -1,4 +1,3 @@
-// @ts-ignore
 import {Mongo} from 'meteor/mongo';
 import ITradeSettings from "../../imports/Interfaces/ITradeSettings";
 import {SendTextToAdmin} from "../SendOutInfo";

@@ -4,12 +4,9 @@ import utc from 'dayjs/plugin/utc';
 import timezone from 'dayjs/plugin/timezone';
 import _ from 'lodash';
 import IPrerunSlopeValue from './Interfaces/IPrerunSlopeValue';
-// @ts-ignore
-import {GetNewYorkTimeAt} from '../server/Trader.ts';
 import customParseFormat from 'dayjs/plugin/customParseFormat';
 import weekday from 'dayjs/plugin/weekday';
 import locale from 'dayjs/plugin/localeData';
-import {OptionType} from "./Interfaces/ILegSettings";
 
 dayjs.extend(utc);
 dayjs.extend(timezone);
@@ -99,7 +96,7 @@ function CalculateGain(tradeSettings, currentPrice) {
     possibleGain = (Math.abs(currentPrice) - openingPrice) * 100.0;
   }
   if (tradeSettings.isBacktesting) {
-    possibleGain = possibleGain/100.0; // Because we are working with the underlying and not option prices.
+    possibleGain = possibleGain / 100.0; // Because we are working with the underlying and not option prices.
     // Calculate potential gain/loss based on the DELTA of the option.
     possibleGain = possibleGain * tradeSettings.backtestingData.delta;
   }

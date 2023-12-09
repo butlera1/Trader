@@ -1,4 +1,3 @@
-// @ts-ignore
 import {Meteor} from 'meteor/meteor';
 import PollingMutex from './PollingMutex';
 import {GetPriceForSymbols} from './TDAApi/TDAApi';

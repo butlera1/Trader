@@ -1,12 +1,9 @@
 import React from 'react';
 import {CartesianGrid, Label, Line, LineChart, Tooltip, XAxis, YAxis} from 'recharts';
-// @ts-ignore
-import {useTracker} from 'meteor/react-meteor-data';
 import {Space} from 'antd';
 import ITradeSettings from '../../Interfaces/ITradeSettings';
 import dayjs from 'dayjs';
 import {CalculateTotalFees, CleanupGainLossWhenFailedClosingTrade, GetNewYorkTimeAsText} from '../../Utils';
-// @ts-ignore
 import {Meteor} from 'meteor/meteor';
 
 interface ISumResults {
@@ -147,7 +144,7 @@ function ChartResults({records, isGraphPrerunningTrades}: {
   const avgWinText = wins ? ((avgWinTmp / wins).toFixed(2)) : '0.00';
   const winRate = sumResults.length ? (((wins / sumResults.length) * 100).toFixed(1)) : '0.0';
   const lossRate = sumResults.length ? (((losses / sumResults.length) * 100).toFixed(1)) : '0.0';
-  avgDuration = wins+losses ? avgDuration / (wins+losses) : 0;
+  avgDuration = wins + losses ? avgDuration / (wins + losses) : 0;
   avgLossDuration = losses ? avgLossDuration / losses : 0;
   avgWinDuration = wins ? avgWinDuration / wins : 0;
   const {spxMin, spxMax} = getSPXMinMax(spxData);
@@ -159,7 +156,7 @@ function ChartResults({records, isGraphPrerunningTrades}: {
         <Line type="monotone" dataKey="gainLoss" stroke="red" dot={false} strokeWidth={1}/>
         <CartesianGrid stroke="#ccc" strokeDasharray="5 5"/>
         <XAxis dataKey={getDateTime}/>
-        <YAxis width={90} tick={{fontSize: 10,}} allowDecimals={false}>
+        <YAxis width={90} tick={{fontSize: 10}} allowDecimals={false}>
           <Label
             value={`Results`}
             angle={-90}
@@ -174,7 +171,7 @@ function ChartResults({records, isGraphPrerunningTrades}: {
         <Line type="monotone" dataKey="mark" stroke="red" dot={false} strokeWidth={2}/>
         <CartesianGrid stroke="#ccc" strokeDasharray="5 5"/>
         <XAxis dataKey={(record) => GetNewYorkTimeAsText(record.whenNY)}/>
-        <YAxis width={90} tick={{fontSize: 10,}} allowDecimals={false} domain={[spxMin, spxMax]}>
+        <YAxis width={90} tick={{fontSize: 10}} allowDecimals={false} domain={[spxMin, spxMax]}>
           <Label
             value={`SPX`}
             angle={-90}

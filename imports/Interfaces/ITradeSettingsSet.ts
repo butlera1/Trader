@@ -1,6 +1,6 @@
 import ITradeSettings from './ITradeSettings';
 
-interface ITradeSettingsSets {
+interface ITradeSettingsSet {
   _id?: string,
   tradeSettings: ITradeSettings[],
   userId: string,
@@ -15,4 +15,4 @@ const DefaultTradeSettingsSets = {
   isDefault: false,
 };
 
-export {ITradeSettingsSets as default, DefaultTradeSettingsSets};
+export {ITradeSettingsSet as default, DefaultTradeSettingsSets};

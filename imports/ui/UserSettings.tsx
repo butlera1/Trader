@@ -1,5 +1,4 @@
 import React, {useEffect, useState} from 'react';
-// @ts-ignore
 import {Meteor} from 'meteor/meteor';
 import {Alert, Button, Checkbox, Input, InputNumber, Row, Space, Spin} from 'antd';
 import {UserOutlined} from '@ant-design/icons';

@@ -1,5 +1,4 @@
 import React, {useState} from 'react';
-// @ts-ignore
 import {Meteor} from 'meteor/meteor';
 import {CartesianGrid, Label, Legend, Line, LineChart, Tooltip, XAxis, YAxis} from 'recharts';
 import dayjs from 'dayjs';

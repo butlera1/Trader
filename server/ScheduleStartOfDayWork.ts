@@ -1,6 +1,5 @@
 import dayjs from 'dayjs';
 import {LogData} from './collections/Logs';
-// @ts-ignore
 import {Meteor} from 'meteor/meteor';
 import {PerformTradeForAllUsers} from './Trader';
 import {GetNewYorkTimeAt,} from '../imports/Utils';

@@ -1,6 +1,4 @@
 import React from 'react';
-// @ts-ignore
-import {useTracker} from 'meteor/react-meteor-data';
 import Trades from '../../Collections/Trades';
 import {ColumnsType} from 'antd/lib/table';
 import {Space, Table} from 'antd';
@@ -9,10 +7,9 @@ import utc from 'dayjs/plugin/utc';
 import timezone from 'dayjs/plugin/timezone';
 
 import {DeleteOutlined} from '@ant-design/icons';
-import ITradeSettings, {GetDescription, whyClosedEnum} from '../../Interfaces/ITradeSettings';
-// @ts-ignore
+import ITradeSettings, {GetDescription} from '../../Interfaces/ITradeSettings';
 import GraphTrade from './GraphTrade.tsx';
-import {CalculateGain, CalculateTotalFees, CleanupGainLossWhenFailedClosingTrade, GetNewYorkTimeAsText} from '../../Utils';
+import {CalculateTotalFees, CleanupGainLossWhenFailedClosingTrade, GetNewYorkTimeAsText} from '../../Utils';
 import './CssActiveTradesTable';
 
 dayjs.extend(utc);
@@ -67,7 +64,7 @@ const columns: ColumnsType<ITradeSettings> = [
     render: (when, record) => {
       const under = record.monitoredPrices.length > 0 ? record.monitoredPrices[0]?.underlyingPrice ?? 0 : 0;
       return RenderOpenOrClosedData(when, record.openingPrice.toFixed(2), under.toFixed(2), '');
-    }
+    },
   },
   {
     title: 'Closed',
@@ -100,7 +97,8 @@ const columns: ColumnsType<ITradeSettings> = [
         return (
           <Space direction={'vertical'}>
             <span key={'up1'}>Open: {monitoredPrices[0].shortStraddlePrice?.toFixed(2)}</span>
-            <span key={'up2'}>Closed: {monitoredPrices[monitoredPrices.length - 1].shortStraddlePrice?.toFixed(2)}</span>
+            <span
+              key={'up2'}>Closed: {monitoredPrices[monitoredPrices.length - 1].shortStraddlePrice?.toFixed(2)}</span>
           </Space>
         );
       }
@@ -134,7 +132,9 @@ const columns: ColumnsType<ITradeSettings> = [
   },
 ];
 
-function TradeResultsTable({records}: { records: ITradeSettings[] }) {
+function TradeResultsTable({records}: {
+  records: ITradeSettings[]
+}) {
   return (<Table
       pagination={{pageSize: 10}}
       size="small" columns={columns}

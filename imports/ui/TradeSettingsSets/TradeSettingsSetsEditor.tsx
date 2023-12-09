@@ -1,26 +1,24 @@
-// @ts-ignore
 import {Meteor} from 'meteor/meteor';
-// @ts-ignore
 import {useTracker} from 'meteor/react-meteor-data';
 import React, {useState} from 'react';
 import TradeSettingsSets from '../../Collections/TradeSettingsSets';
-import ITradeSettingsSets, {DefaultTradeSettingsSets} from "../../Interfaces/ITradeSettingsSets";
+import ITradeSettingsSet, {DefaultTradeSettingsSets} from "../../Interfaces/ITradeSettingsSet";
 import TabTradeSettings from "../TradeSettings/TabTradeSettings";
 import {Button, Input, Modal, Popconfirm, Select, Space} from "antd";
 import {DeleteOutlined, QuestionCircleOutlined} from "@ant-design/icons";
 
 
-function getName(set: ITradeSettingsSets) {
+function getName(set: ITradeSettingsSet) {
   return `${set.name || 'No name'}${set.isDefault ? ' *' : ''}`
 }
 
 function getDefaultSet() {
   const tempSetArray = TradeSettingsSets.find().fetch();
-  return tempSetArray.find(set => set.isDefault) || tempSetArray[0];
+  return tempSetArray.find((set:ITradeSettingsSet) => set.isDefault) || tempSetArray[0];
 }
 
 export default function TradeSettingsSetsEditor() {
-  const sets: ITradeSettingsSets[] = useTracker(() => TradeSettingsSets.find().fetch(), [TradeSettingsSets]);
+  const sets: ITradeSettingsSet[] = useTracker(() => TradeSettingsSets.find().fetch(), [TradeSettingsSets]);
   const [selectedSet, setSelectedSet] = React.useState(getDefaultSet());
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [editSetName, setEditSetName] = useState('');

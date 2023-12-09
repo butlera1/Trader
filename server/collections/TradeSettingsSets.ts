@@ -1,6 +1,4 @@
-// @ts-ignore
 import {Mongo} from 'meteor/mongo';
-// @ts-ignore
 import {Meteor} from "meteor/meteor";
 
 export const TradeSettingsSets = new Mongo.Collection('tradeSettingsSets');

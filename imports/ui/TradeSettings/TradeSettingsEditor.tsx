@@ -1,4 +1,3 @@
-// @ts-ignore
 import {Meteor} from 'meteor/meteor';
 import React, {useEffect} from 'react';
 import {Alert, Button, Checkbox, Col, InputNumber, Popconfirm, Row, Select, Space, Switch, TimePicker} from 'antd';

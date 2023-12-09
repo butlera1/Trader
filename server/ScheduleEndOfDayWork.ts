@@ -1,6 +1,5 @@
 import dayjs from 'dayjs';
 import {LogData} from './collections/Logs';
-// @ts-ignore
 import {Meteor} from 'meteor/meteor';
 import {AppSettings} from './collections/AppSettings';
 import Constants from '../imports/Constants';

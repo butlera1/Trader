@@ -1,6 +1,5 @@
 import React, {useEffect} from 'react';
 import {Select} from "antd";
-// @ts-ignore
 import {Meteor} from "meteor/meteor";
 
 const NameSelector = ({isMultiple, width, setSelectedNames: setSelectedName}) => {
@@ -18,7 +17,6 @@ const NameSelector = ({isMultiple, width, setSelectedNames: setSelectedName}) =>
 
     const modeText = isMultiple ? 'multiple' : undefined;
 
-    // @ts-ignore
     const options = namesAndIds.map(({_id, name}) => <Select.Option key={_id} value={_id}>{name}</Select.Option>);
 
     return (

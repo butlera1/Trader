@@ -1,10 +1,8 @@
-import React, {useEffect} from 'react';
+import React from 'react';
 import {CartesianGrid, Label, Legend, Line, LineChart, Tooltip, XAxis, YAxis} from 'recharts';
 import ITradeSettings, {IPrice} from '../../Interfaces/ITradeSettings';
 import dayjs from 'dayjs';
 import {CalculateGain} from '../../Utils';
-// @ts-ignore
-import {Meteor} from 'meteor/meteor';
 
 function calculateGainGraphLine(tradeSettings, price) {
   let gainOrLoss = CalculateGain(tradeSettings, price);
@@ -15,11 +13,11 @@ function clipNumber(value) {
   return Math.round(value * 100) / 100;
 }
 
-function AdditionalLines(vixMarkMin: number, vixMarkMax: number ) {
+function AdditionalLines(vixMarkMin: number, vixMarkMax: number) {
   console.log('Entering AdditionalLines');
   return (
     <>
-      <YAxis width={70} yAxisId="vixAxis" orientation="right" tick={{fontSize: 10,}} domain={[vixMarkMin, vixMarkMax]}
+      <YAxis width={70} yAxisId="vixAxis" orientation="right" tick={{fontSize: 10}} domain={[vixMarkMin, vixMarkMax]}
              allowDecimals={true}>
         <Label
           value={`VIX`}
@@ -29,7 +27,7 @@ function AdditionalLines(vixMarkMin: number, vixMarkMax: number ) {
           fontSize={14}
         />
       </YAxis>
-      <YAxis width={70} yAxisId="slopeAxis" orientation="right" tick={{fontSize: 10,}} domain={[-0.03, 0.03]}
+      <YAxis width={70} yAxisId="slopeAxis" orientation="right" tick={{fontSize: 10}} domain={[-0.03, 0.03]}
              allowDecimals={true}>
         <Label
           value={`VIX Slope Angle`}
@@ -48,7 +46,9 @@ function AdditionalLines(vixMarkMin: number, vixMarkMax: number ) {
   );
 }
 
-function GraphTrade({liveTrade}: { liveTrade: ITradeSettings }) {
+function GraphTrade({liveTrade}: {
+  liveTrade: ITradeSettings
+}) {
   let initialTime = liveTrade.monitoredPrices[0] ? dayjs(liveTrade.monitoredPrices[0].whenNY) : dayjs();
   let underlyingMin = Number.MAX_VALUE;
   let underlyingMax = Number.MIN_VALUE;
@@ -103,7 +103,7 @@ function GraphTrade({liveTrade}: { liveTrade: ITradeSettings }) {
           fontSize={14}
         />
       </YAxis>
-      <YAxis width={70} yAxisId="underlyingAxis" orientation="right" tick={{fontSize: 10,}}
+      <YAxis width={70} yAxisId="underlyingAxis" orientation="right" tick={{fontSize: 10}}
              domain={[underlyingMin, underlyingMax]} allowDecimals={true}>
         <Label
           value={`Underlying`}

@@ -1,4 +1,3 @@
-// @ts-ignore
 import {Meteor} from 'meteor/meteor';
 import React, {useEffect, useState} from 'react';
 import {Alert, Button, Space, Tabs} from "antd";

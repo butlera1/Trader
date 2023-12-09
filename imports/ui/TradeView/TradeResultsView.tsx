@@ -1,5 +1,4 @@
 import React, {useEffect} from 'react';
-// @ts-ignore
 import {useTracker} from 'meteor/react-meteor-data';
 import TradeResultsTable from './TradeResultsTable';
 import ChartResults from './ChartResults';
@@ -12,7 +11,6 @@ import locale from 'dayjs/plugin/localeData';
 import {Checkbox, DatePicker, Divider, Select, Space} from 'antd';
 import {CheckboxChangeEvent} from 'antd/lib/checkbox';
 import {CalculateLimitsAndFees, GetNewYorkTimeAt, SetEndOfDay, SetStartOfDay} from '../../Utils';
-// @ts-ignore
 import {Meteor} from 'meteor/meteor';
 
 dayjs.extend(customParseFormat);
@@ -127,7 +125,6 @@ function TradeResultsView() {
   }, [Trades, isRealTradesOnly, startDate, endDate, selectedNames, isPrerunTradesOnly,startHour,startMinute,endHour,endMinute]);
 
   const NamesSelector = ({names}: { names: string[] }) => {
-    // @ts-ignore
     const options = names.map((name) => <Select.Option key={name} value={name}>{name}</Select.Option>);
     return (
       <Select mode="multiple" style={{width: 600}} defaultValue={selectedNames} onChange={setSelectedNames}>
