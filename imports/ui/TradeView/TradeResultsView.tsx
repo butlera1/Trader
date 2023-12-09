@@ -83,7 +83,9 @@ function TradeResultsView() {
         alert(`Failed to get trade setting names. Error: ${error}`);
         return;
       }
-      setTradeSettingNames(namesAndIds.map(record => record.name));
+      if (!namesAndIds && !namesAndIds.length) {
+        setTradeSettingNames(namesAndIds.map(record => record.name));
+      }
     });
   }, []);
 

@@ -9,6 +9,7 @@ import {GetNewYorkTimeAt} from '../server/Trader.ts';
 import customParseFormat from 'dayjs/plugin/customParseFormat';
 import weekday from 'dayjs/plugin/weekday';
 import locale from 'dayjs/plugin/localeData';
+import {OptionType} from "./Interfaces/ILegSettings";
 
 dayjs.extend(utc);
 dayjs.extend(timezone);
@@ -94,11 +95,13 @@ function CalculateGain(tradeSettings, currentPrice) {
   }
   let possibleGain = (Math.abs(openingPrice) - currentPrice) * 100.0;
   if (openingPrice > 0) {
-    // We are in a long position.
+    // We are in a short position.
     possibleGain = (Math.abs(currentPrice) - openingPrice) * 100.0;
   }
   if (tradeSettings.isBacktesting) {
     possibleGain = possibleGain/100.0; // Because we are working with the underlying and not option prices.
+    // Calculate potential gain/loss based on the DELTA of the option.
+    possibleGain = possibleGain * tradeSettings.backtestingData.delta;
   }
   return possibleGain;
 }

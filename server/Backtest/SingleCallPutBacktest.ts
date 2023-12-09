@@ -171,7 +171,8 @@ export async function BackTestCallPut(ranges: IRanges): Promise<any> {
               tradeSetting.percentLossIsDollar = ranges.lossIsDollar;
               tradeSetting.prerunGainLimitValue.seconds = seconds;
               tradeSetting.isBacktesting = true;
-              tradeSetting.backtestingData = {...DefaultIBacktestingData, tradeType: tradeSetting.legs[0].callPut};
+              const tradeLeg = tradeSetting.legs[0];
+              tradeSetting.backtestingData = {...DefaultIBacktestingData, tradeType: tradeLeg.callPut, delta: tradeLeg.delta};
 
               const resultsFromAllDaysTraded: IBacktestResult[] = [];
               const startDaysLoop = dayjs();
@@ -223,23 +224,23 @@ export async function TestBackTestCode(): Promise<void> {
   const ranges: IRanges = {
     recordId: _id,
 
-    startGain: 0.1,
-    endGain: 1,
-    gainIncrement: 0.2,
+    startGain: 1.0,
+    endGain: 10,
+    gainIncrement: 2,
     gainIsDollar: true,
 
-    startLoss: 0.1,
-    endLoss: 1,
-    lossIncrement: 0.2,
+    startLoss: 1,
+    endLoss: 10,
+    lossIncrement: 2,
     lossIsDollar: true,
 
     startGainLimitPrerunAllowedDurationSeconds: 180,
-    endGainLimitPrerunAllowedDurationSeconds: 300,
+    endGainLimitPrerunAllowedDurationSeconds: 180,
     gainLimitPrerunAllowedDurationSecondsIncrement: 60,
-    startDate: dayjs().subtract(10, 'day').hour(6).minute(0).toDate(),
+    startDate: dayjs().subtract(1, 'day').hour(6).minute(0).toDate(),
     endDate: dayjs().hour(6).minute(0).toDate(),
     entryHours: [9],
-    exitHours: [16],
+    exitHours: [12],
   };
 
   const DefaultCallLegsSettings = [

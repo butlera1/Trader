@@ -80,8 +80,8 @@ function TabTradeSettings() {
 
   return (
     <div>
-      <div style={{marginBottom: 16}}>
-        <Button type="primary" shape="round" onClick={add} style={{marginTop: 5}}>Add new strategy</Button>
+      <div >
+        <Button type="primary" shape="round" onClick={add}>Add new trade pattern below</Button>
       </div>
       <Tabs
         hideAdd
@@ -91,7 +91,6 @@ function TabTradeSettings() {
         onEdit={onEdit}
         items={items}
         tabPosition={'left'}
-        style={{width: 1300, border: '1px solid grey', marginTop: -15}}
       />
       {errorText ? <Alert
           message={errorText}

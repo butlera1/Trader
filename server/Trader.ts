@@ -760,6 +760,9 @@ function nextBacktestPrice(tradeSettings: ITradeSettings): IPrice {
     whenNY: new Date(minuteData[index].datetime)
   };
   tradeSettings.backtestingData.index++;
+  if (tradeSettings.backtestingData.tradeType === OptionType.CALL) {
+    price.price = -price.price; // Flip since we are long the trade else leave as positive for PUT.
+  }
   return price;
 }
 
@@ -789,12 +792,11 @@ function prepareTradeForStartOfTrade(tradeSettings: ITradeSettings) {
   CalculateLimitsAndFees(tradeSettings);
   let currentSample: IPrice = {
     ...DefaultIPrice,
-    price: -tradeSettings.openingPrice, // Negative for calculateVariousValues below.
+    price: -tradeSettings.openingPrice, // Negative for calculateVariousValues below and monitoredPrices array.
     whenNY: tradeSettings.whenOpened,
     underlyingPrice: tradeSettings.openingUnderlyingPrice,
   };
   calculateVariousValues(tradeSettings, currentSample);
-  currentSample.price = -currentSample.price;
   tradeSettings.monitoredPrices.push(currentSample);
 }
 
@@ -901,7 +903,14 @@ async function ExecuteTrade(
       if (ordersReady) {
         if (tradeSettings.isBacktesting) {
           // Perform all trades for the current day (attached to the tradeSettings object).
+          const oldPercentGain = tradeSettings.percentGain;
+          const oldPercentLoss = tradeSettings.percentLoss;
+          // Adjusting the percentGain and percentLoss based on DELTA value of the trade.
+          tradeSettings.percentGain = tradeSettings.percentGain * tradeSettings.backtestingData.delta;
+          tradeSettings.percentLoss = tradeSettings.percentLoss * tradeSettings.backtestingData.delta;
           prepareTradeForStartOfTrade(tradeSettings);
+          tradeSettings.percentGain = oldPercentGain;
+          tradeSettings.percentLoss = oldPercentLoss;
           const closeTradeInfo: IClosedTradeInfo = await backTestLoop(tradeSettings).catch(reason => {
             LogData(tradeSettings, `Failed backTestLoop ${reason}`, new Error(reason));
             return {...DefaultClosedTradeInfo, isClosed: true, isRepeat: false};

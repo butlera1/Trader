@@ -23,6 +23,9 @@ input,
     font-size: 20px !important; /* Use !important to override existing styles */
 }
 
+.ant-btn{
+    padding-top: 0px !important; /* Centers the text vertically. */
+}
 
 .ant-checkbox .ant-checkbox-inner {
     width: 25px;
