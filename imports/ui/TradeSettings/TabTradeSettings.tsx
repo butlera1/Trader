@@ -41,7 +41,7 @@ function TabTradeSettings() {
     });
   };
 
-  useEffect(updateItems, []);
+  useEffect(() => updateItems(null), []);
 
   const onChange = (key: string) => {
     setActiveKey(key);
