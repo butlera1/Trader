@@ -1,5 +1,9 @@
 {
   "compilerOptions": {
+    "types": [
+      "meteor",
+      "meteor/*",
+    ],
     "lib": [
       "es2017",
       "es2017.string",

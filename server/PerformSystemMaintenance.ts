@@ -1,5 +1,3 @@
-// @ts-ignore
-import {Meteor} from 'meteor/meteor';
 import {TradeSettingsSets} from './collections/TradeSettingsSets';
 import {TradeSettings} from './collections/TradeSettings.js';
 import ITradeSettingsSets, {DefaultTradeSettingsSets} from '../imports/Interfaces/ITradeSettingsSets';

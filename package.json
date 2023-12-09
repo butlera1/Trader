@@ -12,6 +12,7 @@
     "@babel/runtime": "^7.17.9",
     "@marknokes/tdameritrade": "^1.2.12",
     "@polygon.io/client-js": "^6.0.4",
+    "@types/meteor": "^2.9.7",
     "@types/node": "^18.11.9",
     "antd": "^4.23.6",
     "apexcharts": "^3.36.3",

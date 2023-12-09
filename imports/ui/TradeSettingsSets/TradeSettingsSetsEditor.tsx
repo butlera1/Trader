@@ -1,6 +1,4 @@
-// @ts-ignore
 import {Meteor} from 'meteor/meteor';
-// @ts-ignore
 import {useTracker} from 'meteor/react-meteor-data';
 import React, {useState} from 'react';
 import TradeSettingsSets from '../../Collections/TradeSettingsSets';
