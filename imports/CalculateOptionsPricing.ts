@@ -1,5 +1,5 @@
-import {IPrice} from '../imports/Interfaces/ITradeSettings';
-import ILegSettings, {BuySell, OptionType} from '../imports/Interfaces/ILegSettings';
+import {IPrice} from './Interfaces/ITradeSettings.ts';
+import ILegSettings, {BuySell, OptionType} from './Interfaces/ILegSettings.ts';
 
 function CalculateOptionsPricing(result: IPrice, leg: ILegSettings, price: number) {
   let intrinsic = 0;

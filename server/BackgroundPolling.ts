@@ -1,16 +1,28 @@
 import {Meteor} from 'meteor/meteor';
 import PollingMutex from './PollingMutex';
 import {GetPriceForSymbols} from './TDAApi/TDAApi';
-import {InTradeHours} from "../imports/Utils";
+import {CalculateTradePrice, InTradeHours} from "../imports/Utils";
 import Constants from "../imports/Constants";
 import {AppSettings} from './collections/AppSettings';
 import IStreamerData from "../imports/Interfaces/IStreamData";
+import ITradeSettings, {BadDefaultIPrice, IPrice} from "../imports/Interfaces/ITradeSettings.ts";
 
 
 let csvSymbols: string = '$VIX.X,$SPX.X';
 let data = {};
 let isPolling: boolean = false;
 const userId = Meteor.users.findOne({username: 'Arch'})?._id;
+
+/**
+ * Adds one or more symbols to the polling list.
+ * @param csvSymbols
+ * @constructor
+ */
+function AddSymbolsToPolling(newCSVSymbols: string) {
+  let arry1 = csvSymbols.split(',');
+  arry1 = arry1.concat(newCSVSymbols.split(','));
+  csvSymbols = arry1.join(',');
+}
 
 function getAverageMark(data: IStreamerData[]): number {
   let sum = 0;
@@ -71,7 +83,7 @@ async function poll() {
     console.error(err);
   }
   setTimeout(releaseFunc, 1200); // Don't poll more than once per second.
-  setTimeout(poll, 3000); // Repeat every 3 seconds.
+  setTimeout(poll, Constants.TwoSeconds);
 }
 
 function GetVIXSlope() {
@@ -116,6 +128,7 @@ function StartBackgroundPolling() {
   try {
     if (InTradeHours()) {
       isPolling = true;
+      csvSymbols = '$VIX.X,$SPX.X';
       poll().then();
       console.log('Starting background polling.');
     } else {
@@ -132,6 +145,22 @@ function StopBackgroundPolling() {
   isPolling = false;
 }
 
+function GetTradePriceViaBackgroundPolling(liveTrade:ITradeSettings) :IPrice{
+  try {
+    const symbols = liveTrade.csvSymbols.split(',');
+    const quotes = [];
+    symbols.forEach((symbol) => {
+      if (data[symbol]) {
+        const lastIndex = data[symbol].length - 1;
+        quotes.push(data[symbol][lastIndex]);
+      }
+    });
+    return CalculateTradePrice(liveTrade, quotes);
+  } catch (err) {
+    console.error(`GetTradePriceViaBackgroundPolling failed with: `, err);
+    return {...BadDefaultIPrice};
+  }
+}
 export {
   StartBackgroundPolling,
   StopBackgroundPolling,
@@ -139,4 +168,6 @@ export {
   GetVIXMark,
   GetVIXSlopeAngle,
   GetSPXData,
+  AddSymbolsToPolling,
+  GetTradePriceViaBackgroundPolling,
 };

@@ -10,9 +10,8 @@ import {BuySell, OptionType} from '../../imports/Interfaces/ILegSettings';
 import {LogData} from '../collections/Logs';
 import {IronCondorMarketOrder} from './Templates/SellIronCondorOrder';
 import {BadDefaultIPrice} from '../../imports/Interfaces/ITradeSettings';
-import CalculateOptionsPricing from '../CalculateOptionsPricing';
 import Constants from '../../imports/Constants';
-import {InTradeHours} from '../../imports/Utils';
+import {CalculateTradePrice, InTradeHours} from '../../imports/Utils';
 
 const clientId = '8MXX4ODNOEKHOU0COANPEZIETKPXJRQZ@AMER.OAUTHAP';
 const redirectUrl = 'https://localhost/traderOAuthCallback';
@@ -299,43 +298,7 @@ export async function GetPriceForOptions(tradeSettings) {
     if (!quotes || quotes?.length === 0) {
       return {...BadDefaultIPrice};
     }
-    let countFoundQuotes = 0; // must end up equal to the legs.length.
-    // Now scan the quotes and add/subtract up the price.
-    let result = {...BadDefaultIPrice, price: 0, whenNY: new Date()};
-    quotes.forEach((quote) => {
-      const leg = tradeSettings.legs.find((leg) => leg.option.symbol === quote.symbol);
-      // if leg not found, then something is wrong.
-      if (!leg) {
-        const msg = `GetPriceForOptions: leg not found for quote symbol: ${quote.symbol}`;
-        LogData(tradeSettings, msg, new Error(msg));
-        return;
-      }
-      // The quotes include the underlying stock price.
-      result.underlyingPrice = quote.underlyingPrice;
-      let price = 0;
-      // We have tried using the mark price or the bidPrice/askPrice this IF statement
-      // is used to keep both chunks of code logic, so we can easily switch back and forth.
-      if (Constants.usingMarkPrice){
-        price = quote.mark;
-      } else {
-        // Base price on the lower value relative to the opposite desired entry buySell direction.
-        // This is because entry is simply a time point while exit is based on value and the legs
-        // define the buySell direction based on trade entry. So, do the opposite for exit.
-        price = quote.bidPrice;
-        if (leg.buySell === BuySell.SELL) {
-          // Means we are buying this leg now to exit the trade.
-          price = quote.askPrice;
-        }
-      }
-      result = CalculateOptionsPricing(result, leg, price);
-      countFoundQuotes++;
-    });
-    if (countFoundQuotes !== tradeSettings.legs.length) {
-      const msg = `GetPriceForOptions: countFoundQuotes: ${countFoundQuotes} !== tradeSettings.legs.length: ${tradeSettings.legs.length}`;
-      LogData(tradeSettings, msg, new Error(msg));
-      return {...BadDefaultIPrice};
-    }
-    return result;
+    return CalculateTradePrice(tradeSettings, quotes);
   } catch (error) {
     const msg = `TDAApi.GetPriceForOptions: failed with: ${error}`;
     console.error(msg);
@@ -587,7 +550,7 @@ export function CreateOpenAndCloseOrders(chains, tradeSettings) {
     let totalMarkPrice = 0;
     // We have tried using the mark price or the bidPrice/askPrice this IF statement
     // is used to keep both chunks of code logic, so we can easily switch back and forth.
-    if (Constants.usingMarkPrice){
+    if (Constants.usingMarkPrice) {
       totalMarkPrice = leg.option.mark * leg.quantity;
     } else {
       // Base price on the lower value relative to the opposite desired entry buySell direction.

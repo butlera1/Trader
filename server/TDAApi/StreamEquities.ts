@@ -3,7 +3,7 @@ import {Meteor} from 'meteor/meteor';
 import {GetUserPrinciples} from './TDAApi';
 import _ from 'lodash';
 import ITradeSettings, {BadDefaultIPrice, IPrice} from '../../imports/Interfaces/ITradeSettings';
-import CalculateOptionsPricing from '../CalculateOptionsPricing';
+import CalculateOptionsPricing from '../../imports/CalculateOptionsPricing.ts';
 import Constants from '../../imports/Constants';
 import IStreamerData from '../../imports/Interfaces/IStreamData';
 import {AppSettings} from '../collections/AppSettings';

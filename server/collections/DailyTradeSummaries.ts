@@ -1,9 +1,7 @@
-import { Mongo } from 'meteor/mongo';
-
-const DailyTradeSummaries = new Mongo.Collection('dailyTradeSummaries');
+import {Mongo} from 'meteor/mongo';
 
 interface IDailyTradeSummary {
-  _id: string,
+  _id?: string,
   userId: string,
   accountNumber: string,
   dateText: string,
@@ -11,4 +9,7 @@ interface IDailyTradeSummary {
   tradeIds: string[],
 }
 
-export { DailyTradeSummaries, IDailyTradeSummary};
+const DailyTradeSummaries: Mongo.Collection<IDailyTradeSummary> = new Mongo.Collection('dailyTradeSummaries');
+
+
+export {DailyTradeSummaries, IDailyTradeSummary};

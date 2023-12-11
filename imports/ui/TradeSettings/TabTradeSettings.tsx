@@ -44,7 +44,7 @@ function TabTradeSettings({tradeSet}: { tradeSet: ITradeSettingsSet }) {
     });
   };
 
-  useEffect(() => updateItems(null), []);
+  useEffect(() => updateItems(null), [tradeSet]);
 
   const onChange = (key: string) => {
     setActiveKey(key);

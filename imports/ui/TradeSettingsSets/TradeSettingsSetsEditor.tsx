@@ -41,8 +41,9 @@ export default function TradeSettingsSetsEditor() {
     setIsModalOpen(false);
   };
   const add = () => {
-    const id = TradeSettingsSets.insert({...DefaultTradeSettingsSets, userId: Meteor.userId(), name: `New Set ${new Date().toLocaleString()}`});
-    setSelectedSet(TradeSettingsSets.findOne(id));
+    const tempSet = {...DefaultTradeSettingsSets, userId: Meteor.userId(), name: `New Set ${new Date().toLocaleString()}`};
+    tempSet._id = TradeSettingsSets.insert(tempSet);
+    setSelectedSet(tempSet);
   };
 
   const deleteSet = () => {

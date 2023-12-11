@@ -6,6 +6,9 @@ const Constants = {
   usingMarkPrice : false,
   SPXSymbol: '$SPX.X',
   VIXSymbol: '$VIX.X',
+  OneSecond: 1000,
+  TwoSeconds: 2000,
+  ThreeSeconds: 3000,
 };
 
 export default Constants;

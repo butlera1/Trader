@@ -52,7 +52,7 @@ interface IPrice {
   vixSlope?: number,
 }
 
-const DefaultIPrice = {
+const DefaultIPrice :IPrice = {
   price: 0,
   whenNY: new Date(),
   gain: 0,
@@ -71,7 +71,7 @@ const DefaultIPrice = {
   vwapSlopeAngle: 0,
 };
 
-const BadDefaultIPrice = {
+const BadDefaultIPrice :IPrice = {
   price: Number.NaN,
   whenNY: undefined,
   gain: 0,
