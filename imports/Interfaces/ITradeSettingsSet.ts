@@ -1,15 +1,13 @@
-import ITradeSettings from './ITradeSettings';
-
 interface ITradeSettingsSet {
   _id?: string,
-  tradeSettings: ITradeSettings[],
+  tradeSettingIds: string[],
   userId: string,
   name: string,
   isDefault: boolean,
 }
 
-const DefaultTradeSettingsSets = {
-  tradeSettings: [],
+const DefaultTradeSettingsSets :ITradeSettingsSet = {
+  tradeSettingIds: [],
   userId: '',
   name: 'No name',
   isDefault: false,

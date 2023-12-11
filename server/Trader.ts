@@ -35,6 +35,8 @@ import {GetVIXMark, GetVIXSlope, GetVIXSlopeAngle} from "./BackgroundPolling";
 import {DirectionUp} from '../imports/Interfaces/IPrerunVIXSlopeValue';
 import {DefaultClosedTradeInfo, IClosedTradeInfo} from '../imports/Interfaces/IClosedTradeInfo';
 import {OptionType} from '../imports/Interfaces/ILegSettings';
+import {TradeSettingsSets} from "./collections/TradeSettingsSets";
+import ITradeSettingsSet, {DefaultTradeSettingsSets} from "../imports/Interfaces/ITradeSettingsSet";
 
 dayjs.extend(duration);
 dayjs.extend(isoWeek);
@@ -965,6 +967,15 @@ function scheduleUsersTrade(tradeSettings, user) {
   }
 }
 
+function getUsersDefaultTradeSettings(userId:string) : ITradeSettings[] {
+  let tradeSet :ITradeSettingsSet = TradeSettingsSets.findOne({userId, isDefault: true});
+  if (!tradeSet) {
+    tradeSet = TradeSettingsSets.findOne({userId}) ?? {...DefaultTradeSettingsSets};
+  }
+  const tradeSettingsSet = TradeSettings.find({_id: {$in: tradeSet.tradeSettingIds}}).fetch();
+  return tradeSettingsSet;
+}
+
 async function QueueUsersTradesForTheDay(user) {
   const isMarketOpened = await IsOptionMarketOpenToday(user._id);
   if (!isMarketOpened) {
@@ -987,7 +998,7 @@ async function QueueUsersTradesForTheDay(user) {
   usersTimeoutHandlesSemaphore.take(async () => {
     try {
       prepareUserForScheduling(user);
-      const tradeSettingsSet = TradeSettings.find({userId: user._id}).fetch();
+      const tradeSettingsSet = getUsersDefaultTradeSettings(user._id);
       tradeSettingsSet.forEach((tradeSettings: ITradeSettings) => {
         tradeSettings.accountNumber = accountNumber;
         tradeSettings.userName = user.username;

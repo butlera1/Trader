@@ -13,11 +13,19 @@ function DeleteUserTradeSettingsRecord(recordId) {
   throw new Meteor.Error('Must have valid user for DeleteUserTradeSettings.');
 }
 
-function GetAllUserTradeSettings() {
+function GetTradeSettingsFromSet(set) {
   if (Meteor.userId()) {
-    return TradeSettings.find({userId: Meteor.userId()}).fetch();
+    if (!set?.tradeSettings?.length) {
+      return [];
+    }
+    const query = {
+      $or: set.tradeSettings.map(_id => {
+        _id;
+      })
+    };
+    return TradeSettings.find(query).fetch();
   }
-  throw new Meteor.Error('Must have valid user for GetAllUserTradeSettings.');
+  throw new Meteor.Error('Must have valid user for GetTradeSettingsFromSet.');
 }
 
 function GetUserTradeSettings(tradeSettingId) {
@@ -71,7 +79,7 @@ const SetUserTradeSettings = (tradeSettings) => {
 };
 
 export {
-  GetAllUserTradeSettings,
+  GetTradeSettingsFromSet,
   SetUserTradeSettings,
   GetNewUserTradeSettingsRecord,
   GetUserTradeSettings,

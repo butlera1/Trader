@@ -7,16 +7,22 @@ function checkTradeSettingsSetExists(userId) {
   // Check if a user has a tradeSettingsSet
   // If not, create one using the existing tradeSettings for that user.
   // If so, do nothing.
-  const sets = TradeSettingsSets.find({userId}).fetch();
+  const sets :ITradeSettingsSet[] = TradeSettingsSets.find({userId}).fetch();
   if (sets.length === 0) {
     // Create a tradeSettingsSet for this user since he does not have any and make it the default one.
     const set: ITradeSettingsSet = {...DefaultTradeSettingsSets, userId, isDefault: true, name: 'Default'};
-    set.tradeSettings = [];
+    set.tradeSettingIds = [];
     const tradeSettings = TradeSettings.find({userId}).forEach((tradeSettings) => {
-      set.tradeSettings.push(tradeSettings._id);
+      set.tradeSettingIds.push(tradeSettings._id);
     });
     TradeSettingsSets.insert(set);
     console.log('Added a default tradeSettingsSet for user: ' + Users.findOne({_id: userId}).username);
+  } else {
+    // We have sets so make sure one is set to isDefault
+    const defaultSet = sets.find(set => set.isDefault);
+    if (!defaultSet) {
+      TradeSettingsSets.update(sets[0]._id, {$set: {isDefault: true}});
+    }
   }
 }
 

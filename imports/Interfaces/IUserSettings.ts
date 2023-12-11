@@ -1,5 +1,5 @@
 interface IUserSettings {
-  _id: string,
+  _id?: string,
   accountNumber?: string,
   email?: string,
   phone?: string,

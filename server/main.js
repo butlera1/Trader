@@ -5,7 +5,7 @@ import './collections/BacktestTrades'
 import './collections/TradeSettingsSets';
 import {
   DeleteUserTradeSettingsRecord,
-  GetAllUserTradeSettings,
+  GetTradeSettingsFromSet,
   GetNewUserTradeSettingsRecord,
   GetTradeSettingNames,
   GetUserTradeSettings,
@@ -82,7 +82,7 @@ Meteor.methods({
     SetUserTradeSettings,
     GetUserTradeSettings,
     GetTradeSettingNames,
-    GetAllUserTradeSettings,
+    GetTradeSettingsFromSet,
     GetNewUserTradeSettingsRecord,
     DeleteUserTradeSettingsRecord,
     BuyStock,
@@ -115,9 +115,9 @@ AppSettings.upsert(Constants.appSettingsId, settings);
 
 PerformSystemMaintenance();
 
-StartBackgroundPolling();
-ScheduleStartOfDayWork();
-ScheduleEndOfDayWork();
-CheckForAnyExistingTradesAndMonitorThem();
-
+// StartBackgroundPolling();
+// ScheduleStartOfDayWork();
+// ScheduleEndOfDayWork();
+// CheckForAnyExistingTradesAndMonitorThem();
+//
 

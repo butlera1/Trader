@@ -108,7 +108,7 @@ export default function TradeSettingsSetsEditor() {
           </Button>
         </Popconfirm>
       </Space>
-      <TabTradeSettings/>
+      <TabTradeSettings tradeSet={selectedSet}/>
     </div>
   );
 }

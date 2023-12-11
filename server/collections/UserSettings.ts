@@ -1,6 +1,7 @@
 import {Mongo} from 'meteor/mongo';
+import IUserSettings from "../../imports/Interfaces/IUserSettings";
 
-export const UserSettings = new Mongo.Collection('userSettings');
+export const UserSettings: Mongo.Collection<IUserSettings> = new Mongo.Collection('userSettings');
 
 function GetUserSettings() {
   if (!this.userId) {

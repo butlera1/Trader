@@ -3,6 +3,8 @@ import React, {useEffect, useState} from 'react';
 import {Alert, Button, Space, Tabs} from "antd";
 import {TradeSettingsEditor} from "./TradeSettingsEditor";
 import ITradeSettings, {GetDescription} from "../../Interfaces/ITradeSettings";
+import ITradeSettingsSet from '../../Interfaces/ITradeSettingsSet';
+import {TradeSettingsSets} from "../../Collections/TradeSettingsSets";
 
 function formatDescription(description) {
   const parts = description.split('\n');
@@ -12,7 +14,7 @@ function formatDescription(description) {
 }
 
 
-function TabTradeSettings() {
+function TabTradeSettings({tradeSet}: { tradeSet: ITradeSettingsSet }) {
   const [activeKey, setActiveKey] = useState(null);
   const [items, setItems] = useState([]);
   const [errorText, setErrorText] = useState(null);
@@ -20,13 +22,14 @@ function TabTradeSettings() {
   const createTabItem = (tradeSettings: ITradeSettings) => {
     return {
       label: formatDescription(GetDescription(tradeSettings)),
-      children: <TradeSettingsEditor tradeSettings={tradeSettings} changeCallback={() => updateItems(tradeSettings._id)}/>,
+      children: <TradeSettingsEditor tradeSettings={tradeSettings}
+                                     changeCallback={() => updateItems(tradeSettings._id)}/>,
       key: tradeSettings._id,
     };
   };
 
-  const updateItems = (keyToActivate) => {
-    Meteor.call('GetAllUserTradeSettings', (error, tradeSettingsArray) => {
+  const updateItems = (keyToActivate: string | null) => {
+    Meteor.call('GetTradeSettingsFromSet', tradeSet, (error, tradeSettingsArray: ITradeSettings[]) => {
       if (error) {
         setErrorText(`Failed to get trading strategies. Error: ${error}`);
         return;
@@ -34,7 +37,7 @@ function TabTradeSettings() {
       const items = tradeSettingsArray.map(createTabItem);
       setItems(items);
       if (items.length > 0) {
-          setActiveKey(keyToActivate ?? items[0].key);
+        setActiveKey(keyToActivate ?? items[0].key);
       } else {
         setActiveKey(null);
       }
@@ -48,29 +51,34 @@ function TabTradeSettings() {
   };
 
   const add = () => {
-    Meteor.call('GetNewUserTradeSettingsRecord', (error, settings) => {
+    Meteor.call('GetNewUserTradeSettingsRecord', (error, settings :ITradeSettings) => {
       if (error) {
         setErrorText(`Failed to get new trading strategies. Error: ${error}`);
         return;
       }
+      tradeSet.tradeSettingIds.push(settings._id);
+      TradeSettingsSets.update(tradeSet._id, {$set: {tradeSettingIds: tradeSet.tradeSettingIds}});
       setItems([...items, createTabItem(settings)]);
       setActiveKey(settings._id);
     });
   };
 
   const remove = (targetKey: string) => {
-    const targetIndex = items.findIndex(pane => pane.key === targetKey);
-    const newPanes = items.filter(pane => pane.key !== targetKey);
-    if (newPanes.length && targetKey === activeKey) {
-      const {key} = newPanes[targetIndex === newPanes.length ? targetIndex - 1 : targetIndex];
+    const targetIndex = items.findIndex(pane => pane.key===targetKey);
+    const newPanes = items.filter(pane => pane.key!==targetKey);
+    if (newPanes.length && targetKey===activeKey) {
+      const {key} = newPanes[targetIndex===newPanes.length ? targetIndex - 1:targetIndex];
       setActiveKey(key);
     }
+    // remove from the set and update the set to DB.
+    tradeSet.tradeSettingIds = tradeSet.tradeSettingIds.filter(settingsId => settingsId !== targetKey);
+    TradeSettingsSets.update(tradeSet._id, {$set: {tradeSettingIds: tradeSet.tradeSettingIds}});
     setItems(newPanes);
     Meteor.call('DeleteUserTradeSettingsRecord', targetKey);
   };
 
   const onEdit = (targetKey: string, action: 'add' | 'remove') => {
-    if (action === 'add') {
+    if (action==='add') {
       add();
     } else {
       remove(targetKey);
@@ -79,7 +87,7 @@ function TabTradeSettings() {
 
   return (
     <div>
-      <div >
+      <div>
         <Button type="primary" shape="round" onClick={add}>Add new trade pattern below</Button>
       </div>
       <Tabs
@@ -103,7 +111,7 @@ function TabTradeSettings() {
           }
           closable
         />
-        : null}
+        :null}
     </div>
   );
 }
