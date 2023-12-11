@@ -55,7 +55,7 @@ export const TradeSettingsEditor = ({tradeSettings, changeCallback}: Props) => {
   const [commissionPerContract, setCommissionPerContract] = React.useState(tradeSettings.commissionPerContract || 0);
   const [legs, setLegs] = React.useState(tradeSettings.legs);
   const [errorText, setErrorText] = React.useState(null);
-  const [tradeType, setTradeType] = React.useState(tradeSettings.tradeType ?? false);
+  const [tradeType, setTradeType] = React.useState(tradeSettings.tradeType ?? []);
   const [isRepeat, setIsRepeat] = React.useState(tradeSettings.isRepeat ?? false);
   const [repeatStopHour, setRepeatStopHour] = React.useState(tradeSettings.repeatStopHour ?? 13);
   const [useShortOnlyForLimits, setUseShortOnlyForLimits] = React.useState(tradeSettings.useShortOnlyForLimits ?? false);
@@ -187,7 +187,7 @@ export const TradeSettingsEditor = ({tradeSettings, changeCallback}: Props) => {
         showVixAndSlopeInGraphs,
       };
       strategy.description = GetDescription(strategy);
-      Meteor.call('SetUserTradeSettings', strategy, (error, result) => {
+      Meteor.call('SetUserTradeSettings', strategy, (error) => {
         if (error) {
           setErrorText(error.toString());
         } else {

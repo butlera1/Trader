@@ -1,5 +1,5 @@
 interface IPrerunGainLimitValue {
-  seconds: number;
+  seconds?: number;
 }
 
 const defaultPrerunGainLimitValue = {

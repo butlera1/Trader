@@ -2,7 +2,7 @@ const DirectionUp = 'up';
 const DirectionDown = 'down';
 
 interface IPrerunVIXSlopeValue {
-  numberOfDesiredVIXAnglesInARow: number;
+  numberOfDesiredVIXAnglesInARow?: number;
   direction?: 'up' | 'down';
 }
 const defaultPrerunVIXSlopeValue: IPrerunVIXSlopeValue = {

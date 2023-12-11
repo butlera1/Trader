@@ -9,7 +9,7 @@
       "dom"
     ],
     "allowSyntheticDefaultImports": true,
-    "allowImportingTsExtensions": "iKnowWhatImDoing",
+    "allowImportingTsExtensions": true,
     "jsx": "react",
     "paths": {
       "react": [

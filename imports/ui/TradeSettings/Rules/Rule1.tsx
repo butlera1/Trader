@@ -2,8 +2,8 @@ import React from 'react';
 import {InputNumber, Space} from 'antd';
 
 interface IRule1Value {
-  profitPercent: number;
-  minutes: number;
+  profitPercent?: number;
+  minutes?: number;
 }
 
 function Rule1({value, onChange}: { value: IRule1Value, onChange: (value: IRule1Value) => void }) {

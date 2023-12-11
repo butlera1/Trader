@@ -115,9 +115,9 @@ AppSettings.upsert(Constants.appSettingsId, settings);
 
 PerformSystemMaintenance();
 
-// StartBackgroundPolling();
-// ScheduleStartOfDayWork();
-// ScheduleEndOfDayWork();
-// CheckForAnyExistingTradesAndMonitorThem();
-//
+StartBackgroundPolling();
+ScheduleStartOfDayWork();
+ScheduleEndOfDayWork();
+CheckForAnyExistingTradesAndMonitorThem();
+
 
