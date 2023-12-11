@@ -4,7 +4,7 @@ import {Alert, Button, Space, Tabs} from "antd";
 import {TradeSettingsEditor} from "./TradeSettingsEditor";
 import ITradeSettings, {GetDescription} from "../../Interfaces/ITradeSettings";
 import ITradeSettingsSet from '../../Interfaces/ITradeSettingsSet';
-import {TradeSettingsSets} from "../../Collections/TradeSettingsSets";
+import TradeSettingsSets from "../../Collections/TradeSettingsSets";
 
 function formatDescription(description) {
   const parts = description.split('\n');

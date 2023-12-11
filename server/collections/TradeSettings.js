@@ -15,13 +15,11 @@ function DeleteUserTradeSettingsRecord(recordId) {
 
 function GetTradeSettingsFromSet(set) {
   if (Meteor.userId()) {
-    if (!set?.tradeSettings?.length) {
+    if (!set?.tradeSettingIds?.length) {
       return [];
     }
     const query = {
-      $or: set.tradeSettings.map(_id => {
-        _id;
-      })
+      $or: set.tradeSettingIds.map(_id => ({_id}))
     };
     return TradeSettings.find(query).fetch();
   }
