@@ -1,13 +1,13 @@
 import {Meteor} from 'meteor/meteor';
 import './collections/stockData';
 import './collections/straddleData';
-import './collections/BacktestTrades'
+import './collections/BacktestTrades';
 import './collections/TradeSettingsSets';
 import {
   DeleteUserTradeSettingsRecord,
-  GetTradeSettingsFromSet,
   GetNewUserTradeSettingsRecord,
   GetTradeSettingNames,
+  GetTradeSettingsFromSetMethod,
   GetUserTradeSettings,
   SetUserTradeSettings,
   TradeSettings
@@ -40,7 +40,7 @@ import {DefaultAppSettings} from '../imports/Interfaces/IAppSettings';
 import {GetSPXData, StartBackgroundPolling} from './BackgroundPolling';
 import ScheduleEndOfDayWork from './ScheduleEndOfDayWork';
 import ScheduleStartOfDayWork from './ScheduleStartOfDayWork';
-import {BackTestCallPut} from "./Backtest/SingleCallPutBacktest";
+import {BackTestCallPut, BacktestTradeSetMethod} from "./Backtest/SingleCallPutBacktest";
 import PerformSystemMaintenance from "./PerformSystemMaintenance";
 
 dayjs.extend(utc);
@@ -82,7 +82,7 @@ Meteor.methods({
     SetUserTradeSettings,
     GetUserTradeSettings,
     GetTradeSettingNames,
-    GetTradeSettingsFromSet,
+    GetTradeSettingsFromSetMethod,
     GetNewUserTradeSettingsRecord,
     DeleteUserTradeSettingsRecord,
     BuyStock,
@@ -98,6 +98,7 @@ Meteor.methods({
     ResetUsersMaxDailyGainSettings,
     GetSPXData,
     BackTestCallPut,
+    BacktestTradeSetMethod,
   }
 );
 
@@ -110,9 +111,6 @@ const settings = {
 };
 delete settings._id;
 AppSettings.upsert(Constants.appSettingsId, settings);
-
-// TestBackTestCode().then(r => {});
-
 PerformSystemMaintenance();
 
 StartBackgroundPolling();

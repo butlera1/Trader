@@ -36,12 +36,12 @@ function UserSettings() {
 
   useEffect(getLatestUserSettings, [getData]);
 
-  const UsingPriceText = Constants.usingMarkPrice ? 'Mark' : 'Bid/Ask';
+  const UsingPriceText = Constants.usingMarkPrice ? 'Mark':'Bid/Ask';
 
   const onChange = (propertyName, value) => {
     userSettings[propertyName] = value;
     setUserSettings({...userSettings}); // force update
-    if (propertyName === 'accountIsActive' && value === false) {
+    if (propertyName==='accountIsActive' && value===false) {
       Meteor.call('EmergencyCloseAllTrades', (error) => {
         if (error) {
           setErrorText(`Failed calling EmergencyCloseAllTrades when account was deactivated: ${error.toString()}`);
@@ -70,7 +70,7 @@ function UserSettings() {
   };
 
   const Warn = () => {
-    if (userSettings?.accountIsActive === false) {
+    if (userSettings?.accountIsActive===false) {
       return <Row style={{paddingBottom: 20}}>
         <h2 style={{color: 'red'}}>(Warning: Account is not active)</h2>
       </Row>;

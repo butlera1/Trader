@@ -1,9 +1,11 @@
 import React from 'react';
 import {Button, DatePicker, InputNumber, Popconfirm, Select, Space} from 'antd';
-import NameSelector from "../TradeView/NameSelector";
 import IRanges, {DefaultRanges} from "../../Interfaces/IRanges";
 import {QuestionCircleOutlined} from "@ant-design/icons";
 import {Meteor} from "meteor/meteor";
+import ITradeSettingsSet from "../../Interfaces/ITradeSettingsSet.ts";
+import {useTracker} from "meteor/react-meteor-data";
+import TradeSettingsSets from '../../Collections/TradeSettingsSets';
 
 const hours = [
   <Select.Option key={1} value={9}>9</Select.Option>,
@@ -16,6 +18,14 @@ const hours = [
   <Select.Option key={8} value={16}>4</Select.Option>,
 ];
 
+const SetNameSelector = ({width, setSelectedName}) => {
+  const sets: ITradeSettingsSet[] = useTracker(() => TradeSettingsSets.find().fetch(), [TradeSettingsSets]);
+  const options = sets.map(({_id, name}) => <Select.Option key={_id} value={_id}>{name}</Select.Option>);
+  return (
+    <Select style={{width: width}} onChange={setSelectedName}>
+      {options}
+    </Select>);
+};
 
 function GainLossEditor({ranges, label, isGain}: { ranges: IRanges, label: string, isGain: boolean }) {
   let startPercent = 'startLoss';
@@ -70,12 +80,12 @@ function GainLossEditor({ranges, label, isGain}: { ranges: IRanges, label: strin
   );
 }
 
-let ranges: IRanges = {...DefaultRanges, recordId: null};
+let ranges: IRanges = {...DefaultRanges, tradeSettingsSetId: null};
 
 function RangesEditor({}) {
-  const [selectedName, setSelectedName] = React.useState(null);
-  if (selectedName===null) {
-    ranges.recordId = null;
+  const [selectedSetId, setSelectedSetId] = React.useState(null);
+  if (selectedSetId===null) {
+    ranges.tradeSettingsSetId = null;
   }
 
   return (
@@ -101,20 +111,17 @@ function RangesEditor({}) {
                                        defaultValue={ranges.endDate}/></label>
         </Space>
         <Space>
-          <span>Select A Trade Pattern:</span>
-          <NameSelector width={200} isMultiple={false} setSelectedNames={(value) => {
-            setSelectedName(value);
-          }}
-          />
+          <span>Select A Trade Pattern Set:</span>
+          <SetNameSelector width={200} setSelectedName={setSelectedSetId}/>
         </Space>
         <Space>
           <Popconfirm
-            disabled={(selectedName===null)}
+            disabled={(selectedSetId===null)}
             title="Are you sure: Backtest this trade now?"
             icon={<QuestionCircleOutlined style={{color: 'red'}}/>}
             onConfirm={() => {
-              ranges.recordId = selectedName;
-              Meteor.call('BackTestCallPut', ranges, (error, results) => {
+              ranges.tradeSettingsSetId = selectedSetId;
+              Meteor.call('BacktestTradeSetMethod', ranges, (error, results) => {
                 if (error) {
                   console.error(error);
                 } else {
@@ -126,7 +133,7 @@ function RangesEditor({}) {
             cancelText="No"
           >
             <Button
-              disabled={(selectedName===null)}
+              disabled={(selectedSetId===null)}
               type="primary"
               shape="round"
             >

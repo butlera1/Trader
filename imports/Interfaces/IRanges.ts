@@ -1,7 +1,7 @@
 import {Dayjs} from 'dayjs';
 
 interface IRanges {
-    recordId: string,
+    tradeSettingsSetId: string,
 
     startGain: number,
     endGain: number,
@@ -25,16 +25,16 @@ interface IRanges {
 }
 
 const DefaultRanges: IRanges = {
-    recordId: '',
+    tradeSettingsSetId: '',
     startGain: 1,
-    endGain: 1,
-    gainIncrement: 1,
-    gainIsDollar: false,
+    endGain: 10,
+    gainIncrement: 2,
+    gainIsDollar: true,
 
     startLoss: 1,
-    endLoss: 1,
-    lossIncrement: 1,
-    lossIsDollar: false,
+    endLoss: 10,
+    lossIncrement: 2,
+    lossIsDollar: true,
 
     startGainLimitPrerunAllowedDurationSeconds: 180,
     endGainLimitPrerunAllowedDurationSeconds: 180,

@@ -16,7 +16,8 @@ import {Trades} from './collections/Trades';
 import ITradeSettings, {
   BadDefaultIPrice,
   DefaultIPrice,
-  GetDescription, IBacktestingData,
+  GetDescription,
+  IBacktestingData,
   IPrice,
   whyClosedEnum
 } from '../imports/Interfaces/ITradeSettings';
@@ -61,7 +62,7 @@ function GetNewYorkTime24HourNow() {
   const text = GetNewYorkTimeNowAsText();
   const parts = text.split(' ');
   const hour = parseInt(parts[1].split(':')[0], 10);
-  const additionalHours = (parts[2] === 'PM' && hour != 12) ? 12 : 0;
+  const additionalHours = (parts[2]==='PM' && hour!=12) ? 12:0;
   return hour + additionalHours;
 }
 
@@ -195,7 +196,7 @@ async function CloseTrade(tradeSettings: ITradeSettings, currentPrice: IPrice): 
     });
     // Save the trade in a different collection dedicated to backtesting.
     delete tradeSettings._id;
-    const holdBacktestingData :IBacktestingData = tradeSettings.backtestingData;
+    const holdBacktestingData: IBacktestingData = tradeSettings.backtestingData;
     delete tradeSettings.backtestingData;
     BacktestTrades.insert(tradeSettings);
     tradeSettings.backtestingData = holdBacktestingData;
@@ -220,19 +221,19 @@ async function CloseTrade(tradeSettings: ITradeSettings, currentPrice: IPrice): 
   if (tradeSettings.isRepeat) {
     notTooLate = (GetNewYorkTime24HourNow() < (tradeSettings.repeatStopHour ?? 16));
   }
-  const okToRepeat = (tradeSettings.whyClosed !== whyClosedEnum.emergencyExit) &&
-    (tradeSettings.whyClosed !== whyClosedEnum.timedExit) &&
+  const okToRepeat = (tradeSettings.whyClosed!==whyClosedEnum.emergencyExit) &&
+    (tradeSettings.whyClosed!==whyClosedEnum.timedExit) &&
     (notTooLate);
   if ((tradeSettings.isRepeat || wasPrerunning || wasPrerunningVIXSlope || wasPrerunningGainLimit) && okToRepeat) {
-    let nowPrerunning = wasPrerunning ? false : tradeSettings.isPrerun;
+    let nowPrerunning = wasPrerunning ? false:tradeSettings.isPrerun;
     // If wasPrerunning, and we exited for something other than (gainLimit or prerunExit), restart a prerun.
-    if (wasPrerunning && tradeSettings.whyClosed !== whyClosedEnum.gainLimit && tradeSettings.whyClosed !== whyClosedEnum.prerunExit) {
+    if (wasPrerunning && tradeSettings.whyClosed!==whyClosedEnum.gainLimit && tradeSettings.whyClosed!==whyClosedEnum.prerunExit) {
       nowPrerunning = true; // Do another prerun because we exited for loss limit or similar.
     }
 
-    let nowPrerunningVIXSlope = wasPrerunningVIXSlope ? false : tradeSettings.isPrerunVIXSlope;
+    let nowPrerunningVIXSlope = wasPrerunningVIXSlope ? false:tradeSettings.isPrerunVIXSlope;
     // If wasPrerunningVIXSlope and we exited for something other than (gainLimit or prerunSlopeExit), restart a prerun.
-    if (wasPrerunningVIXSlope && tradeSettings.whyClosed !== whyClosedEnum.gainLimit && tradeSettings.whyClosed !== whyClosedEnum.prerunVIXSlopeExit) {
+    if (wasPrerunningVIXSlope && tradeSettings.whyClosed!==whyClosedEnum.gainLimit && tradeSettings.whyClosed!==whyClosedEnum.prerunVIXSlopeExit) {
       nowPrerunningVIXSlope = true; // Do another prerunSlope because we exited for loss limit or similar.
     }
     if (tradeSettings.isPrerunVIXSlope && tradeSettings.gainLoss > 0) {
@@ -242,7 +243,7 @@ async function CloseTrade(tradeSettings: ITradeSettings, currentPrice: IPrice): 
 
     // Decide what to do about isPrerunGainLimit. Always rerun PrerunGainLimit if we did not hit prerunGainLimitExit.
     let nowPrerunningGainLimit = tradeSettings.isPrerunGainLimit;
-    if (wasPrerunningGainLimit && (tradeSettings.whyClosed === whyClosedEnum.prerunGainLimitExit)) {
+    if (wasPrerunningGainLimit && (tradeSettings.whyClosed===whyClosedEnum.prerunGainLimitExit)) {
       // Do a real trade is we were in prerunGainLimit and we just exited for prerunGainLimitExit.
       nowPrerunningGainLimit = false;
     }
@@ -309,8 +310,8 @@ function EmergencyCloseSingleTrade(_id: string) {
 }
 
 function getTradeDurationInMinutes(tradeSettings: ITradeSettings) {
-  const initialTime = tradeSettings.monitoredPrices[0] ? dayjs(tradeSettings.monitoredPrices[0].whenNY) : dayjs();
-  const latestTime = tradeSettings.monitoredPrices[tradeSettings.monitoredPrices.length - 1] ? dayjs(tradeSettings.monitoredPrices[tradeSettings.monitoredPrices.length - 1].whenNY) : dayjs();
+  const initialTime = tradeSettings.monitoredPrices[0] ? dayjs(tradeSettings.monitoredPrices[0].whenNY):dayjs();
+  const latestTime = tradeSettings.monitoredPrices[tradeSettings.monitoredPrices.length - 1] ? dayjs(tradeSettings.monitoredPrices[tradeSettings.monitoredPrices.length - 1].whenNY):dayjs();
   return latestTime.diff(initialTime, 'minute', true);
 }
 
@@ -369,8 +370,8 @@ function checkRule2Exit(liveTrade: ITradeSettings, currentSample: IPrice) {
 }
 
 function getMaximumPercentGainReached(liveTrade: ITradeSettings) {
-  if (liveTrade.monitoredPrices.length === 0) return 0;
-  const maxGain = liveTrade.monitoredPrices.reduce((max, sample) => sample.gain > max.gain ? sample : max, liveTrade.monitoredPrices[0]);
+  if (liveTrade.monitoredPrices.length===0) return 0;
+  const maxGain = liveTrade.monitoredPrices.reduce((max, sample) => sample.gain > max.gain ? sample:max, liveTrade.monitoredPrices[0]);
   const maxGainDollar = CalculateGain(liveTrade, liveTrade.gainLimit);
   return maxGain.gain / maxGainDollar;
 }
@@ -482,7 +483,7 @@ function checkPrerunVIXSlopeExit(liveTrade: ITradeSettings) {
     if (liveTrade.monitoredPrices.length >= numberOfDesiredVIXAnglesInARow) {
       // This approach is for checking for VIX slope trending down (decreasing in value) or up.
       const samples = liveTrade.monitoredPrices.slice(liveTrade.monitoredPrices.length - numberOfDesiredVIXAnglesInARow);
-      const isUp = liveTrade.prerunVIXSlopeValue.direction === DirectionUp;
+      const isUp = liveTrade.prerunVIXSlopeValue.direction===DirectionUp;
       let trending = true;
       for (let i = 0; i < samples.length - 1; i++) {
         if (isUp) {
@@ -508,7 +509,7 @@ function checkPrerunGainLimitExit(liveTrade: ITradeSettings, isGainLimitMet: boo
 
 function getAveragePrice(samples: IPrice[], desiredNumberOfSamples: number) {
   const numberOfSamples = Math.min(desiredNumberOfSamples, samples.length);
-  if (numberOfSamples === 0) return 0;
+  if (numberOfSamples===0) return 0;
   // Get the last numberOfSamples samples.
   const subSet = samples.slice(samples.length - numberOfSamples);
   const sum = subSet.reduce((sum, sample) => sum + sample.price, 0);
@@ -532,7 +533,7 @@ function isExitTimeBeforeSampleTime(exitTime: dayjs.Dayjs, currentSampleTime: da
   if (exitTime.hour() < currentSampleTime.hour()) {
     return true;
   }
-  if (exitTime.hour() === currentSampleTime.hour() && exitTime.minute() <= currentSampleTime.minute()) {
+  if (exitTime.hour()===currentSampleTime.hour() && exitTime.minute() <= currentSampleTime.minute()) {
     return true;
   }
   if (liveTrade.isBacktesting && liveTrade.backtestingData.index >= liveTrade.backtestingData.minuteData.length) {
@@ -542,7 +543,7 @@ function isExitTimeBeforeSampleTime(exitTime: dayjs.Dayjs, currentSampleTime: da
   return false;
 }
 
-async function checkForTradeCompletion(liveTrade: ITradeSettings, currentSamplePrice: IPrice, exitTime: dayjs.Dayjs): Promise<IClosedTradeInfo> {
+async function CheckForTradeCompletion(liveTrade: ITradeSettings, currentSamplePrice: IPrice, exitTime: dayjs.Dayjs): Promise<IClosedTradeInfo> {
   calculateVariousValues(liveTrade, currentSamplePrice);
   const sampleTime = dayjs(currentSamplePrice.whenNY);
   const isEndOfDay = isExitTimeBeforeSampleTime(exitTime, sampleTime, liveTrade);
@@ -632,15 +633,14 @@ function MonitorTradeToCloseItOut(liveTrade: ITradeSettings) {
         return;
       }
       // Get the current price for the trade.
-      // const currentSamplePrice: IPrice = await GetSmartOptionsPrice(liveTrade);
       const currentSamplePrice: IPrice = GetTradePriceViaBackgroundPolling(liveTrade);
-      if (currentSamplePrice.price === Number.NaN || currentSamplePrice.price === 0) {
+      if (currentSamplePrice.price===Number.NaN || currentSamplePrice.price===0) {
         Meteor.setTimeout(monitorMethod, Constants.TwoSeconds);
         return; // Try again on next interval timeout.
       }
       liveTrade.monitoredPrices.push(currentSamplePrice);
 
-      const closedInfo: IClosedTradeInfo = await checkForTradeCompletion(liveTrade, currentSamplePrice, localEarlyExitTime);
+      const closedInfo: IClosedTradeInfo = await CheckForTradeCompletion(liveTrade, currentSamplePrice, localEarlyExitTime);
       if (!closedInfo.isClosed) {
         // Loop again waiting for one of the close patterns to get hit.
         Meteor.setTimeout(monitorMethod, Constants.TwoSeconds);
@@ -660,7 +660,7 @@ function MonitorTradeToCloseItOut(liveTrade: ITradeSettings) {
       LogData(liveTrade, message, ex);
     }
   };
-  Meteor.setTimeout(monitorMethod, Constants.ThreeSeconds+Constants.OneSecond);
+  Meteor.setTimeout(monitorMethod, Constants.ThreeSeconds + Constants.OneSecond);
 }
 
 function CalculateGrossOrderBuysAndSells(order) {
@@ -701,7 +701,7 @@ function CalculateFilledOrderPrice(order): IOrderPriceResults {
 }
 
 function calculateIfOrderIsFilled(order) {
-  let isFilled = (order?.status === 'FILLED');
+  let isFilled = (order?.status==='FILLED');
   order?.childOrderStrategies?.forEach((childOrder) => isFilled = isFilled && calculateIfOrderIsFilled(childOrder));
   return isFilled;
 }
@@ -743,7 +743,7 @@ async function WaitForOrderCompleted(userId, accountNumber, orderId) {
           reject(msg);
           return;
         }
-        if (order.status === 'REJECTED' || order.status === 'CANCELED') {
+        if (order.status==='REJECTED' || order.status==='CANCELED') {
           const msg = `WaitForOrderCompleted: Order ${orderId} has been ${order.status}. (RETRYING)`;
           LogData(null, msg, null);
           reject(msg);
@@ -760,42 +760,7 @@ async function WaitForOrderCompleted(userId, accountNumber, orderId) {
   });
 }
 
-function nextBacktestPrice(tradeSettings: ITradeSettings): IPrice {
-  // This approach in backtesting only uses the close value and not the HIGH / LOW range in any way.
-  const {minuteData, index} = tradeSettings.backtestingData;
-  const price: IPrice = {
-    ...DefaultIPrice,
-    price: minuteData[index].close,
-    whenNY: new Date(minuteData[index].datetime)
-  };
-  tradeSettings.backtestingData.index++;
-  if (tradeSettings.backtestingData.tradeType === OptionType.CALL) {
-    price.price = -price.price; // Flip since we are long the trade else leave as positive for PUT.
-  }
-  return price;
-}
-
-async function backTestLoop(tradeSettings: ITradeSettings): Promise<IClosedTradeInfo> {
-  let closeTradeInfo: IClosedTradeInfo = {...DefaultClosedTradeInfo};
-  const exitTime = GetNewYorkTimeAt(tradeSettings.exitHour, tradeSettings.exitMinute);
-  let currentSample :IPrice = tradeSettings.monitoredPrices[0];
-  if (tradeSettings.backtestingData.tradeType === OptionType.PUT) {
-    currentSample.price = Math.abs(tradeSettings.openingPrice);
-  }
-  do {
-    closeTradeInfo = await checkForTradeCompletion(tradeSettings, currentSample, exitTime);
-    if (closeTradeInfo.isClosed) {
-      tradeSettings.backtestingData.index++; // Move to next sample for next trade loop if any.
-    } else {
-      // Get next price for the trade.
-      currentSample = nextBacktestPrice(tradeSettings);
-      tradeSettings.monitoredPrices.push(currentSample);
-    }
-  } while (closeTradeInfo.isClosed === false);
-  return closeTradeInfo;
-}
-
-function prepareTradeForStartOfTrade(tradeSettings: ITradeSettings) {
+function PrepareTradeForStartOfTrade(tradeSettings: ITradeSettings) {
   tradeSettings.originalTradeSettingsId = tradeSettings._id;
   tradeSettings.monitoredPrices = [];
   CalculateLimitsAndFees(tradeSettings);
@@ -823,7 +788,7 @@ async function PlaceOpeningOrderAndMonitorToClose(tradeSettings: ITradeSettings)
       tradeSettings.whenOpened = new Date(); // Live trade show use NOW for whenOpened.
     }
   }
-  prepareTradeForStartOfTrade(tradeSettings);
+  PrepareTradeForStartOfTrade(tradeSettings);
   delete tradeSettings._id; // Remove the old _id for so when storing into Trades collection, a new _id is created.
   tradeSettings._id = Trades.insert({...tradeSettings});
   if (!_.isFinite(tradeSettings.openingPrice)) {
@@ -844,42 +809,54 @@ function IsNotDuplicateTrade(tradeSettings: ITradeSettings) {
   return !existingTrade;
 }
 
-async function ExecuteTrade(
+function IsTradeReadyToRun(
   tradeSettings: ITradeSettings,
   forceTheTrade: boolean = false,
   isPrerun: boolean = false,
   isPrerunVIXSlope: boolean = false,
   isPrerunGainLimit: boolean = false
-): Promise<IClosedTradeInfo> {
+): boolean {
   if (!tradeSettings) {
-    const msg = `ExecuteTrade called without 'tradeSettings'.`;
+    const msg = `IsTradeReadyToRun called without 'tradeSettings'.`;
     LogData(null, msg, new Error(msg));
-    return;
+    return false;
   }
   const userSettings: IUserSettings = UserSettings.findOne({_id: tradeSettings.userId});
   if (!userSettings?.accountIsActive) {
-    LogData(tradeSettings, `ExecuteTrade called for ${tradeSettings.userName} but account is not active.`, null);
-    return;
+    LogData(tradeSettings, `IsTradeReadyToRun called for ${tradeSettings.userName} but account is not active.`, null);
+    return false;
   }
   if (userSettings?.isMaxGainAllowedMet) {
-    LogData(tradeSettings, `ExecuteTrade called for ${tradeSettings.userName} but Max Daily Gain has been met.`, null);
-    return;
+    LogData(tradeSettings, `IsTradeReadyToRun called for ${tradeSettings.userName} but Max Daily Gain has been met.`, null);
+    return false;
   }
   let now = null;
   if (tradeSettings.isBacktesting) {
     now = dayjs(tradeSettings.backtestingData.minuteData[tradeSettings.backtestingData.index].datetime);
-  }else {
+  } else {
     now = dayjs();
   }
+  // Make sure we have latest userSettings for this new trade about to happen.
+  tradeSettings.accountNumber = userSettings.accountNumber;
+  tradeSettings.phone = userSettings.phone;
+  tradeSettings.emailAddress = userSettings.email;
+  tradeSettings.isPrerunning = isPrerun;
+  tradeSettings.isPrerunningVIXSlope = isPrerunVIXSlope;
+  tradeSettings.isPrerunningGainLimit = isPrerunGainLimit;
+  tradeSettings.isMocked = tradeSettings.isMocked || isPrerun || isPrerunVIXSlope || isPrerunGainLimit;
+  tradeSettings.description = GetDescription(tradeSettings);
+  tradeSettings.gainLoss = 0;
+  delete tradeSettings.whyClosed;
+
   const nowNYText = now.toDate().toLocaleString('en-US', {timeZone: 'America/New_York'});
   const currentDayOfTheWeek = isoWeekdayNames[now.isoWeekday()];
   const justBeforeClose = GetNewYorkTimeAt(15, 55);
-  const notTooLateToTrade = now.isBefore(justBeforeClose);
+  const notTooLateToTrade = now.isBefore(justBeforeClose) || tradeSettings.isBacktesting;
   const tradePatternIncludesThisDayOfTheWeek = tradeSettings.days?.includes(currentDayOfTheWeek);
   const hasLegsInTrade = tradeSettings.legs.length > 0;
   const tradeIsNotADuplicate = IsNotDuplicateTrade(tradeSettings);
   const isADuplicateTrade = !tradeIsNotADuplicate;
-  const performTheTrade = (
+  let performTheTrade = (
     tradeSettings.isActive &&
     notTooLateToTrade &&
     tradePatternIncludesThisDayOfTheWeek &&
@@ -888,48 +865,39 @@ async function ExecuteTrade(
   );
   if (isADuplicateTrade && !forceTheTrade) {
     // Write logs indicating that this happened and is not desired.
-    const msg = `ExecuteTrade: Duplicated trade for ${tradeSettings.userName} with trade ${tradeSettings.description}. Skipping this additional trade.`;
+    const msg = `IsTradeReadyToRun: Duplicated trade for ${tradeSettings.userName} with trade ${tradeSettings.description}. Skipping this additional trade.`;
     LogData(tradeSettings, msg, new Meteor.Error(msg));
-    return;
+    return false;
   }
-  if (forceTheTrade || performTheTrade) {
+  performTheTrade = performTheTrade || forceTheTrade;
+  if (!performTheTrade) {
+    const msg = `Skipping a trade setting for ${tradeSettings.userName} @ ${nowNYText} (NY). \
+Is Not Active: ${!tradeSettings.isActive}, Too Close To Closing Time: ${!notTooLateToTrade}, \
+Not This Day Of The Week: ${!tradePatternIncludesThisDayOfTheWeek}, \
+No Legs: ${!hasLegsInTrade} with ${JSON.stringify(tradeSettings)}`;
+    LogData(tradeSettings, msg);
+  }
+  return performTheTrade;
+}
+
+async function ExecuteTrade(
+  tradeSettings: ITradeSettings,
+  forceTheTrade: boolean = false,
+  isPrerun: boolean = false,
+  isPrerunVIXSlope: boolean = false,
+  isPrerunGainLimit: boolean = false
+): Promise<IClosedTradeInfo> {
+  const performTheTrade = IsTradeReadyToRun(tradeSettings, forceTheTrade, isPrerun, isPrerunVIXSlope, isPrerunGainLimit);
+  if (performTheTrade) {
     try {
-      // Make sure we have latest userSettings for this new trade about to happen.
-      tradeSettings.accountNumber = userSettings.accountNumber;
-      tradeSettings.phone = userSettings.phone;
-      tradeSettings.emailAddress = userSettings.email;
-      tradeSettings.isPrerunning = isPrerun;
-      tradeSettings.isPrerunningVIXSlope = isPrerunVIXSlope;
-      tradeSettings.isPrerunningGainLimit = isPrerunGainLimit;
-      tradeSettings.isMocked = tradeSettings.isMocked || isPrerun || isPrerunVIXSlope || isPrerunGainLimit;
-      tradeSettings.description = GetDescription(tradeSettings);
-      tradeSettings.gainLoss = 0;
-      delete tradeSettings.whyClosed;
       // Place the opening trade and monitor it to later close it out.
       const chains = await GetATMOptionChains(tradeSettings);
       // The trade orders are assigned to the tradeSettings object.
       const ordersReady = CreateOpenAndCloseOrders(chains, tradeSettings);
       if (ordersReady) {
-        if (tradeSettings.isBacktesting) {
-          // Perform all trades for the current day (attached to the tradeSettings object).
-          const oldPercentGain = tradeSettings.percentGain;
-          const oldPercentLoss = tradeSettings.percentLoss;
-          // Adjusting the percentGain and percentLoss based on DELTA value of the trade.
-          tradeSettings.percentGain = tradeSettings.percentGain * tradeSettings.backtestingData.delta;
-          tradeSettings.percentLoss = tradeSettings.percentLoss * tradeSettings.backtestingData.delta;
-          prepareTradeForStartOfTrade(tradeSettings);
-          tradeSettings.percentGain = oldPercentGain;
-          tradeSettings.percentLoss = oldPercentLoss;
-          const closeTradeInfo: IClosedTradeInfo = await backTestLoop(tradeSettings).catch(reason => {
-            LogData(tradeSettings, `Failed backTestLoop ${reason}`, new Error(reason));
-            return {...DefaultClosedTradeInfo, isClosed: true, isRepeat: false};
-          });
-          return closeTradeInfo;
-        } else {
           await PlaceOpeningOrderAndMonitorToClose(tradeSettings);
-        }
       } else {
-        const msg = `Failed CreateOpenAndCloseOrders call. No orders were created for ${tradeSettings.userName} @ ${nowNYText} (NY) with ${JSON.stringify(tradeSettings)}`;
+        const msg = `Failed CreateOpenAndCloseOrders call. No orders were created for ${tradeSettings.userName} @ ${dayjs()} (NY) with ${JSON.stringify(tradeSettings)}`;
         LogData(tradeSettings, msg);
       }
     } catch (ex) {
@@ -937,12 +905,6 @@ async function ExecuteTrade(
       const msg = `ExecuteTrade failed with user ${tradeSettings.userName} at ${when.format('MMM DD, YYYY hh:mm:ssa')}. Exception: ${ex}`;
       LogData(tradeSettings, msg, ex);
     }
-  } else {
-    const msg = `Skipping a trade setting for ${tradeSettings.userName} @ ${nowNYText} (NY). \
-Is Not Active: ${!tradeSettings.isActive}, Too Close To Closing Time: ${!notTooLateToTrade}, \
-Not This Day Of The Week: ${!tradePatternIncludesThisDayOfTheWeek}, \
-No Legs: ${!hasLegsInTrade} with ${JSON.stringify(tradeSettings)}`;
-    LogData(tradeSettings, msg);
   }
   return {...DefaultClosedTradeInfo, isClosed: true, isRepeat: false};
 }
@@ -976,8 +938,8 @@ function scheduleUsersTrade(tradeSettings, user) {
   }
 }
 
-function getUsersDefaultTradeSettings(userId:string) : ITradeSettings[] {
-  let tradeSet :ITradeSettingsSet = TradeSettingsSets.findOne({userId, isDefault: true});
+function getUsersDefaultTradeSettings(userId: string): ITradeSettings[] {
+  let tradeSet: ITradeSettingsSet = TradeSettingsSets.findOne({userId, isDefault: true});
   if (!tradeSet) {
     tradeSet = TradeSettingsSets.findOne({userId}) ?? {...DefaultTradeSettingsSets};
   }
@@ -994,7 +956,7 @@ async function QueueUsersTradesForTheDay(user) {
   LogData(null, `Market is open today so queueing ${user.username}'s trades.`);
   const userSettings: IUserSettings = UserSettings.findOne(user._id) ?? {};
   const {accountNumber, accountIsActive} = userSettings;
-  if (!accountNumber || accountNumber === 'None') {
+  if (!accountNumber || accountNumber==='None') {
     LogData(null, `User ${user.username} has no account number so skipping this user.`, null);
     return;
   }
@@ -1037,4 +999,7 @@ export {
   EmergencyCloseAllTrades,
   EmergencyCloseSingleTrade,
   QueueUsersTradesForTheDay,
+  IsTradeReadyToRun,
+  PrepareTradeForStartOfTrade,
+  CheckForTradeCompletion,
 };

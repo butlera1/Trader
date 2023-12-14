@@ -29,7 +29,7 @@ function TabTradeSettings({tradeSet}: { tradeSet: ITradeSettingsSet }) {
   };
 
   const updateItems = (keyToActivate: string | null) => {
-    Meteor.call('GetTradeSettingsFromSet', tradeSet, (error, tradeSettingsArray: ITradeSettings[]) => {
+    Meteor.call('GetTradeSettingsFromSetMethod', tradeSet, (error, tradeSettingsArray: ITradeSettings[]) => {
       if (error) {
         setErrorText(`Failed to get trading strategies. Error: ${error}`);
         return;

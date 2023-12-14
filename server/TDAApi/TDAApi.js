@@ -515,21 +515,6 @@ function getOptionChainsAtOrNearDTE(chains, dte) {
 }
 
 export function CreateOpenAndCloseOrders(chains, tradeSettings) {
-  if (tradeSettings.isBacktesting) {
-    // If backtesting, set the opening price to the open price of the current minute data (means long the trade).
-    const {minuteData, index} = tradeSettings.backtestingData;
-    tradeSettings.openingPrice = minuteData[index].open;
-    tradeSettings.csvSymbols = Constants.SPXSymbol;
-    tradeSettings.openingShortOnlyPrice = 0;
-    tradeSettings.whenOpened = new Date(minuteData[index].datetime);
-    if (tradeSettings.backtestingData.tradeType === OptionType.PUT) {
-      // If PUT, then openingPrice is flipped since we are working with underlying (not actual option price) and a PUT
-      // implies short.
-      tradeSettings.openingPrice = -tradeSettings.openingPrice;
-    }
-    return true;
-  }
-
   let csvSymbols = ``;
   let openingPrice = 0.0;
   let shortOnlyPrice = 0.0;
