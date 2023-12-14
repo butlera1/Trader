@@ -229,7 +229,8 @@ function CalculateTradePrice(tradeSettings: ITradeSettings, quotes) {
   });
   if (countFoundQuotes!==tradeSettings.legs.length) {
     const msg = `CalculateTradePrice: countFoundQuotes: ${countFoundQuotes} !== tradeSettings.legs.length: ${tradeSettings.legs.length}`;
-    throw new Error(msg);
+    console.error(msg);
+    return {...BadDefaultIPrice};
   }
   return result;
 }

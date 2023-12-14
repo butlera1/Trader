@@ -310,6 +310,10 @@ export async function GetPriceForSymbols(userId, symbols) {
   try {
     const token = await GetAccessToken(userId);
     if (!token) return [];
+    if (!symbols || symbols.length === 0) {
+      console.error(`GetPriceForSymbols: No symbols provided.`);
+      return [];
+    }
     const queryParams = new URLSearchParams({
       symbol: symbols,
       apikey: clientId,
@@ -323,7 +327,7 @@ export async function GetPriceForSymbols(userId, symbols) {
     };
     const response = await fetch(url, fetchOptions);
     if (response.status !== 200) {
-      const msg = `Error: GetPriceForSymbols ('${symbols}') fetch called failed. status: ${response.status}, ${JSON.stringify(response)}`;
+      const msg = `Error: GetPriceForSymbols ('${symbols}') fetch called failed. status: ${response.status}, ${JSON.stringify(response)}. Parameters: ${JSON.stringify(queryParams)}`;
       console.error(msg);
       return [];
     }

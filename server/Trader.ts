@@ -635,7 +635,7 @@ function MonitorTradeToCloseItOut(liveTrade: ITradeSettings) {
       // Get the current price for the trade.
       const currentSamplePrice: IPrice = GetTradePriceViaBackgroundPolling(liveTrade);
       if (currentSamplePrice.price===Number.NaN || currentSamplePrice.price===0) {
-        Meteor.setTimeout(monitorMethod, Constants.TwoSeconds);
+        Meteor.setTimeout(monitorMethod, Constants.ThreeSeconds);
         return; // Try again on next interval timeout.
       }
       liveTrade.monitoredPrices.push(currentSamplePrice);
@@ -643,7 +643,7 @@ function MonitorTradeToCloseItOut(liveTrade: ITradeSettings) {
       const closedInfo: IClosedTradeInfo = await CheckForTradeCompletion(liveTrade, currentSamplePrice, localEarlyExitTime);
       if (!closedInfo.isClosed) {
         // Loop again waiting for one of the close patterns to get hit.
-        Meteor.setTimeout(monitorMethod, Constants.TwoSeconds);
+        Meteor.setTimeout(monitorMethod, Constants.ThreeSeconds);
       } else {
         if (closedInfo.isRepeat) {
           // Start another trade if IsRepeat.
