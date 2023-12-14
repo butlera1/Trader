@@ -7,6 +7,7 @@ import {AppSettings} from './collections/AppSettings';
 import Constants from '../imports/Constants';
 import {StartBackgroundPolling} from "./BackgroundPolling";
 import {ResetUsersMaxDailyGainSettings} from './collections/UserSettings';
+import {Trades} from './collections/Trades';m
 
 function ScheduleStartOfDayWork() {
   try {
@@ -24,10 +25,11 @@ function ScheduleStartOfDayWork() {
     const timerHandle = Meteor.setTimeout(async () => {
       try {
         Meteor.clearTimeout(timerHandle);
+        Trades.remove({}); // Clear out any trades from yesterday.
         StartBackgroundPolling();
         ResetUsersMaxDailyGainSettings();
         PerformTradeForAllUsers();
-        ScheduleStartOfDayWork();
+        ScheduleStartOfDayWork(); // For tomorrow.
       } catch (ex) {
         LogData(null, `Failed inside timeOut loop for 'Perform Trades For All Users' and 'SchedulePerformTrades'.`, ex);
       }
