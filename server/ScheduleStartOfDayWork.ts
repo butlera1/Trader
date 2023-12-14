@@ -7,7 +7,7 @@ import {AppSettings} from './collections/AppSettings';
 import Constants from '../imports/Constants';
 import {StartBackgroundPolling} from "./BackgroundPolling";
 import {ResetUsersMaxDailyGainSettings} from './collections/UserSettings';
-import {Trades} from './collections/Trades';m
+import {Trades} from './collections/Trades';
 
 function ScheduleStartOfDayWork() {
   try {

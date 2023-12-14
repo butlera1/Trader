@@ -91,7 +91,7 @@ function RangesEditor({}) {
   return (
     <div style={{border: 'solid 1px red', padding: 25, marginBottom: 25}}>
       <Space direction={'vertical'} size={30}>
-        <h1 style={{marginBottom: -15}}>Back Testing</h1>
+        <h3 style={{marginBottom: -15}}>Ranges for Back Testing</h3>
         <GainLossEditor label={'Gain range:'} ranges={ranges} isGain={true}/>
         <GainLossEditor label={'Loss range:'} ranges={ranges} isGain={false}/>
         <Space>

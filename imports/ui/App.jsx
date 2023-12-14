@@ -6,7 +6,7 @@ import 'antd/dist/antd.css';
 import {CodeOrMain} from './CodeOrMain';
 import {Button, Space, Spin} from 'antd';
 import {BrowserRouter, Link, Outlet, Route, Routes} from "react-router-dom";
-import RangesEditor from './Backtest/RangesEditor';
+import {BacktestingPage} from './Backtest/BacktestingPage';
 
 function NoMatch() {
   return (
@@ -74,7 +74,7 @@ export const App = () => {
         <Routes>
           <Route path="/" element={<Layout/>}>
             <Route index element={<Home/>}/>
-            <Route path="backtesting" element={<RangesEditor/>}/>
+            <Route path="backtesting" element={<BacktestingPage/>}/>
             <Route path="*" element={<NoMatch/>}/>
           </Route>
         </Routes>
