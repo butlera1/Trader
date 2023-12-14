@@ -97,7 +97,6 @@ function Tools() {
           onChange={(maxPublishedTrades: number) => onChange({...appSettings, maxPublishedTrades})}
         />
       </Space>
-      <RangesEditor/>
       <ShowErrorMessage/>
     </>
   );
