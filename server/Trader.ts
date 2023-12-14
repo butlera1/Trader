@@ -866,7 +866,7 @@ function IsTradeReadyToRun(
   if (isADuplicateTrade && !forceTheTrade) {
     // Write logs indicating that this happened and is not desired.
     const msg = `IsTradeReadyToRun: Duplicated trade for ${tradeSettings.userName} with trade ${tradeSettings.description}. Skipping this additional trade.`;
-    LogData(tradeSettings, msg, new Meteor.Error(msg));
+    LogData(tradeSettings, msg);
     return false;
   }
   performTheTrade = performTheTrade || forceTheTrade;

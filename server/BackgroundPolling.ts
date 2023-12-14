@@ -82,8 +82,8 @@ async function poll() {
   } catch (err) {
     console.error(err);
   }
-  setTimeout(releaseFunc, 1200); // Don't poll more than once per second.
-  setTimeout(poll, Constants.TwoSeconds);
+  setTimeout(releaseFunc, Constants.TwoSeconds); // Don't poll more than once per second.
+  setTimeout(poll, Constants.ThreeSeconds);
 }
 
 function GetVIXSlope() {

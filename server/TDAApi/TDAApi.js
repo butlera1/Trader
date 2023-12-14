@@ -323,7 +323,7 @@ export async function GetPriceForSymbols(userId, symbols) {
     };
     const response = await fetch(url, fetchOptions);
     if (response.status !== 200) {
-      const msg = `Error: GetPriceForSymbols fetch called failed. status: ${response.status}, ${JSON.stringify(response)}`;
+      const msg = `Error: GetPriceForSymbols ('${symbols}') fetch called failed. status: ${response.status}, ${JSON.stringify(response)}`;
       console.error(msg);
       return [];
     }
