@@ -75,13 +75,13 @@ function TradeResultsView() {
     }
   }
 
-  useEffect(() => {
+  useTracker(() => {
     Meteor.call('GetTradeSettingNames', (error, namesAndIds) => {
       if (error) {
         alert(`Failed to get trade setting names. Error: ${error}`);
         return;
       }
-      if (!namesAndIds && !namesAndIds.length) {
+      if (namesAndIds && namesAndIds.length) {
         setTradeSettingNames(namesAndIds.map(record => record.name));
       }
     });

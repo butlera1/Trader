@@ -2,7 +2,7 @@ import dayjs from 'dayjs';
 import {LogData} from './collections/Logs';
 import {Meteor} from 'meteor/meteor';
 import {PerformTradeForAllUsers} from './Trader';
-import {GetNewYorkTimeAt,} from '../imports/Utils';
+import {GetNewYorkTimeAt, SetEndOfDay, SetStartOfDay,} from '../imports/Utils';
 import {AppSettings} from './collections/AppSettings';
 import Constants from '../imports/Constants';
 import {StartBackgroundPolling} from "./BackgroundPolling";
@@ -25,7 +25,10 @@ function ScheduleStartOfDayWork() {
     const timerHandle = Meteor.setTimeout(async () => {
       try {
         Meteor.clearTimeout(timerHandle);
-        Trades.remove({}); // Clear out any trades from yesterday.
+        Trades.remove({
+          whyClosed: {$exists: true},
+          whenClosed: {$lte: SetStartOfDay(dayjs()).toDate()},
+        }); // Clear out any completed trades, leaving live trades from today.
         StartBackgroundPolling();
         ResetUsersMaxDailyGainSettings();
         PerformTradeForAllUsers();

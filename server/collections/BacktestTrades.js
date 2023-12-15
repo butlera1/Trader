@@ -4,11 +4,12 @@ import {Meteor} from 'meteor/meteor';
 export const BacktestTrades = new Mongo.Collection('backtestTrades');
 
 /********************* Publish tradeResults **********************************/
-function publishBacktestTradeResults() {
+
+async function publishBacktestRecordsCount() {
     const query = {
         userId: this.userId,
     };
-    return BacktestTrades.find(query, {sort: {whenOpened: -1}});
+    const count = await BacktestTrades.countDocuments(query);
+    return [{backtestRecordCountForUser: this.userId, count}];
 }
-
-Meteor.publish('backtestTrades', publishBacktestTradeResults);
+Meteor.publish('BacktestRecordsCount', publishBacktestRecordsCount);

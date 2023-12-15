@@ -40,7 +40,7 @@ import {DefaultAppSettings} from '../imports/Interfaces/IAppSettings';
 import {GetSPXData, StartBackgroundPolling} from './BackgroundPolling';
 import ScheduleEndOfDayWork from './ScheduleEndOfDayWork';
 import ScheduleStartOfDayWork from './ScheduleStartOfDayWork';
-import {BackTestCallPut, BacktestTradeSetMethod} from "./Backtest/SingleCallPutBacktest";
+import {BackTestCallPut, BacktestTradeSetMethod, TestBackTestCode} from "./Backtest/SingleCallPutBacktest";
 import PerformSystemMaintenance from "./PerformSystemMaintenance";
 
 dayjs.extend(utc);

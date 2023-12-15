@@ -22,6 +22,9 @@ interface IRanges {
 
     entryHours: number[],
     exitHours: number[],
+
+    countOnly: boolean, // Used to run backtest to get estimated trading days for the range settings.
+    estimatedDaysCount: number, // Used to run backtest to get estimated trading days for the range settings.
 }
 
 const DefaultRanges: IRanges = {
@@ -45,6 +48,9 @@ const DefaultRanges: IRanges = {
 
     entryHours: [9],
     exitHours: [10],
+
+    countOnly: true,
+    estimatedDaysCount:0,
 };
 
 export {IRanges as default, DefaultRanges} ;

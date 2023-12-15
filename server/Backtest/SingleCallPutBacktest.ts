@@ -7,7 +7,7 @@ import ITradeSettings, {
   IBacktestResult,
   IPrice
 } from '../../imports/Interfaces/ITradeSettings';
-import IRanges from '../../imports/Interfaces/IRanges';
+import IRanges, {DefaultRanges} from '../../imports/Interfaces/IRanges';
 import {GetHistoricalData} from '../TDAApi/TDAApi';
 import {GetNewYorkTimeAt} from '../../imports/Utils';
 import Constants from '../../imports/Constants';
@@ -276,7 +276,11 @@ export async function BackTestCallPut(ranges: IRanges, dataSet: ICandle[][]): Pr
                 if (!minuteData || minuteData.length===0) {
                   continue; // Skip this day (weekend or holiday).
                 }
-
+                if (ranges.countOnly){
+                  // Count only mode, just count the number of days that would have been traded.
+                  ranges.estimatedDaysCount++;
+                  continue;
+                }
                 // Assign historical minute data to backtestingData within the tradeSetting object.
                 let timeIndex = getStartIndex(tradeSetting);
                 const endIndex = Math.min(getEndIndex(tradeSetting), minuteData.length - 1);
@@ -332,7 +336,18 @@ export async function BackTestCallPut(ranges: IRanges, dataSet: ICandle[][]): Pr
       }
     }
     const end = dayjs();
-    const sumText = `BacktestLoop: ${end.diff(start, 'second')} seconds, for ${totalTradeCount.toLocaleString()} results.`;
+    let duration = end.diff(start, 'seconds', true);
+    let resolutionText = 'seconds';
+    if (duration > 60) {
+      duration = end.diff(start, 'minutes', true);
+      resolutionText = 'minutes';
+    }
+    const durationText = duration.toFixed(3) + ' ' + resolutionText;
+    if (ranges.countOnly){
+      const sumText = `BacktestLoop: ${durationText}, for ${ranges.estimatedDaysCount.toLocaleString()} estimated days traded.`;
+      return {sumText, summaries};
+    }
+    const sumText = `BacktestLoop: ${durationText}, for ${totalTradeCount.toLocaleString()} results.`;
     return {sumText, summaries};
   } catch (error) {
     throw new Meteor.Error(error.message);
@@ -342,10 +357,13 @@ export async function BackTestCallPut(ranges: IRanges, dataSet: ICandle[][]): Pr
 async function BacktestTradeSetMethod(ranges: IRanges) {
   const tradesSet: ITradeSettingsSet = TradeSettingsSets.findOne(ranges.tradeSettingsSetId);
   const dataSet = await loadHistoricalData(ranges, tradesSet.userId, Constants.SPXSymbol);
+  ranges.estimatedDaysCount = 0;
   for (let i = 0; i < tradesSet.tradeSettingIds.length; i++) {
     ranges.tradeSettingsSetId = tradesSet.tradeSettingIds[i];
     let {sumText, summaries} = await BackTestCallPut(ranges, dataSet);
-    console.log(summaries[0]);
+    if (summaries && summaries.length) {
+      console.log(summaries[0]);
+    }
     console.log(sumText);
   }
 }
@@ -353,6 +371,7 @@ async function BacktestTradeSetMethod(ranges: IRanges) {
 async function TestBackTestCode(): Promise<void> {
   const _id = 'backtestSettings';
   const ranges: IRanges = {
+    ...DefaultRanges,
     tradeSettingsSetId: _id,
 
     startGain: 1.0,
@@ -372,6 +391,8 @@ async function TestBackTestCode(): Promise<void> {
     endDate: dayjs().hour(6).minute(0).toDate(),
     entryHours: [9],
     exitHours: [10],
+
+    countOnly: true,
   };
 
   const DefaultCallLegsSettings = [
@@ -423,11 +444,13 @@ async function TestBackTestCode(): Promise<void> {
   tradeSetting.legs = [...DefaultPutLegsSettings];
   TradeSettings.upsert(_id, tradeSetting);
   console.log('Starting backtesting.');
+  ranges.estimatedDaysCount = 0;
   let {sumText, summaries} = await BackTestCallPut(ranges, dataSet);
   console.log(summaries[0]);
   console.log(sumText);
 
   tradeSetting.legs = [...DefaultCallLegsSettings];
+  ranges.estimatedDaysCount = 0;
   ({sumText, summaries} = await BackTestCallPut(ranges, dataSet));
   console.log(summaries[0]);
   console.log(sumText);
