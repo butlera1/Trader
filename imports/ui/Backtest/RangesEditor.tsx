@@ -121,6 +121,7 @@ function RangesEditor({}) {
             icon={<QuestionCircleOutlined style={{color: 'red'}}/>}
             onConfirm={() => {
               ranges.tradeSettingsSetId = selectedSetId;
+              ranges.countOnly = false;
               Meteor.call('BacktestTradeSetMethod', ranges, (error, results) => {
                 if (error) {
                   console.error(error);

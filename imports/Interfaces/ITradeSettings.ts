@@ -85,14 +85,50 @@ const BadDefaultIPrice :IPrice = {
   underlyingSlopeAngle: 0,
 };
 
-interface IBacktestResult {
-  openingPrice: number,
-  whenOpened: Date,
-  closingPrice: number,
-  whenClosed: Date,
-  whyClosed: whyClosedEnum,
-  gainLoss: number,
-  isAnyPrerun: boolean,
+interface IDailyResult {
+  when: Date,
+  trades: ITradeSettings[],
+}
+
+interface IBacktestSummary {
+  startDate: Date,
+  endDate: Date,
+  entryHour: number,
+  exitHour: number,
+  gainLimit: number,
+  lossLimit: number,
+  prerunGainLimitValueSeconds: number,
+  resultsPerDay: IDailyResult[],
+  gainLossTotal: number,
+  totalGain: number,
+  totalLoss: number,
+  wins: number,
+  losses: number,
+  winRate: number,
+  lossRate: number,
+  averageDurationMin: number,
+  averageWinsDurationMin: number,
+  averageLossesDurationMin: number,
+  totalNumberOfTrades: number,
+}
+
+const DefaultIBacktestSummary: IBacktestSummary = {
+  startDate: new Date(),
+  endDate: new Date(),
+  entryHour: 9,
+  exitHour: 10,
+  gainLimit: 1,
+  lossLimit: 1,
+  prerunGainLimitValueSeconds: 180,
+  resultsPerDay: [],
+  totalGain: 0,
+  totalLoss: 0,
+  wins: 0,
+  losses: 0,
+  averageDurationMin: 0,
+  averageWinsDurationMin: 0,
+  averageLossesDurationMin: 0,
+  totalNumberOfTrades: 0,
 };
 
 interface IBacktestingData {
@@ -100,7 +136,6 @@ interface IBacktestingData {
   minuteData: ICandle[],
   isHighUsed: boolean,
   isLowUsed: boolean,
-  results: IBacktestResult[],
   tradeType: OptionType,
   delta: number,
 }
@@ -333,7 +368,6 @@ export {
   whyClosedEnum,
   ITradeSettings as default,
   IPrice,
-  IBacktestResult,
   IBacktestingData,
   GetDescription,
   DefaultTradeSettings,
@@ -341,4 +375,6 @@ export {
   DefaultCalendarSpreadLegsSettings,
   BadDefaultIPrice,
   DefaultIPrice,
+  DefaultIBacktestSummary,
+  IBacktestSummary,
 };

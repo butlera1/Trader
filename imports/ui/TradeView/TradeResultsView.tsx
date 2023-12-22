@@ -82,7 +82,7 @@ function TradeResultsView() {
         return;
       }
       if (namesAndIds && namesAndIds.length) {
-        setTradeSettingNames(namesAndIds.map(record => record.name));
+        setTradeSettingNames(namesAndIds.map(record => record.name).filter(name => name));
       }
     });
   }, []);

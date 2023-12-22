@@ -8,7 +8,6 @@ import {
   PlaceOrder,
 } from './TDAApi/TDAApi.js';
 import {Users} from './collections/users';
-import {BacktestTrades} from './collections/BacktestTrades';
 import dayjs from 'dayjs';
 import duration from 'dayjs/plugin/duration';
 import isoWeek from 'dayjs/plugin/isoWeek';
@@ -17,7 +16,6 @@ import ITradeSettings, {
   BadDefaultIPrice,
   DefaultIPrice,
   GetDescription,
-  IBacktestingData,
   IPrice,
   whyClosedEnum
 } from '../imports/Interfaces/ITradeSettings';
@@ -41,7 +39,6 @@ import {
 } from "./BackgroundPolling";
 import {DirectionUp} from '../imports/Interfaces/IPrerunVIXSlopeValue';
 import {DefaultClosedTradeInfo, IClosedTradeInfo} from '../imports/Interfaces/IClosedTradeInfo';
-import {OptionType} from '../imports/Interfaces/ILegSettings';
 import {TradeSettingsSets} from "./collections/TradeSettingsSets";
 import ITradeSettingsSet, {DefaultTradeSettingsSets} from "../imports/Interfaces/ITradeSettingsSet";
 import Constants from "../imports/Constants.ts";
@@ -118,7 +115,7 @@ async function GetSmartOptionsPrice(tradeSettings: ITradeSettings): Promise<IPri
 
 /**
  * Saves the daily trades as a single daily record. Sums up the total gain/loss for the day as well.
- * Does not inclulde pre-running trades in the summing.
+ * Does not include pre-running trades in the summing.
  * @param tradeSettings
  */
 function saveTradeToHistory(tradeSettings: ITradeSettings) {
@@ -184,23 +181,7 @@ async function CloseTrade(tradeSettings: ITradeSettings, currentPrice: IPrice): 
   }
   tradeSettings.whenClosed = currentPrice.whenNY;
   tradeSettings.gainLoss = CalculateGain(tradeSettings, tradeSettings.closingPrice);
-  if (tradeSettings.isBacktesting) {
-    tradeSettings.backtestingData.results.push({
-      openingPrice: tradeSettings.openingPrice,
-      whenOpened: tradeSettings.whenOpened,
-      closingPrice: tradeSettings.closingPrice,
-      whenClosed: tradeSettings.whenClosed,
-      whyClosed: tradeSettings.whyClosed,
-      gainLoss: tradeSettings.gainLoss,
-      isAnyPrerun: tradeSettings.isPrerunning || tradeSettings.isPrerunningVIXSlope || tradeSettings.isPrerunningGainLimit,
-    });
-    // Save the trade in a different collection dedicated to backtesting.
-    delete tradeSettings._id;
-    const holdBacktestingData: IBacktestingData = tradeSettings.backtestingData;
-    delete tradeSettings.backtestingData;
-    BacktestTrades.insert(tradeSettings);
-    tradeSettings.backtestingData = holdBacktestingData;
-  } else {
+  if (!tradeSettings.isBacktesting) {
     Trades.update(tradeSettings._id, {
       $set: {
         closingOrderId: tradeSettings.closingOrderId,
@@ -854,7 +835,7 @@ function IsTradeReadyToRun(
   const notTooLateToTrade = now.isBefore(justBeforeClose) || tradeSettings.isBacktesting;
   const tradePatternIncludesThisDayOfTheWeek = tradeSettings.days?.includes(currentDayOfTheWeek);
   const hasLegsInTrade = tradeSettings.legs.length > 0;
-  const tradeIsNotADuplicate = IsNotDuplicateTrade(tradeSettings);
+  const tradeIsNotADuplicate = tradeSettings.isBacktesting || IsNotDuplicateTrade(tradeSettings);
   const isADuplicateTrade = !tradeIsNotADuplicate;
   let performTheTrade = (
     tradeSettings.isActive &&
@@ -895,7 +876,7 @@ async function ExecuteTrade(
       // The trade orders are assigned to the tradeSettings object.
       const ordersReady = CreateOpenAndCloseOrders(chains, tradeSettings);
       if (ordersReady) {
-          await PlaceOpeningOrderAndMonitorToClose(tradeSettings);
+        await PlaceOpeningOrderAndMonitorToClose(tradeSettings);
       } else {
         const msg = `Failed CreateOpenAndCloseOrders call. No orders were created for ${tradeSettings.userName} @ ${dayjs()} (NY) with ${JSON.stringify(tradeSettings)}`;
         LogData(tradeSettings, msg);

@@ -1,7 +1,7 @@
 import {Meteor} from 'meteor/meteor';
 import './collections/stockData';
 import './collections/straddleData';
-import './collections/BacktestTrades';
+import './collections/Backtests';
 import './collections/TradeSettingsSets';
 import {
   DeleteUserTradeSettingsRecord,
@@ -27,6 +27,7 @@ import {EmergencyCloseAllTrades, EmergencyCloseSingleTrade, ExecuteTrade, Monito
 import {WebApp} from 'meteor/webapp';
 import {Trades} from './collections/Trades';
 import {LogData} from './collections/Logs';
+import './collections/Backtests';
 import {AppSettings, GetAppSettings, SetAppSettings} from './collections/AppSettings';
 import Constants from '../imports/Constants';
 
@@ -112,6 +113,8 @@ const settings = {
 delete settings._id;
 AppSettings.upsert(Constants.appSettingsId, settings);
 PerformSystemMaintenance();
+
+// TestBackTestCode().then(r => console.log(r));
 
 StartBackgroundPolling();
 ScheduleStartOfDayWork();

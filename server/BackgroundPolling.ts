@@ -6,6 +6,7 @@ import Constants from "../imports/Constants";
 import {AppSettings} from './collections/AppSettings';
 import IStreamerData from "../imports/Interfaces/IStreamData";
 import ITradeSettings, {BadDefaultIPrice, IPrice} from "../imports/Interfaces/ITradeSettings.ts";
+import {Trades} from "./collections/Trades";
 
 
 let csvSymbols: string = '$VIX.X,$SPX.X';
@@ -50,6 +51,20 @@ function getAngleOfSlope(slope) {
   return angle;
 }
 
+function gatherUpSymbolsNeeded(){
+  let symbolsNeeded = [Constants.SPXSymbol, Constants.VIXSymbol];
+  const liveTrades = Trades.find({whyClosed: {$exists: false}});
+  liveTrades.forEach((liveTrade:ITradeSettings) => {
+    const symbols = liveTrade.csvSymbols.split(',');
+    symbols.forEach((symbol) => {
+      if (!symbolsNeeded.includes(symbol)) {
+        symbolsNeeded.push(symbol);
+      }
+    });
+  });
+  return symbolsNeeded.join(',');
+}
+
 async function poll() {
   if (!isPolling) {
     console.log('Polling is turned off so no more background polling.');
@@ -58,6 +73,7 @@ async function poll() {
   }
   const releaseFunc = await PollingMutex();
   try {
+    csvSymbols = gatherUpSymbolsNeeded();
     const results = await GetPriceForSymbols(userId, csvSymbols).catch(err => {
       console.error(err);
       return [];
