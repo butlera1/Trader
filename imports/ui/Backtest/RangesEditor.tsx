@@ -27,6 +27,44 @@ const SetNameSelector = ({width, setSelectedName}) => {
     </Select>);
 };
 
+function SecondsEditor({ranges}: {ranges: IRanges}){
+  return (
+    <>
+      <Space>
+        <span>{`Prerun GainLimit Seconds:`}</span>
+        <span>{`Start:`}</span>
+        <InputNumber
+          min={0}
+          step="1"
+          defaultValue={ranges.startGainLimitPrerunAllowedDurationSeconds}
+          max={100000}
+          style={{width: '100px'}}
+          onChange={(value) => ranges.startGainLimitPrerunAllowedDurationSeconds = value}
+        />
+
+        <span>End:</span>
+        <InputNumber
+          min={0}
+          step="1"
+          defaultValue={ranges.endGainLimitPrerunAllowedDurationSeconds}
+          max={100000}
+          style={{width: '100px'}}
+          onChange={(value) => ranges.endGainLimitPrerunAllowedDurationSeconds = value}
+        />
+        <span>Increment:</span>
+        <InputNumber
+          min={0}
+          step="1"
+          defaultValue={ranges.gainLimitPrerunAllowedDurationSecondsIncrement}
+          max={100000}
+          style={{width: '100px'}}
+          onChange={(value) => ranges.gainLimitPrerunAllowedDurationSecondsIncrement = value}
+        />
+      </Space>
+    </>
+  );
+}
+
 function GainLossEditor({ranges, label, isGain}: { ranges: IRanges, label: string, isGain: boolean }) {
   let startPercent = 'startLoss';
   let endPercent = 'endLoss';
@@ -94,6 +132,7 @@ function RangesEditor({}) {
         <h3 style={{marginBottom: -15}}>Ranges for Back Testing</h3>
         <GainLossEditor label={'Gain range:'} ranges={ranges} isGain={true}/>
         <GainLossEditor label={'Loss range:'} ranges={ranges} isGain={false}/>
+        <SecondsEditor ranges={ranges}/>
         <Space>
           <span>Entry Hours Range:</span>
           <Select mode='multiple' style={{width: 220}} onChange={(values => ranges.entryHours = values)}>
@@ -105,10 +144,8 @@ function RangesEditor({}) {
           </Select>
         </Space>
         <Space>
-          <label>Start Date: <DatePicker onChange={(value) => ranges.startDate = value.toDate()}
-                                         defaultValue={ranges.startDate}/></label>
-          <label>End Date: <DatePicker onChange={(value) => ranges.endDate = value.toDate()}
-                                       defaultValue={ranges.endDate}/></label>
+          <label>Start Date: <DatePicker onChange={(value) => ranges.startDate = value.hour(1).toDate()}/></label>
+          <label>End Date: <DatePicker onChange={(value) => ranges.endDate = value.hour(23).toDate()}/></label>
         </Space>
         <Space>
           <span>Select A Trade Pattern Set:</span>

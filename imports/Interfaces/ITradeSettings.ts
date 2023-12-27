@@ -87,7 +87,7 @@ const BadDefaultIPrice :IPrice = {
 
 interface IDailyResult {
   when: Date,
-  trades: ITradeSettings[],
+  trades: string[],
 }
 
 interface IBacktestSummary {
@@ -129,6 +129,9 @@ const DefaultIBacktestSummary: IBacktestSummary = {
   averageWinsDurationMin: 0,
   averageLossesDurationMin: 0,
   totalNumberOfTrades: 0,
+  gainLossTotal: 0,
+  winRate: 0,
+  lossRate: 0,
 };
 
 interface IBacktestingData {
@@ -140,12 +143,11 @@ interface IBacktestingData {
   delta: number,
 }
 
-export const DefaultIBacktestingData = {
+export const DefaultIBacktestingData :IBacktestingData = {
   minuteData: [],
   index: 0,
   isHighUsed: false,
   isLowUsed: false,
-  results: [],
   tradeType: OptionType.CALL,
   delta: 0.50,
 };

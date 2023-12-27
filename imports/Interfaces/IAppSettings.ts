@@ -10,6 +10,7 @@ interface IAppSettings {
   vwapNumberOfSamples: number,
   vwapEquity: string,
   vwapSlopeSamplesRequired?: number,
+  maxBacktestSummaries?: number,
 }
 
 const DefaultAppSettings: IAppSettings = {
@@ -23,6 +24,7 @@ const DefaultAppSettings: IAppSettings = {
   vwapNumberOfSamples: 60,
   vwapEquity: 'SPY',
   vwapSlopeSamplesRequired: 10,
+  maxBacktestSummaries: 200,
 };
 
 export {IAppSettings, DefaultAppSettings} ;
