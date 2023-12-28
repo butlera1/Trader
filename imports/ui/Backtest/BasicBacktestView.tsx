@@ -11,12 +11,12 @@ const columnWidth = 1;
 
 const columns: ColumnsType<IBacktestSummary> = [
   {
-    title: 'Gains-Losses = total',
+    title: 'Total $',
     dataIndex: 'gainLossTotal',
     key: 'Gain/Loss',
     width: columnWidth,
     render: (item, record, index) => {
-      const text = `${record.totalGain.toFixed(0)}-${Math.abs(record.totalLoss).toFixed(0)} = ${item.toFixed(2)}`;
+      const text = `$${(item * 100).toFixed(2)}`;
       return (
         <span key={index}>{text}</span>
       );
@@ -68,7 +68,10 @@ const columns: ColumnsType<IBacktestSummary> = [
     key: 'gainLimit',
     width: columnWidth,
     render: (limit, record) => {
-      const text = `${(limit*100).toFixed(2)}`;
+      const prefix = record.isGainLimitDollar ? '$':'';
+      const postfix = record.isGainLimitDollar ? '':'%';
+      const multiplier = record.isGainLimitDollar ? 1:100;
+      const text = `${prefix}${(limit * multiplier).toFixed(2)}${postfix}`;
       return (
         <span>{text}</span>
       );
@@ -80,8 +83,11 @@ const columns: ColumnsType<IBacktestSummary> = [
     dataIndex: 'lossLimit',
     key: 'lossLimit',
     width: columnWidth,
-    render: (limit) => {
-      const text = `${(limit*100).toFixed(2)}`;
+    render: (limit, record) => {
+      const prefix = record.isLossLimitDollar ? '$':'';
+      const postfix = record.isLossLimitDollar ? '':'%';
+      const multiplier = record.isGainLimitDollar ? 1:100;
+      const text = `${prefix}${(limit * multiplier).toFixed(2)}${postfix}`;
       return (
         <span>{text}</span>
       );
@@ -94,7 +100,7 @@ const columns: ColumnsType<IBacktestSummary> = [
     key: 'entryHour',
     width: columnWidth,
     render: (hour) => {
-      const text = hour>12 ? `${hour-12}pm` : `${hour}am`;
+      const text = hour > 12 ? `${hour - 12}pm`:`${hour}am`;
       return (
         <span>{text}</span>
       );
@@ -107,7 +113,7 @@ const columns: ColumnsType<IBacktestSummary> = [
     key: 'exitHour',
     width: columnWidth,
     render: (hour) => {
-      const text = hour>12 ? `${hour-12}pm` : `${hour}am`;
+      const text = hour > 12 ? `${hour - 12}pm`:`${hour}am`;
       return (
         <span>{text}</span>
       );
@@ -130,9 +136,12 @@ const columns: ColumnsType<IBacktestSummary> = [
 
 function title(record: IBacktest) {
   if (!record) return (<h1>Backtest: No record</h1>);
-  if (!record.isOkToRun) return (<h1 style={{color: 'red'}}>Backtest: It is not OK to run with {record.estimatedSummariesCount} summaries estimated.</h1>);
+  if (!record.isOkToRun) return (
+    <h1 style={{color: 'red'}}>Backtest: It is not OK to run with {record.estimatedSummariesCount} summaries
+      estimated.</h1>);
   return (
-    <h1>Backtest: totalTrades: {record.totalTradesCount}, Summaries: {record.totalSummariesCount} out of {record.estimatedSummariesCount},
+    <h1>Backtest: totalTrades: {record.totalTradesCount}, Summaries: {record.totalSummariesCount} out
+      of {record.estimatedSummariesCount},
       isDone: {record.isDone ? 'Yup':'Nope'}</h1>
   );
 }
@@ -144,7 +153,7 @@ export function BasicBacktestView() {
     <div>
       <Table
         style={{border: 'solid 1px red'}}
-        scroll={{ x: 1000, y: 600 }}
+        scroll={{x: 1000, y: 200}}
         pagination={false}
         title={() => title(record)}
         size="small"

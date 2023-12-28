@@ -232,7 +232,9 @@ export async function BackTestCallPut(ranges: IRanges, dataSet: ICandle[][], tra
                 entryHour,
                 exitHour,
                 gainLimit,
+                isGainLimitDollar: ranges.gainIsDollar,
                 lossLimit,
+                isLossLimitDollar: ranges.lossIsDollar,
                 prerunGainLimitValueSeconds: seconds,
                 resultsPerDay: [],
               };
