@@ -3,12 +3,16 @@ import {DefaultTradeSettings} from '../../imports/Interfaces/ITradeSettings';
 import _ from 'lodash';
 import {QueueUsersTradesForTheDay} from '../Trader';
 import {LogData} from './Logs';
+import {TradeSettingsSets} from './TradeSettingsSets';
 
 export const TradeSettings = new Mongo.Collection('tradeSettings');
 
 function DeleteUserTradeSettingsRecord(recordId) {
   if (Meteor.userId()) {
-    return TradeSettings.remove(recordId);
+    TradeSettings.remove(recordId);
+    // Remove this ID from any TradeSettingsSets.tradeSettingIds arrays.
+    TradeSettingsSets.update({}, {$pull: {tradeSettingsIds: recordId}});
+    return true;
   }
   throw new Meteor.Error('Must have valid user for DeleteUserTradeSettings.');
 }

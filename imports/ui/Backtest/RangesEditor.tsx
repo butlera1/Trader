@@ -1,11 +1,11 @@
 import React from 'react';
-import {Button, DatePicker, InputNumber, Popconfirm, Select, Space} from 'antd';
+import {Button, DatePicker, InputNumber, Select, Space} from 'antd';
 import IRanges, {DefaultRanges} from "../../Interfaces/IRanges";
-import {QuestionCircleOutlined} from "@ant-design/icons";
 import {Meteor} from "meteor/meteor";
 import ITradeSettingsSet from "../../Interfaces/ITradeSettingsSet.ts";
 import {useTracker} from "meteor/react-meteor-data";
 import TradeSettingsSets from '../../Collections/TradeSettingsSets';
+import TradeSettingsSetView from "./TradeSettingsSetView.tsx";
 
 const hours = [
   <Select.Option key={1} value={9}>9</Select.Option>,
@@ -27,7 +27,7 @@ const SetNameSelector = ({width, setSelectedName}) => {
     </Select>);
 };
 
-function SecondsEditor({ranges}: {ranges: IRanges}){
+function SecondsEditor({ranges}: { ranges: IRanges }) {
   return (
     <>
       <Space>
@@ -126,6 +126,16 @@ function RangesEditor({}) {
     ranges.tradeSettingsSetId = null;
   }
 
+  const runBacktest = () => {
+    ranges.tradeSettingsSetId = selectedSetId;
+    ranges.countOnly = false;
+    Meteor.call('BacktestTradeSetMethod', ranges, (error) => {
+      if (error) {
+        alert(`Error running backtest: ${error}`);
+      }
+    });
+  };
+
   return (
     <div style={{border: 'solid 1px red', padding: 25, marginBottom: 25}}>
       <Space direction={'vertical'} size={30}>
@@ -151,34 +161,10 @@ function RangesEditor({}) {
           <span>Select A Trade Pattern Set:</span>
           <SetNameSelector width={200} setSelectedName={setSelectedSetId}/>
         </Space>
-        <Space>
-          <Popconfirm
-            disabled={(selectedSetId===null)}
-            title="Are you sure: Backtest this trade now?"
-            icon={<QuestionCircleOutlined style={{color: 'red'}}/>}
-            onConfirm={() => {
-              ranges.tradeSettingsSetId = selectedSetId;
-              ranges.countOnly = false;
-              Meteor.call('BacktestTradeSetMethod', ranges, (error, results) => {
-                if (error) {
-                  console.error(error);
-                } else {
-                  console.log(results);
-                }
-              });
-            }}
-            okText="Yes"
-            cancelText="No"
-          >
-            <Button
-              disabled={(selectedSetId===null)}
-              type="primary"
-              shape="round"
-            >
-              Run Backtest
-            </Button>
-          </Popconfirm>
-        </Space>
+        <TradeSettingsSetView setId={selectedSetId}/>
+        <Button disabled={(selectedSetId===null)} type="primary" shape="round" onClick={runBacktest}>
+          Run Backtest
+        </Button>
       </Space>
     </div>
   );

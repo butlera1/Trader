@@ -27,7 +27,6 @@ import {EmergencyCloseAllTrades, EmergencyCloseSingleTrade, ExecuteTrade, Monito
 import {WebApp} from 'meteor/webapp';
 import {Trades} from './collections/Trades';
 import {LogData} from './collections/Logs';
-import './collections/Backtests';
 import {AppSettings, GetAppSettings, SetAppSettings} from './collections/AppSettings';
 import Constants from '../imports/Constants';
 
@@ -41,8 +40,9 @@ import {DefaultAppSettings} from '../imports/Interfaces/IAppSettings';
 import {GetSPXData, StartBackgroundPolling} from './BackgroundPolling';
 import ScheduleEndOfDayWork from './ScheduleEndOfDayWork';
 import ScheduleStartOfDayWork from './ScheduleStartOfDayWork';
-import {BackTestCallPut, BacktestTradeSetMethod, TestBackTestCode} from "./Backtest/SingleCallPutBacktest";
+import {BackTestCallPut, BacktestTradeSetMethod} from "./Backtest/SingleCallPutBacktest";
 import PerformSystemMaintenance from "./PerformSystemMaintenance";
+import {GetTradeSettingsInfoFromSetId} from './collections/TradeSettingsSets';
 
 dayjs.extend(utc);
 dayjs.extend(timezone);
@@ -100,6 +100,7 @@ Meteor.methods({
     GetSPXData,
     BackTestCallPut,
     BacktestTradeSetMethod,
+    GetTradeSettingsInfoFromSetId,
   }
 );
 
