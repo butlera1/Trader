@@ -43,6 +43,7 @@ import ScheduleStartOfDayWork from './ScheduleStartOfDayWork';
 import {BackTestCallPut, BacktestTradeSetMethod} from "./Backtest/SingleCallPutBacktest";
 import PerformSystemMaintenance from "./PerformSystemMaintenance";
 import {GetTradeSettingsInfoFromSetId} from './collections/TradeSettingsSets';
+import {GetBacktestTradesFromIds} from './collections/Backtests';
 
 dayjs.extend(utc);
 dayjs.extend(timezone);
@@ -101,6 +102,7 @@ Meteor.methods({
     BackTestCallPut,
     BacktestTradeSetMethod,
     GetTradeSettingsInfoFromSetId,
+    GetBacktestTradesFromIds,
   }
 );
 

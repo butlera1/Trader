@@ -741,10 +741,18 @@ async function WaitForOrderCompleted(userId, accountNumber, orderId) {
   });
 }
 
+function CalculateLimitsAndFeesWhenBackTesting(tradeSettings: ITradeSettings) {
+  const {percentGain, percentLoss} = tradeSettings;
+  tradeSettings.percentGain = tradeSettings.percentGain/tradeSettings.backtestingData.delta;
+  tradeSettings.percentLoss = tradeSettings.percentLoss/tradeSettings.backtestingData.delta;
+  CalculateLimitsAndFees(tradeSettings);
+  tradeSettings.percentGain = percentGain;
+  tradeSettings.percentLoss = percentLoss;
+}
 function PrepareTradeForStartOfTrade(tradeSettings: ITradeSettings) {
   tradeSettings.originalTradeSettingsId = tradeSettings._id;
   tradeSettings.monitoredPrices = [];
-  CalculateLimitsAndFees(tradeSettings);
+  CalculateLimitsAndFeesWhenBackTesting(tradeSettings);
   let currentSample: IPrice = {
     ...DefaultIPrice,
     price: -tradeSettings.openingPrice, // Negative for calculateVariousValues below and monitoredPrices array.

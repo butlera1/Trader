@@ -7,6 +7,7 @@ import {CodeOrMain} from './CodeOrMain';
 import {Button, Space, Spin} from 'antd';
 import {BrowserRouter, Link, Outlet, Route, Routes} from "react-router-dom";
 import {BacktestingPage} from './Backtest/BacktestingPage';
+import HeaderLine from './HeaderLine';
 
 function NoMatch() {
   return (
@@ -27,7 +28,8 @@ function Layout() {
       {/* A "layout route" is a good place to put markup you want to
           share across all the pages on your site, like navigation. */}
       {user ?
-        <div>
+        <Space direction={'vertical'}>
+          <HeaderLine/>
           <Space direction={'horizontal'}>
             <Button>
               <Link to="/">Home</Link>
@@ -37,7 +39,7 @@ function Layout() {
             </Button>
           </Space>
           <hr/>
-        </div>
+        </Space>
         : null}
       {/* An <Outlet> renders whatever child route is currently active,
           so you can think about this <Outlet> as a placeholder for

@@ -1,6 +1,5 @@
 import {Meteor} from "meteor/meteor";
 import dayjs, {Dayjs} from 'dayjs';
-import _ from 'lodash';
 import ITradeSettings, {
   DefaultIBacktestingData,
   DefaultIBacktestSummary,
@@ -142,9 +141,11 @@ async function backTestLoop(tradeSettings: ITradeSettings, allTradesForOneDay: s
       return {...DefaultClosedTradeInfo, isClosed: true, isRepeat: false};
     });
     if (closeTradeInfo.isClosed) {
+      // BacktestingData is doing math on one contract so here we scale it up to the TradeSetting's leg's quantity.
+      tradeSettings.gainLoss = Math.trunc(tradeSettings.gainLoss * tradeSettings.backtestingData.quantity);
+      tradeSettings._id = Random.id();
       const holdBacktestingData: IBacktestingData = tradeSettings.backtestingData;
       delete tradeSettings.backtestingData;
-      tradeSettings._id = Random.id();
       const idResult = Backtests.insert(tradeSettings);
       allTradesForOneDay.push(tradeSettings._id);
       tradeSettings.backtestingData = holdBacktestingData;
@@ -227,6 +228,7 @@ export async function BackTestCallPut(ranges: IRanges, dataSet: ICandle[][], tra
                  seconds += ranges.gainLimitPrerunAllowedDurationSecondsIncrement) {
               const backTestPatternSummary: IBacktestSummary = {
                 ...DefaultIBacktestSummary,
+                key: Random.id(),
                 startDate: ranges.startDate,
                 endDate: ranges.endDate,
                 entryHour,
@@ -263,12 +265,14 @@ export async function BackTestCallPut(ranges: IRanges, dataSet: ICandle[][], tra
                   tradeSetting.percentLossIsDollar = ranges.lossIsDollar;
                   tradeSetting.prerunGainLimitValue.seconds = seconds;
                   tradeSetting.isBacktesting = true;
+                  tradeSetting.commissionPerContract = 0;
                   // Define backtestingData within the tradeSetting object.
                   const tradeLeg = tradeSetting.legs[0];
                   tradeSetting.backtestingData = {
                     ...DefaultIBacktestingData,
                     tradeType: tradeLeg.callPut,
-                    delta: tradeLeg.delta
+                    delta: tradeLeg.delta,
+                    quantity: tradeLeg.quantity,
                   };
                   tradeSetting.backtestingData.minuteData = minuteData;
                   await mainBacktestTradeLoop(tradeSetting, allTradesForOneDay).catch(reason => {
@@ -321,12 +325,12 @@ export async function BackTestCallPut(ranges: IRanges, dataSet: ICandle[][], tra
   }
 }
 
-async function checkIfNotTooManyLoops(ranges: IRanges, dataSet: ICandle[][], tradeSettingsArray: ITradeSettings[], userId: string) : Promise<boolean>{
+async function checkIfNotTooManyLoops(ranges: IRanges, dataSet: ICandle[][], tradeSettingsArray: ITradeSettings[], userId: string): Promise<boolean> {
   const holdOldValue = ranges.countOnly;
   ranges.countOnly = true;
   let results = await BackTestCallPut(ranges, dataSet, tradeSettingsArray, userId);
   ranges.countOnly = holdOldValue;
-  const settings :IAppSettings = AppSettings.findOne(Constants.appSettingsId);
+  const settings: IAppSettings = AppSettings.findOne(Constants.appSettingsId);
   const isOkToRun = ranges.estimatedSummariesCount <= settings.maxBacktestSummaries;
 
   const modifier = {

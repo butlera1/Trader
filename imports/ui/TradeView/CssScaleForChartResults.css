@@ -1,0 +1,3 @@
+.scaledTextSummary {
+    transform: scale(0.90); /* Equal to scaleX(0.5) scaleY(0.5) */
+}

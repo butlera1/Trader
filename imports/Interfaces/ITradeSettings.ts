@@ -91,6 +91,7 @@ interface IDailyResult {
 }
 
 interface IBacktestSummary {
+  key: string,
   startDate: Date,
   endDate: Date,
   entryHour: number,
@@ -115,6 +116,7 @@ interface IBacktestSummary {
 }
 
 const DefaultIBacktestSummary: IBacktestSummary = {
+  key: '',
   startDate: new Date(),
   endDate: new Date(),
   entryHour: 9,
@@ -145,6 +147,7 @@ interface IBacktestingData {
   isLowUsed: boolean,
   tradeType: OptionType,
   delta: number,
+  quantity: number,
 }
 
 export const DefaultIBacktestingData :IBacktestingData = {
@@ -154,6 +157,7 @@ export const DefaultIBacktestingData :IBacktestingData = {
   isLowUsed: false,
   tradeType: OptionType.CALL,
   delta: 0.50,
+  quantity: 1,
 };
 
 interface ITradeSettings {
@@ -376,6 +380,7 @@ export {
   IPrice,
   IBacktestingData,
   GetDescription,
+  IDailyResult,
   DefaultTradeSettings,
   DefaultIronCondorLegsSettings,
   DefaultCalendarSpreadLegsSettings,

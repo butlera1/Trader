@@ -5,6 +5,7 @@ import ITradeSettings from '../../Interfaces/ITradeSettings';
 import dayjs from 'dayjs';
 import {CalculateTotalFees, CleanupGainLossWhenFailedClosingTrade, GetNewYorkTimeAsText} from '../../Utils';
 import {Meteor} from 'meteor/meteor';
+import './CssScaleForChartResults.css';
 
 interface ISumResults {
   description: string,
@@ -34,10 +35,10 @@ interface ITotalsProps {
 }
 
 function Totals({numberOfTrades, winnings, losses, totalGains}: ITotalsProps) {
-  const color = totalGains >= 0 ? 'green' : 'red';
+  const color = totalGains >= 0 ? 'green':'red';
   const ColoredStuff = <span>Result: ${totalGains.toFixed(2)}</span>;
-  return <h2 style={{color}}>{numberOfTrades} trades, Wins: ${winnings.toFixed(2)} - Losses:
-    ${Math.abs(losses).toFixed(2)} = {ColoredStuff}</h2>;
+  return <span style={{color}}>{numberOfTrades} trades, Wins: ${winnings.toFixed(2)} - Losses:
+    ${Math.abs(losses).toFixed(2)} = {ColoredStuff}</span>;
 }
 
 function getSPXMinMax(spxData) {
@@ -61,7 +62,7 @@ function getSPXMinMax(spxData) {
  * @param records
  */
 function timeSliceSPXData(spxData, records) {
-  if (!records || records.length === 0 || !spxData || spxData.length === 0) {
+  if (!records || records.length===0 || !spxData || spxData.length===0) {
     return spxData;
   }
   let startIndex = 0;
@@ -77,9 +78,33 @@ function timeSliceSPXData(spxData, records) {
   return spxData.slice(startIndex, endIndex);
 }
 
-function ChartResults({records, isGraphPrerunningTrades}: {
+function SPXChart({spxData, spxMin, spxMax, skipSPXChart}) {
+  if (skipSPXChart) {
+    return null;
+  }
+  return (
+    <LineChart width={1600} height={300} data={spxData ?? []} margin={{top: 5, right: 20, bottom: 5, left: 0}}>
+      <Line type="monotone" dataKey="mark" stroke="red" dot={false} strokeWidth={2}/>
+      <CartesianGrid stroke="#ccc" strokeDasharray="5 5"/>
+      <XAxis dataKey={(record) => GetNewYorkTimeAsText(record.whenNY)}/>
+      <YAxis width={90} tick={{fontSize: 10}} allowDecimals={false} domain={[spxMin, spxMax]}>
+        <Label
+          value={`SPX`}
+          angle={-90}
+          position="outside"
+          fill="#676767"
+          fontSize={16}
+        />
+      </YAxis>
+      <Tooltip/>
+    </LineChart>
+  );
+}
+
+function ChartResults({records, isGraphPrerunningTrades, skipSPXChart}: {
   records: ITradeSettings[],
-  isGraphPrerunningTrades: boolean
+  isGraphPrerunningTrades: boolean,
+  skipSPXChart?: boolean,
 }) {
   const sumResults: ISumResults[] = [];
   const [spxData, setSPXData] = React.useState([]);
@@ -96,6 +121,9 @@ function ChartResults({records, isGraphPrerunningTrades}: {
   let sumLosses = 0;
 
   React.useEffect(() => {
+    if (skipSPXChart) {
+      return;
+    }
     Meteor.call('GetSPXData', (error, result) => {
       if (error) {
         console.error(error);
@@ -140,18 +168,46 @@ function ChartResults({records, isGraphPrerunningTrades}: {
     }
     return sum;
   }, 0.0);
-  const avgLossText = losses ? ((avgLossTmp / losses).toFixed(2)) : '0.00';
-  const avgWinText = wins ? ((avgWinTmp / wins).toFixed(2)) : '0.00';
-  const winRate = sumResults.length ? (((wins / sumResults.length) * 100).toFixed(1)) : '0.0';
-  const lossRate = sumResults.length ? (((losses / sumResults.length) * 100).toFixed(1)) : '0.0';
-  avgDuration = wins + losses ? avgDuration / (wins + losses) : 0;
-  avgLossDuration = losses ? avgLossDuration / losses : 0;
-  avgWinDuration = wins ? avgWinDuration / wins : 0;
+  const avgLossText = losses ? ((avgLossTmp / losses).toFixed(2)):'0.00';
+  const avgWinText = wins ? ((avgWinTmp / wins).toFixed(2)):'0.00';
+  const winRate = sumResults.length ? (((wins / sumResults.length) * 100).toFixed(1)):'0.0';
+  const lossRate = sumResults.length ? (((losses / sumResults.length) * 100).toFixed(1)):'0.0';
+  avgDuration = wins + losses ? avgDuration / (wins + losses):0;
+  avgLossDuration = losses ? avgLossDuration / losses:0;
+  avgWinDuration = wins ? avgWinDuration / wins:0;
   const {spxMin, spxMax} = getSPXMinMax(spxData);
 
-  return (
-    <>
-      <LineChart width={1600} height={600} data={sumResults ?? []} margin={{top: 5, right: 20, bottom: 5, left: 0}}>
+  const TextSummary = ({isScaled}: { isScaled: boolean }) => {
+    const className = isScaled ? "scaledTextSummary":"";
+    return (
+      <div className={className}>
+        <p>Wins:{wins}/{sumResults.length} for {winRate}% win rate. Avg: ${avgWinText} Max: ${maxWin.toFixed(2)} Avg
+          Time: {avgWinDuration.toFixed(1)} min Total: ${sumWins.toFixed(2)}</p>
+        <p>Losses: {losses}/{sumResults.length} for {lossRate}% loss rate. Avg: ${avgLossText} Max:
+          ${maxLoss.toFixed(2)} Avg Time: {avgLossDuration.toFixed(1)} min Total: ${sumLosses.toFixed(2)}</p>
+        <p>Average Duration: {avgDuration.toFixed(1)} min</p>
+        <p>Totals: <Totals numberOfTrades={sumResults.length} winnings={sumWins} losses={sumLosses}
+                           totalGains={resultSum}/></p>
+      </div>
+    );
+  };
+
+  const CustomTooltip = ({active, payload, label}) => {
+    if (active && payload && payload.length) {
+        const items = payload.map((item, index) => <span style={{color: item.color, display: 'block'}} key={index}>{`${item.name} : ${item.value}`}</span>);
+        const tradePatternName = payload[0].payload.description.split(':')[0];
+      return (
+        <div style={{backgroundColor: 'rgba(100, 100, 100, 0.1)'}}>
+          <span key={-1}>{label} ({tradePatternName})</span>
+          {items}
+        </div>
+      );
+    }
+    return null;
+  };
+  const GainLossChart = ({width, height}: { width: number, height: number }) => {
+    return (
+      <LineChart width={width} height={height} data={sumResults ?? []} margin={{top: 5, right: 20, bottom: 5, left: 0}}>
         <Line type="monotone" dataKey="sum" stroke="blue" dot={false} strokeWidth={2}/>
         <Line type="monotone" dataKey="gainLoss" stroke="red" dot={false} strokeWidth={1}/>
         <CartesianGrid stroke="#ccc" strokeDasharray="5 5"/>
@@ -165,52 +221,25 @@ function ChartResults({records, isGraphPrerunningTrades}: {
             fontSize={14}
           />
         </YAxis>
-        <Tooltip/>
+        <Tooltip content={<CustomTooltip />} />
       </LineChart>
-      <LineChart width={1600} height={300} data={spxData ?? []} margin={{top: 5, right: 20, bottom: 5, left: 0}}>
-        <Line type="monotone" dataKey="mark" stroke="red" dot={false} strokeWidth={2}/>
-        <CartesianGrid stroke="#ccc" strokeDasharray="5 5"/>
-        <XAxis dataKey={(record) => GetNewYorkTimeAsText(record.whenNY)}/>
-        <YAxis width={90} tick={{fontSize: 10}} allowDecimals={false} domain={[spxMin, spxMax]}>
-          <Label
-            value={`SPX`}
-            angle={-90}
-            position="outside"
-            fill="#676767"
-            fontSize={16}
-          />
-        </YAxis>
-        <Tooltip/>
-      </LineChart>
-      <div>
-        <Space>
-          <h1>Wins:</h1>
-          <h2>{wins}/{sumResults.length} for {winRate}% win rate.</h2>
-          <h2>Avg: ${avgWinText}</h2>
-          <h2>Max: ${maxWin.toFixed(2)}</h2>
-          <h2>Avg Time: {avgWinDuration.toFixed(1)} min</h2>
-          <h2>Total: ${sumWins.toFixed(2)}</h2>
-        </Space>
-        <br/>
-        <Space>
-          <h1>Losses:</h1>
-          <h2>{losses}/{sumResults.length} for {lossRate}% loss rate.</h2>
-          <h2>Avg: ${avgLossText}</h2>
-          <h2>Max: ${maxLoss.toFixed(2)}</h2>
-          <h2>Avg Time: {avgLossDuration.toFixed(1)} min</h2>
-          <h2>Total: ${sumLosses.toFixed(2)}</h2>
-        </Space>
-        <br/>
-        <Space>
-          <h1>Average Duration:</h1>
-          <h2>{avgDuration.toFixed(1)} min</h2>
-        </Space>
-        <br/>
-        <Space>
-          <h1>Totals:</h1>
-          <Totals numberOfTrades={sumResults.length} winnings={sumWins} losses={sumLosses} totalGains={resultSum}/>
-        </Space>
-      </div>
+    );
+  };
+
+  if (skipSPXChart) {
+    return (
+      <Space direction={'horizontal'}>
+        <GainLossChart width={800} height={200}/>
+        <TextSummary isScaled={true}/>
+      </Space>
+    );
+  }
+
+  return (
+    <>
+      <GainLossChart width={1600} height={400}/>
+      <SPXChart spxData={spxData} spxMin={spxMin} spxMax={spxMax} skipSPXChart={skipSPXChart}/>
+      <TextSummary isScaled={false}/>
     </>
   );
 }

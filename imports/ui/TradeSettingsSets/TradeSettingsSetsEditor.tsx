@@ -64,7 +64,7 @@ export default function TradeSettingsSetsEditor() {
   return (
     <div style={{width: 1300, border: '1px solid grey', marginTop: 15, padding: 10}}>
       <Space style={{marginBottom: 30}}>
-        <h2 style={{marginBottom: 0}}>Trade Pattern Set:</h2>
+        <h3 style={{marginBottom: 0}}>Trade Pattern Group:</h3>
         <Select
           style={{width: 600}}
           onChange={(id) => setSelectedSet(sets.find((record) => record._id === id))}
@@ -91,9 +91,9 @@ export default function TradeSettingsSetsEditor() {
             value={editSetName}
           />
         </Modal>
-        <Button type="primary" shape="round" onClick={add} style={{marginTop: 5}}>Add new set</Button>
+        <Button type="primary" shape="round" onClick={add} style={{marginTop: 5}}>Create group</Button>
         <Popconfirm
-          title={`Are you sure you want to Delete trades set "${selectedSet?.name}"?`}
+          title={`Are you sure you want to Delete trades group "${selectedSet?.name}"?`}
           icon={<QuestionCircleOutlined style={{color: 'red'}}/>}
           onConfirm={deleteSet}
           okText="Yes"

@@ -5,6 +5,7 @@ import {UserOutlined} from '@ant-design/icons';
 import Constants from '../Constants';
 import {CheckboxChangeEvent} from 'antd/lib/checkbox';
 import IUserSettings from '../Interfaces/IUserSettings';
+import HeaderLine from "./HeaderLine.tsx";
 
 let timeoutHandle = null;
 
@@ -35,8 +36,6 @@ function UserSettings() {
   };
 
   useEffect(getLatestUserSettings, [getData]);
-
-  const UsingPriceText = Constants.usingMarkPrice ? 'Mark':'Bid/Ask';
 
   const onChange = (propertyName, value) => {
     userSettings[propertyName] = value;
@@ -94,11 +93,6 @@ function UserSettings() {
   return (
     <>
       <Space>
-        <span style={{fontSize: '32px', color: 'blue'}}>
-          <UserOutlined/> {Meteor.user().username}
-          <span
-            style={{fontSize: '12px', color: 'grey'}}>  (Vr. {Constants.version}) Using {UsingPriceText} price.</span>
-        </span>
         {errorText
           ?
           <Alert

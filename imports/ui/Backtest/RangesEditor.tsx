@@ -35,7 +35,7 @@ function SecondsEditor({ranges}: { ranges: IRanges }) {
         <span>{`Start:`}</span>
         <InputNumber
           min={0}
-          step="1"
+          step="60"
           defaultValue={ranges.startGainLimitPrerunAllowedDurationSeconds}
           max={100000}
           style={{width: '100px'}}
@@ -45,7 +45,7 @@ function SecondsEditor({ranges}: { ranges: IRanges }) {
         <span>End:</span>
         <InputNumber
           min={0}
-          step="1"
+          step="60"
           defaultValue={ranges.endGainLimitPrerunAllowedDurationSeconds}
           max={100000}
           style={{width: '100px'}}
@@ -53,8 +53,8 @@ function SecondsEditor({ranges}: { ranges: IRanges }) {
         />
         <span>Increment:</span>
         <InputNumber
-          min={0}
-          step="1"
+          min={60}
+          step="60"
           defaultValue={ranges.gainLimitPrerunAllowedDurationSecondsIncrement}
           max={100000}
           style={{width: '100px'}}
@@ -158,8 +158,8 @@ function RangesEditor({}) {
           <label>End Date: <DatePicker onChange={(value) => ranges.endDate = value.hour(23).toDate()}/></label>
         </Space>
         <Space>
-          <span>Select A Trade Pattern Set:</span>
-          <SetNameSelector width={200} setSelectedName={setSelectedSetId}/>
+          <span>Select A Trade Pattern Group:</span>
+          <SetNameSelector width={400} setSelectedName={setSelectedSetId}/>
         </Space>
         <TradeSettingsSetView setId={selectedSetId}/>
         <Button disabled={(selectedSetId===null)} type="primary" shape="round" onClick={runBacktest}>

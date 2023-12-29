@@ -5,7 +5,7 @@ import {DefaultIBacktest, IBacktest} from "../../Interfaces/IBacktest.ts";
 import {ColumnsType} from "antd/lib/table";
 import {IBacktestSummary} from "../../Interfaces/ITradeSettings.ts";
 import {Table} from "antd";
-import {Random} from 'meteor/random';
+import BacktestSummaryView from "./BacktestSummaryView.tsx";
 
 const columnWidth = 1;
 
@@ -16,7 +16,7 @@ const columns: ColumnsType<IBacktestSummary> = [
     key: 'Gain/Loss',
     width: columnWidth,
     render: (item, record, index) => {
-      const text = `$${(item * 100).toFixed(2)}`;
+      const text = `$${(item).toFixed(2)}`;
       return (
         <span key={index}>{text}</span>
       );
@@ -138,11 +138,12 @@ function title(record: IBacktest) {
   if (!record) return (<h1>Backtest: No record</h1>);
   if (!record.isOkToRun) return (
     <h1 style={{color: 'red'}}>Backtest: It is not OK to run with {record.estimatedSummariesCount} summaries
-      estimated.</h1>);
+      estimated.</h1>
+  );
+  const doneTextSpan = record.isDone ? <span style={{color: 'green'}}> (Finished)</span>:<></>;
   return (
-    <h1>Backtest: totalTrades: {record.totalTradesCount}, Summaries: {record.totalSummariesCount} out
-      of {record.estimatedSummariesCount},
-      isDone: {record.isDone ? 'Yup':'Nope'}</h1>
+    <h1>TotalTrades: {record.totalTradesCount},
+      Summaries: {record.totalSummariesCount} / {record.estimatedSummariesCount}{doneTextSpan}</h1>
   );
 }
 
@@ -153,14 +154,14 @@ export function BasicBacktestView() {
     <div>
       <Table
         style={{border: 'solid 1px red'}}
-        scroll={{x: 1000, y: 200}}
-        pagination={false}
         title={() => title(record)}
         size="small"
         columns={columns}
-        rowKey={() => Random.id()}
         dataSource={record.summaries}
-      >
+        expandable={{
+          expandedRowRender: (record) => <BacktestSummaryView summary={record}/>,
+          rowExpandable: (record) => true,
+        }}>
       </Table>
     </div>
   )
