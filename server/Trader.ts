@@ -59,7 +59,7 @@ function GetNewYorkTime24HourNow() {
   const text = GetNewYorkTimeNowAsText();
   const parts = text.split(' ');
   const hour = parseInt(parts[1].split(':')[0], 10);
-  const additionalHours = (parts[2]==='PM' && hour!=12) ? 12:0;
+  const additionalHours = (parts[2]==='PM' && hour!==12) ? 12:0;
   return hour + additionalHours;
 }
 
