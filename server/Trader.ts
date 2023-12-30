@@ -752,7 +752,11 @@ function CalculateLimitsAndFeesWhenBackTesting(tradeSettings: ITradeSettings) {
 function PrepareTradeForStartOfTrade(tradeSettings: ITradeSettings) {
   tradeSettings.originalTradeSettingsId = tradeSettings._id;
   tradeSettings.monitoredPrices = [];
-  CalculateLimitsAndFeesWhenBackTesting(tradeSettings);
+  if (tradeSettings.isBacktesting) {
+    CalculateLimitsAndFeesWhenBackTesting(tradeSettings);
+  }else {
+    CalculateLimitsAndFees(tradeSettings);
+  }
   let currentSample: IPrice = {
     ...DefaultIPrice,
     price: -tradeSettings.openingPrice, // Negative for calculateVariousValues below and monitoredPrices array.

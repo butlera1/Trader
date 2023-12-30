@@ -99,7 +99,7 @@ function CalculateGain(tradeSettings, currentPrice) {
     // We are in a short position.
     possibleGain = (Math.abs(currentPrice) - openingPrice) * 100.0;
   }
-  if (tradeSettings.isBacktesting) {
+  if (tradeSettings.isBacktesting && tradeSettings.backtestingData?.delta) {
     // Calculate potential gain/loss based on the DELTA of the option.
     possibleGain = possibleGain * tradeSettings.backtestingData.delta;
   }
