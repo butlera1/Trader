@@ -31,7 +31,8 @@ function LogData(tradeSettings: ITradeSettings | null, message: string, error: E
   }
   Logs.insert({logType, tradeId: _id || 'System', message, when: when_NY});
   if (LogType.Error === logType) {
-    console.error(`LogData: ${finalMessage}`);
+    console.error(`LogData: ${finalMessage}`;
+    console.error(error);
     const subject = `TRADER EXCEPTION.`;
     const text = `${finalMessage.substring(0, 1500)}\n\n--Trader System`;
     SendTextToAdmin(text, subject);
