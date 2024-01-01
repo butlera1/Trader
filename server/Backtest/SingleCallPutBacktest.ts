@@ -276,7 +276,11 @@ export async function BackTestCallPut(ranges: IRanges, dataSet: ICandle[][], tra
                   };
                   tradeSetting.backtestingData.minuteData = minuteData;
                   await mainBacktestTradeLoop(tradeSetting, allTradesForOneDay).catch(reason => {
-                    LogData(tradeSetting, `Failed mainBacktestTradeLoop inside For Loop: ${reason}`, new Error(reason));
+                    LogData(tradeSetting, `Failed mainBacktestTradeLoop inside For Loop: ${reason}`, reason);
+                    const hold = tradeSetting.backtestingData.minuteData;
+                    tradeSetting.backtestingData.minuteData = [];
+                    LogData(null, `TradeSettings.backtestData: ${JSON.stringify(tradeSetting.backtestingData)}`);
+                    tradeSetting.backtestingData.minuteData = hold;
                   });
                 }
                 // Save all the trades for this day.
