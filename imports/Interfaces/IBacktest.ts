@@ -9,6 +9,7 @@ interface IBacktest {
     estimatedDaysCount?: number,
     estimatedSummariesCount?: number,
     isOkToRun?: boolean,
+    loadingHistoricalData?: string,
 }
 
 const DefaultIBacktest: IBacktest = {

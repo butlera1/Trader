@@ -101,7 +101,7 @@ function CalculateGain(tradeSettings, currentPrice) {
   }
   if (tradeSettings.isBacktesting && tradeSettings.backtestingData?.delta) {
     // Calculate potential gain/loss based on the DELTA of the option.
-    possibleGain = possibleGain * tradeSettings.backtestingData.delta;
+    possibleGain = possibleGain * tradeSettings.backtestingData.delta * tradeSettings.backtestingData.quantity;
   }
   return possibleGain;
 }
@@ -235,6 +235,11 @@ function CalculateTradePrice(tradeSettings: ITradeSettings, quotes) {
   return result;
 }
 
+function AnyPrerunningOn(tradeSettings: ITradeSettings) {
+  const {isPrerunning, isPrerunningVWAPSlope, isPrerunningVIXSlope, isPrerunningGainLimit} = tradeSettings;
+  return isPrerunning || isPrerunningVWAPSlope || isPrerunningVIXSlope || isPrerunningGainLimit;
+}
+
 export {
   CalculateGain,
   CalculateTotalFees,
@@ -248,4 +253,5 @@ export {
   SetEndOfDay,
   SetStartOfDay,
   CalculateTradePrice,
+  AnyPrerunningOn,
 };

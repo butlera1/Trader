@@ -136,10 +136,14 @@ const columns: ColumnsType<IBacktestSummary> = [
 
 function title(record: IBacktest) {
   if (!record) return (<h1>Backtest: No record</h1>);
+
+  if (record.loadingHistoricalData) return (<h1>{record.loadingHistoricalData}</h1>);
+
   if (!record.isOkToRun) return (
     <h1 style={{color: 'red'}}>Backtest: It is not OK to run with {record.estimatedSummariesCount} summaries
       estimated.</h1>
   );
+
   const doneTextSpan = record.isDone ? <span style={{color: 'green'}}> (Finished)</span>:<></>;
   return (
     <h1>TotalTrades: {record.totalTradesCount},

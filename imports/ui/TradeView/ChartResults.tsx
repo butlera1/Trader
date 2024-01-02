@@ -3,7 +3,12 @@ import {CartesianGrid, Label, Line, LineChart, Tooltip, XAxis, YAxis} from 'rech
 import {Space} from 'antd';
 import ITradeSettings from '../../Interfaces/ITradeSettings';
 import dayjs from 'dayjs';
-import {CalculateTotalFees, CleanupGainLossWhenFailedClosingTrade, GetNewYorkTimeAsText} from '../../Utils';
+import {
+  AnyPrerunningOn,
+  CalculateTotalFees,
+  CleanupGainLossWhenFailedClosingTrade,
+  GetNewYorkTimeAsText
+} from '../../Utils';
 import {Meteor} from 'meteor/meteor';
 import './CssScaleForChartResults.css';
 
@@ -134,7 +139,7 @@ function ChartResults({records, isGraphPrerunningTrades, skipSPXChart}: {
   }, [records]);
 
   const resultSum = records.reduce((sum, record) => {
-    const isAnyPrerunning = record.isPrerunning || record.isPrerunningVWAPSlope || record.isPrerunningVIXSlope || record.isPrerunningGainLimit;
+    const isAnyPrerunning = AnyPrerunningOn(record);
     if (!isAnyPrerunning || isGraphPrerunningTrades) {
       const description = getDescription(record);
       CleanupGainLossWhenFailedClosingTrade(record);

@@ -21,7 +21,10 @@ import ITradeSettings, {
 } from '../imports/Interfaces/ITradeSettings';
 import {TradeSettings} from './collections/TradeSettings';
 import {UserSettings} from './collections/UserSettings';
-import {DailyTradeSummaries, IDailyTradeSummary} from './collections/DailyTradeSummaries';
+import {
+  IsDailyGainOrLossLimitReached,
+  SaveTradeToDailySummaryAndIsEmergencyClose
+} from './collections/DailyTradeSummaries';
 import {Random} from 'meteor/random';
 import _ from 'lodash';
 import {LogData} from './collections/Logs';
@@ -113,42 +116,6 @@ async function GetSmartOptionsPrice(tradeSettings: ITradeSettings): Promise<IPri
   return lastSample;
 }
 
-/**
- * Saves the daily trades as a single daily record. Sums up the total gain/loss for the day as well.
- * Does not include pre-running trades in the summing.
- * @param tradeSettings
- */
-function saveTradeToHistory(tradeSettings: ITradeSettings) {
-  const dateText = dayjs().format('YYYY-MM-DD');
-  const {userId, accountNumber} = tradeSettings;
-  const summary: IDailyTradeSummary = DailyTradeSummaries.findOne({userId, accountNumber, dateText}) || {
-    gainLoss: 0,
-    tradeIds: [],
-    userId,
-    accountNumber,
-    dateText
-  };
-  const id = summary._id || Random.id();
-  delete summary._id;
-  if (!tradeSettings.isPrerunningVIXSlope && !tradeSettings.isPrerunning) {
-    // Don't record any pre-running trades.
-    summary.gainLoss += tradeSettings.gainLoss;
-  }
-  summary.tradeIds.push(tradeSettings._id);
-  const userSettings: IUserSettings = UserSettings.findOne({_id: userId});
-  if (summary.gainLoss < -Math.abs(userSettings.maxAllowedDailyLoss)) {
-    // User has lost too much money today.  Disable their account.
-    UserSettings.update({_id: userId}, {$set: {accountIsActive: false}});
-    EmergencyCloseAllTradesForUser(userId);
-  }
-  if (summary.gainLoss > Math.abs(userSettings.maxAllowedDailyGain)) {
-    // User has gained enough money today.  Disable their account.
-    UserSettings.update({_id: userId}, {$set: {isMaxGainAllowedMet: true}});
-    EmergencyCloseAllTradesForUser(userId);
-  }
-  DailyTradeSummaries.upsert(id, summary);
-}
-
 async function CloseTrade(tradeSettings: ITradeSettings, currentPrice: IPrice): Promise<IClosedTradeInfo> {
   const {isMocked, userId, accountNumber, closingOrder, openingPrice, isBacktesting} = tradeSettings;
   const result: IClosedTradeInfo = {...DefaultClosedTradeInfo, isClosed: true};
@@ -181,7 +148,7 @@ async function CloseTrade(tradeSettings: ITradeSettings, currentPrice: IPrice): 
   }
   tradeSettings.whenClosed = currentPrice.whenNY;
   tradeSettings.gainLoss = CalculateGain(tradeSettings, tradeSettings.closingPrice);
-  if (!tradeSettings.isBacktesting) {
+  if (!isBacktesting) {
     Trades.update(tradeSettings._id, {
       $set: {
         closingOrderId: tradeSettings.closingOrderId,
@@ -191,7 +158,10 @@ async function CloseTrade(tradeSettings: ITradeSettings, currentPrice: IPrice): 
         gainLoss: tradeSettings.gainLoss,
       }
     });
-    saveTradeToHistory(tradeSettings);
+  }
+  const isEmergencyClose = SaveTradeToDailySummaryAndIsEmergencyClose(tradeSettings, currentPrice.whenNY);
+  if (isEmergencyClose && !isBacktesting) {
+    EmergencyCloseAllTradesForUser(userId);
   }
   const wasPrerunning = tradeSettings.isPrerunning;
   const wasPrerunningVIXSlope = tradeSettings.isPrerunningVIXSlope;
@@ -743,18 +713,19 @@ async function WaitForOrderCompleted(userId, accountNumber, orderId) {
 
 function CalculateLimitsAndFeesWhenBackTesting(tradeSettings: ITradeSettings) {
   const {percentGain, percentLoss} = tradeSettings;
-  tradeSettings.percentGain = tradeSettings.percentGain/tradeSettings.backtestingData.delta;
-  tradeSettings.percentLoss = tradeSettings.percentLoss/tradeSettings.backtestingData.delta;
+  tradeSettings.percentGain = tradeSettings.percentGain / tradeSettings.backtestingData.delta;
+  tradeSettings.percentLoss = tradeSettings.percentLoss / tradeSettings.backtestingData.delta;
   CalculateLimitsAndFees(tradeSettings);
   tradeSettings.percentGain = percentGain;
   tradeSettings.percentLoss = percentLoss;
 }
+
 function PrepareTradeForStartOfTrade(tradeSettings: ITradeSettings) {
   tradeSettings.originalTradeSettingsId = tradeSettings._id;
   tradeSettings.monitoredPrices = [];
   if (tradeSettings.isBacktesting) {
     CalculateLimitsAndFeesWhenBackTesting(tradeSettings);
-  }else {
+  } else {
     CalculateLimitsAndFees(tradeSettings);
   }
   let currentSample: IPrice = {
@@ -826,6 +797,9 @@ function IsTradeReadyToRun(
   let now = null;
   if (tradeSettings.isBacktesting) {
     now = dayjs(tradeSettings.backtestingData.minuteData[tradeSettings.backtestingData.index].datetime);
+    if (IsDailyGainOrLossLimitReached(tradeSettings, now)) {
+      return false;
+    }
   } else {
     now = dayjs();
   }

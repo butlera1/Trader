@@ -11,7 +11,7 @@ import ITradeSettings, {
 } from '../../imports/Interfaces/ITradeSettings';
 import IRanges, {DefaultRanges} from '../../imports/Interfaces/IRanges';
 import {GetHistoricalData} from '../TDAApi/TDAApi';
-import {GetNewYorkTimeAt} from '../../imports/Utils';
+import {AnyPrerunningOn, GetNewYorkTimeAt} from '../../imports/Utils';
 import Constants from '../../imports/Constants';
 import {BuySell, OptionType} from '../../imports/Interfaces/ILegSettings';
 import {defaultPrerunGainLimitValue} from '../../imports/Interfaces/IPrerunGainLimitValue';
@@ -27,6 +27,7 @@ import {Random} from 'meteor/random';
 import {IAppSettings} from "../../imports/Interfaces/IAppSettings.ts";
 import {AppSettings} from "../collections/AppSettings.js";
 import {DefaultIBacktest} from "../../imports/Interfaces/IBacktest.ts";
+import {PrepareDailyTradeSummariesFor} from "../collections/DailyTradeSummaries.ts";
 
 const startOfTradeTime = GetNewYorkTimeAt(9, 30);
 
@@ -52,7 +53,7 @@ function calculateSummary(backtestSummary: IBacktestSummary) {
         console.error(`BacktestSummary failed to find tradeId: ${tradeId}`);
         continue
       }
-      if (trade.isPrerunningGainLimit || trade.isPrerunning || trade.isPrerunningVIXSlope || trade.isPrerunningVWAPSlope) {
+      if (AnyPrerunningOn(trade)) {
         // Skip all prerun trades.
         continue;
       }
@@ -142,7 +143,7 @@ async function backTestLoop(tradeSettings: ITradeSettings, allTradesForOneDay: s
     });
     if (closeTradeInfo.isClosed) {
       // BacktestingData is doing math on one contract so here we scale it up to the TradeSetting's leg's quantity.
-      tradeSettings.gainLoss = Math.trunc(tradeSettings.gainLoss * tradeSettings.backtestingData.quantity);
+      tradeSettings.gainLoss = Math.trunc(tradeSettings.gainLoss);
       tradeSettings._id = Random.id();
       const holdBacktestingData: IBacktestingData = tradeSettings.backtestingData;
       delete tradeSettings.backtestingData;
@@ -162,14 +163,21 @@ async function backTestLoop(tradeSettings: ITradeSettings, allTradesForOneDay: s
 
 async function loadHistoricalData(ranges: IRanges, userId: string, symbol: string) {
   const dataSet = [];
+  const start = dayjs(ranges.startDate);
+  const end = dayjs(ranges.endDate);
+  const daysCount = end.diff(start, 'day') + 1;
+
   // Get all the day's data for the Backtest.
-  for (let date: Dayjs = dayjs(ranges.startDate); date.isBefore(dayjs(ranges.endDate)); date = date.add(1, 'day')) {
+  for (let date: Dayjs = start; date.isBefore(end); date = date.add(1, 'day')) {
+    const loadingHistoricalData = `Loading historical data for ${symbol} on ${date.format('YYYY-MM-DD')}: ${dataSet.length + 1}/${daysCount}`;
+    Backtests.upsert({_id: userId}, {$set: {loadingHistoricalData}});
     const data = await GetHistoricalData(userId, symbol, date).catch((error) => {
       console.error(`GetHistoricalData failed with: ${error.message}`, error);
       throw error;
     });
     dataSet.push(data || []);
   }
+  Backtests.upsert({_id: userId}, {$unset: {loadingHistoricalData: ''}});
   return dataSet;
 }
 
@@ -203,6 +211,9 @@ async function mainBacktestTradeLoop(tradeSetting: ITradeSettings, allTradesForO
         LogData(tradeSetting, `Failed backTestLoop ${reason}`, new Error(reason));
         return {...DefaultClosedTradeInfo, isClosed: true, isRepeat: false};
       });
+    } else {
+      // Could be that we hit daily gain or loss limit.
+      tradeSetting.backtestingData.index = endIndex; // Force exit of the loop.
     }
   } while (tradeSetting.isRepeat && tradeSetting.backtestingData.index < endIndex);
 }
@@ -251,6 +262,9 @@ export async function BackTestCallPut(ranges: IRanges, dataSet: ICandle[][], tra
                   ranges.estimatedDaysCount += 1;
                   continue;
                 }
+                // Prepare the day's summary record (for stopping at max daily gain or max daily loss).
+                const tradingDate = new Date(minuteData[0].datetime);
+                PrepareDailyTradeSummariesFor(tradeSettingsArray[0], tradingDate);
                 const allTradesForOneDay = [];
                 for (let j = 0; j < tradeSettingsArray.length; j++) {
                   const tradeSetting = tradeSettingsArray[j];
