@@ -1,6 +1,8 @@
 import React from 'react';
 import {Button, DatePicker, InputNumber, Select, Space} from 'antd';
-import IRanges, {DefaultRanges} from "../../Interfaces/IRanges";
+import {Random} from "meteor/random";
+import IRanges from "../../Interfaces/IRanges";
+import Ranges from "../../Collections/Ranges.js";
 import {Meteor} from "meteor/meteor";
 import ITradeSettingsSet from "../../Interfaces/ITradeSettingsSet.ts";
 import {useTracker} from "meteor/react-meteor-data";
@@ -39,7 +41,10 @@ function SecondsEditor({ranges}: { ranges: IRanges }) {
           defaultValue={ranges.startGainLimitPrerunAllowedDurationSeconds}
           max={100000}
           style={{width: '100px'}}
-          onChange={(value) => ranges.startGainLimitPrerunAllowedDurationSeconds = value}
+          onChange={(value) => {
+            ranges.startGainLimitPrerunAllowedDurationSeconds = value;
+            save(ranges);
+          }}
         />
 
         <span>End:</span>
@@ -49,7 +54,10 @@ function SecondsEditor({ranges}: { ranges: IRanges }) {
           defaultValue={ranges.endGainLimitPrerunAllowedDurationSeconds}
           max={100000}
           style={{width: '100px'}}
-          onChange={(value) => ranges.endGainLimitPrerunAllowedDurationSeconds = value}
+          onChange={(value) => {
+            ranges.endGainLimitPrerunAllowedDurationSeconds = value;
+            save(ranges);
+          }}
         />
         <span>Increment:</span>
         <InputNumber
@@ -58,7 +66,10 @@ function SecondsEditor({ranges}: { ranges: IRanges }) {
           defaultValue={ranges.gainLimitPrerunAllowedDurationSecondsIncrement}
           max={100000}
           style={{width: '100px'}}
-          onChange={(value) => ranges.gainLimitPrerunAllowedDurationSecondsIncrement = value}
+          onChange={(value) => {
+            ranges.gainLimitPrerunAllowedDurationSecondsIncrement = value;
+            save(ranges);
+          }}
         />
       </Space>
     </>
@@ -81,7 +92,10 @@ function GainLossEditor({ranges, label, isGain}: { ranges: IRanges, label: strin
       <Space>
         <span>{`${label}`}</span>
         <Select defaultValue={ranges[isDollar]} style={{width: 60}}
-                onChange={(value) => ranges[isDollar] = value}>
+                onChange={(value) => {
+                  ranges[isDollar] = value;
+                  save(ranges);
+                }}>
           <Select.Option value={false}>%</Select.Option>
           <Select.Option value={true}>$</Select.Option>
         </Select>
@@ -92,7 +106,10 @@ function GainLossEditor({ranges, label, isGain}: { ranges: IRanges, label: strin
           defaultValue={Math.round(ranges[startPercent] * 100000) / 1000}
           max={100000}
           style={{width: '100px'}}
-          onChange={(value) => ranges[startPercent] = (value) / 100}
+          onChange={(value) => {
+            ranges[startPercent] = (value) / 100;
+            save(ranges);
+          }}
         />
 
         <span>End:</span>
@@ -102,7 +119,10 @@ function GainLossEditor({ranges, label, isGain}: { ranges: IRanges, label: strin
           max={100000}
           defaultValue={Math.round(ranges[endPercent] * 100000) / 1000}
           style={{width: '100px'}}
-          onChange={(value) => ranges[endPercent] = (value) / 100}
+          onChange={(value) => {
+            ranges[endPercent] = (value) / 100;
+            save(ranges);
+          }}
         />
         <span>Increment:</span>
         <InputNumber
@@ -111,18 +131,26 @@ function GainLossEditor({ranges, label, isGain}: { ranges: IRanges, label: strin
           max={100000}
           defaultValue={Math.round(ranges[increment] * 100000) / 1000}
           style={{width: '100px'}}
-          onChange={(value) => ranges[increment] = (value) / 100}
+          onChange={(value) => {
+            ranges[increment] = (value) / 100;
+            save(ranges);
+          }}
         />
       </Space>
     </>
   );
 }
 
-let ranges: IRanges = {...DefaultRanges, tradeSettingsSetId: null};
+function save(ranges: IRanges) {
+  const _id = ranges._id || Random.id();
+  delete ranges._id;
+  Ranges.upsert(_id, ranges);
+  ranges._id = _id;
+}
 
-function RangesEditor({}) {
+function RangesEditor({ranges}: { ranges: IRanges }) {
   const [selectedSetId, setSelectedSetId] = React.useState(null);
-  if (selectedSetId===null) {
+  if (selectedSetId===null && ranges) {
     ranges.tradeSettingsSetId = null;
   }
 
@@ -137,25 +165,36 @@ function RangesEditor({}) {
   };
 
   return (
-    <div style={{border: 'solid 1px red', padding: 25, marginBottom: 25}}>
+    <div style={{padding: 25, marginBottom: 25}}>
       <Space direction={'vertical'} size={30}>
-        <h3 style={{marginBottom: -15}}>Ranges for Back Testing</h3>
         <GainLossEditor label={'Gain range:'} ranges={ranges} isGain={true}/>
         <GainLossEditor label={'Loss range:'} ranges={ranges} isGain={false}/>
         <SecondsEditor ranges={ranges}/>
         <Space>
           <span>Entry Hours Range:</span>
-          <Select mode='multiple' style={{width: 220}} onChange={(values => ranges.entryHours = values)}>
+          <Select mode='multiple' style={{width: 220}} onChange={(values) => {
+            ranges.entryHours = values;
+            save(ranges);
+          }}>
             {hours}
           </Select>
           <span>Exit Hours Range:</span>
-          <Select mode='multiple' style={{width: 220}} onChange={(values => ranges.exitHours = values)}>
+          <Select mode='multiple' style={{width: 220}} onChange={(values) => {
+            ranges.exitHours = values;
+            save(ranges);
+          }}>
             {hours}
           </Select>
         </Space>
         <Space>
-          <label>Start Date: <DatePicker onChange={(value) => ranges.startDate = value.hour(1).toDate()}/></label>
-          <label>End Date: <DatePicker onChange={(value) => ranges.endDate = value.hour(23).toDate()}/></label>
+          <label>Start Date: <DatePicker onChange={(value) => {
+            ranges.startDate = value.hour(1).toDate();
+            save(ranges);
+          }}/></label>
+          <label>End Date: <DatePicker onChange={(value) => {
+            ranges.endDate = value.hour(23).toDate();
+            save(ranges);
+          }}/></label>
         </Space>
         <Space>
           <span>Select A Trade Pattern Group:</span>

@@ -3,6 +3,7 @@ import './collections/stockData';
 import './collections/straddleData';
 import './collections/Backtests';
 import './collections/TradeSettingsSets';
+import './collections/Ranges'
 import {
   DeleteUserTradeSettingsRecord,
   GetNewUserTradeSettingsRecord,
