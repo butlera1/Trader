@@ -116,7 +116,7 @@ export default function BacktestPatternsEditor() {
           </Button>
         </Popconfirm>
       </Space>
-      <RangesEditor ranges={selectedRange}/>
+      <RangesEditor ranges={{...selectedRange}}/>
     </div>
   );
 }

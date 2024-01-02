@@ -91,7 +91,7 @@ function GainLossEditor({ranges, label, isGain}: { ranges: IRanges, label: strin
     <>
       <Space>
         <span>{`${label}`}</span>
-        <Select defaultValue={ranges[isDollar]} style={{width: 60}}
+        <Select value={ranges[isDollar]} style={{width: 60}}
                 onChange={(value) => {
                   ranges[isDollar] = value;
                   save(ranges);
@@ -103,7 +103,7 @@ function GainLossEditor({ranges, label, isGain}: { ranges: IRanges, label: strin
         <InputNumber
           min={0}
           step="0.01"
-          defaultValue={Math.round(ranges[startPercent] * 100000) / 1000}
+          value={Math.round(ranges[startPercent] * 100000) / 1000}
           max={100000}
           style={{width: '100px'}}
           onChange={(value) => {
@@ -117,7 +117,7 @@ function GainLossEditor({ranges, label, isGain}: { ranges: IRanges, label: strin
           min={0}
           step="0.01"
           max={100000}
-          defaultValue={Math.round(ranges[endPercent] * 100000) / 1000}
+          value={Math.round(ranges[endPercent] * 100000) / 1000}
           style={{width: '100px'}}
           onChange={(value) => {
             ranges[endPercent] = (value) / 100;
@@ -129,7 +129,7 @@ function GainLossEditor({ranges, label, isGain}: { ranges: IRanges, label: strin
           min={0}
           step="0.01"
           max={100000}
-          defaultValue={Math.round(ranges[increment] * 100000) / 1000}
+          value={Math.round(ranges[increment] * 100000) / 1000}
           style={{width: '100px'}}
           onChange={(value) => {
             ranges[increment] = (value) / 100;
@@ -172,14 +172,22 @@ function RangesEditor({ranges}: { ranges: IRanges }) {
         <SecondsEditor ranges={ranges}/>
         <Space>
           <span>Entry Hours Range:</span>
-          <Select mode='multiple' style={{width: 220}} onChange={(values) => {
-            ranges.entryHours = values;
-            save(ranges);
-          }}>
+          <Select
+            mode='multiple'
+            value={ranges.entryHours}
+            style={{width: 220}}
+            onChange={(values) => {
+              ranges.entryHours = values;
+              save(ranges);
+            }}>
             {hours}
           </Select>
           <span>Exit Hours Range:</span>
-          <Select mode='multiple' style={{width: 220}} onChange={(values) => {
+          <Select
+            mode='multiple'
+            defaultValue={ranges.exitHours}
+            style={{width: 220}}
+            onChange={(values) => {
             ranges.exitHours = values;
             save(ranges);
           }}>

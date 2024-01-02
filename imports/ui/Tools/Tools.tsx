@@ -3,7 +3,6 @@ import {Meteor} from 'meteor/meteor';
 import _ from 'lodash';
 import {Button, InputNumber, Space} from 'antd';
 import {DefaultAppSettings, IAppSettings} from '../../Interfaces/IAppSettings';
-import RangesEditor from '../Backtest/RangesEditor';
 
 function Tools() {
   const [appSettings, setAppSettings] = React.useState<IAppSettings>({...DefaultAppSettings});
@@ -33,7 +32,7 @@ function Tools() {
 
   useEffect(getInitialSettings, []); // Call just once.
 
-  const showOrdersButton = Meteor.user().username === 'Arch';
+  const showOrdersButton = Meteor.user().username==='Arch';
 
   const OrderButton = () => {
     if (showOrdersButton) {
