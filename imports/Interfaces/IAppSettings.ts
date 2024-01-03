@@ -11,6 +11,7 @@ interface IAppSettings {
   vwapEquity: string,
   vwapSlopeSamplesRequired?: number,
   maxBacktestSummaries?: number,
+  backgroundPollingIntervalMillisecs?: number,
 }
 
 const DefaultAppSettings: IAppSettings = {
@@ -25,6 +26,7 @@ const DefaultAppSettings: IAppSettings = {
   vwapEquity: 'SPY',
   vwapSlopeSamplesRequired: 10,
   maxBacktestSummaries: 200,
+  backgroundPollingIntervalMillisecs: 5000,
 };
 
 export {IAppSettings, DefaultAppSettings} ;

@@ -45,6 +45,8 @@ import {DefaultClosedTradeInfo, IClosedTradeInfo} from '../imports/Interfaces/IC
 import {TradeSettingsSets} from "./collections/TradeSettingsSets";
 import ITradeSettingsSet, {DefaultTradeSettingsSets} from "../imports/Interfaces/ITradeSettingsSet";
 import Constants from "../imports/Constants.ts";
+import {AppSettings} from "./collections/AppSettings.js";
+import {IAppSettings} from "../imports/Interfaces/IAppSettings.ts";
 
 dayjs.extend(duration);
 dayjs.extend(isoWeek);
@@ -75,7 +77,7 @@ async function GetOptionsPriceLoop(tradeSettings: ITradeSettings): Promise<IPric
       result = null;
       const release = await PollingMutex();
       result = await GetPriceForOptions(tradeSettings);
-      setTimeout(() => {
+      Meteor.setTimeout(() => {
         release();
       }, 1000);
       if (_.isFinite(result.price)) {
@@ -571,6 +573,12 @@ async function CheckForTradeCompletion(liveTrade: ITradeSettings, currentSampleP
   return {...DefaultClosedTradeInfo, isClosed: false, isRepeat: false};
 }
 
+function runMonitorMethod(monitorMethod) {
+  const settings :IAppSettings = AppSettings.findOne(Constants.appSettingsId);
+  // Sync with the background polling interval speed.
+  Meteor.setTimeout(monitorMethod, settings.backgroundPollingIntervalMillisecs ?? Constants.ThreeSeconds * 2);
+}
+
 function MonitorTradeToCloseItOut(liveTrade: ITradeSettings) {
   AddSymbolsToPolling(liveTrade.csvSymbols);
   const monitorMethod = async () => {
@@ -586,7 +594,7 @@ function MonitorTradeToCloseItOut(liveTrade: ITradeSettings) {
       // Get the current price for the trade.
       const currentSamplePrice: IPrice = GetTradePriceViaBackgroundPolling(liveTrade);
       if (currentSamplePrice.price===Number.NaN || currentSamplePrice.price===0) {
-        Meteor.setTimeout(monitorMethod, Constants.ThreeSeconds);
+        runMonitorMethod(monitorMethod);
         return; // Try again on next interval timeout.
       }
       liveTrade.monitoredPrices.push(currentSamplePrice);
@@ -594,7 +602,7 @@ function MonitorTradeToCloseItOut(liveTrade: ITradeSettings) {
       const closedInfo: IClosedTradeInfo = await CheckForTradeCompletion(liveTrade, currentSamplePrice, localEarlyExitTime);
       if (!closedInfo.isClosed) {
         // Loop again waiting for one of the close patterns to get hit.
-        Meteor.setTimeout(monitorMethod, Constants.ThreeSeconds);
+        runMonitorMethod(monitorMethod);
       } else {
         if (closedInfo.isRepeat) {
           // Start another trade if IsRepeat.
@@ -611,7 +619,7 @@ function MonitorTradeToCloseItOut(liveTrade: ITradeSettings) {
       LogData(liveTrade, message, ex);
     }
   };
-  Meteor.setTimeout(monitorMethod, Constants.ThreeSeconds + Constants.OneSecond);
+  runMonitorMethod(monitorMethod);
 }
 
 function CalculateGrossOrderBuysAndSells(order) {

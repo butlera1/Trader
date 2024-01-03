@@ -258,9 +258,6 @@ export async function GetHistoricalData(userId, symbol, date) {
   }
 }
 
-// Returns a Promise that resolves after "ms" Milliseconds
-export const WaitMs = ms => new Promise(res => setTimeout(res, ms));
-
 /**
  * The function returns an object containing all the resulting data.
  *

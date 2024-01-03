@@ -7,6 +7,7 @@ import {AppSettings} from './collections/AppSettings';
 import IStreamerData from "../imports/Interfaces/IStreamData";
 import ITradeSettings, {BadDefaultIPrice, IPrice} from "../imports/Interfaces/ITradeSettings.ts";
 import {Trades} from "./collections/Trades";
+import {IAppSettings} from "../imports/Interfaces/IAppSettings.ts";
 
 
 let csvSymbols: string = '$VIX.X,$SPX.X';
@@ -51,10 +52,10 @@ function getAngleOfSlope(slope) {
   return angle;
 }
 
-function gatherUpSymbolsNeeded(){
+function gatherUpSymbolsNeeded() {
   let symbolsNeeded = [Constants.SPXSymbol, Constants.VIXSymbol];
   const liveTrades = Trades.find({whyClosed: {$exists: false}});
-  liveTrades.forEach((liveTrade:ITradeSettings) => {
+  liveTrades.forEach((liveTrade: ITradeSettings) => {
     const symbols = liveTrade.csvSymbols.split(',');
     symbols.forEach((symbol) => {
       if (!symbolsNeeded.includes(symbol)) {
@@ -98,8 +99,9 @@ async function poll() {
   } catch (err) {
     console.error(err);
   }
-  setTimeout(releaseFunc, Constants.TwoSeconds); // Don't poll more than once per second.
-  setTimeout(poll, Constants.ThreeSeconds);
+  const settings: IAppSettings = AppSettings.findOne(Constants.appSettingsId);
+  Meteor.setTimeout(releaseFunc, Constants.TwoSeconds); // Don't poll more than once per second.
+  Meteor.setTimeout(poll, settings.backgroundPollingIntervalMillisecs ?? Constants.ThreeSeconds);
 }
 
 function GetVIXSlope() {
@@ -161,7 +163,7 @@ function StopBackgroundPolling() {
   isPolling = false;
 }
 
-function GetTradePriceViaBackgroundPolling(liveTrade:ITradeSettings) :IPrice{
+function GetTradePriceViaBackgroundPolling(liveTrade: ITradeSettings): IPrice {
   try {
     const symbols = liveTrade.csvSymbols.split(',');
     const quotes = [];
@@ -177,6 +179,7 @@ function GetTradePriceViaBackgroundPolling(liveTrade:ITradeSettings) :IPrice{
     return {...BadDefaultIPrice};
   }
 }
+
 export {
   StartBackgroundPolling,
   StopBackgroundPolling,
