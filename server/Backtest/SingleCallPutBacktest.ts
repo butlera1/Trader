@@ -9,7 +9,7 @@ import ITradeSettings, {
   IBacktestSummary,
   IPrice
 } from '../../imports/Interfaces/ITradeSettings';
-import IRanges, {DefaultRanges} from '../../imports/Interfaces/IRanges';
+import IRanges, {GetDefaultRanges} from '../../imports/Interfaces/IRanges';
 import {GetHistoricalData} from '../TDAApi/TDAApi';
 import {AnyPrerunningOn, GetNewYorkTimeAt} from '../../imports/Utils';
 import Constants from '../../imports/Constants';
@@ -419,7 +419,7 @@ async function BacktestTradeSetMethod(ranges: IRanges) {
 async function TestBackTestCode(): Promise<void> {
   const _id = 'backtestSettings';
   const ranges: IRanges = {
-    ...DefaultRanges,
+    ...GetDefaultRanges(),
     tradeSettingsSetId: _id,
 
     startGain: 1.0,
