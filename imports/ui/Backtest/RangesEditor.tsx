@@ -8,6 +8,7 @@ import ITradeSettingsSet from "../../Interfaces/ITradeSettingsSet.ts";
 import {useTracker} from "meteor/react-meteor-data";
 import TradeSettingsSets from '../../Collections/TradeSettingsSets';
 import TradeSettingsSetView from "./TradeSettingsSetView.tsx";
+import moment from "moment";
 
 const hours = [
   <Select.Option key={1} value={9}>9</Select.Option>,
@@ -38,7 +39,7 @@ function SecondsEditor({ranges}: { ranges: IRanges }) {
         <InputNumber
           min={0}
           step="60"
-          defaultValue={ranges.startGainLimitPrerunAllowedDurationSeconds}
+          value={ranges.startGainLimitPrerunAllowedDurationSeconds}
           max={100000}
           style={{width: '100px'}}
           onChange={(value) => {
@@ -51,7 +52,7 @@ function SecondsEditor({ranges}: { ranges: IRanges }) {
         <InputNumber
           min={0}
           step="60"
-          defaultValue={ranges.endGainLimitPrerunAllowedDurationSeconds}
+          value={ranges.endGainLimitPrerunAllowedDurationSeconds}
           max={100000}
           style={{width: '100px'}}
           onChange={(value) => {
@@ -63,7 +64,7 @@ function SecondsEditor({ranges}: { ranges: IRanges }) {
         <InputNumber
           min={60}
           step="60"
-          defaultValue={ranges.gainLimitPrerunAllowedDurationSecondsIncrement}
+          value={ranges.gainLimitPrerunAllowedDurationSecondsIncrement}
           max={100000}
           style={{width: '100px'}}
           onChange={(value) => {
@@ -164,6 +165,20 @@ function RangesEditor({ranges}: { ranges: IRanges }) {
     });
   };
 
+  const getStartDate = (ranges: IRanges) => {
+    if (ranges.startDate) {
+      return moment(ranges.startDate);
+    }
+    return moment();
+  };
+
+  const getEndDate = (ranges: IRanges) => {
+    if (ranges.endDate) {
+      return moment(ranges.endDate);
+    }
+    return moment();
+  };
+
   return (
     <div style={{padding: 25, marginBottom: 25}}>
       <Space direction={'vertical'} size={30}>
@@ -185,7 +200,7 @@ function RangesEditor({ranges}: { ranges: IRanges }) {
           <span>Exit Hours Range:</span>
           <Select
             mode='multiple'
-            defaultValue={ranges.exitHours}
+            value={ranges.exitHours}
             style={{width: 220}}
             onChange={(values) => {
             ranges.exitHours = values;
@@ -195,11 +210,11 @@ function RangesEditor({ranges}: { ranges: IRanges }) {
           </Select>
         </Space>
         <Space>
-          <label>Start Date: <DatePicker onChange={(value) => {
+          <label>Start Date: <DatePicker value={getStartDate(ranges)} onChange={(value) => {
             ranges.startDate = value.hour(1).toDate();
             save(ranges);
           }}/></label>
-          <label>End Date: <DatePicker onChange={(value) => {
+          <label>End Date: <DatePicker value={getEndDate(ranges)} onChange={(value) => {
             ranges.endDate = value.hour(23).toDate();
             save(ranges);
           }}/></label>

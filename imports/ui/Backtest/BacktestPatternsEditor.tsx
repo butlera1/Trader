@@ -71,7 +71,7 @@ export default function BacktestPatternsEditor() {
   return (
     <div style={{width: 1300, border: '1px solid grey', marginTop: 15, padding: 10}}>
       <Space style={{marginBottom: 30}}>
-        <h3 style={{marginBottom: 0}}>Range Group:</h3>
+        <h3 style={{marginBottom: 0}}>Ranges Pattern:</h3>
         <Select
           style={{width: 600}}
           onChange={(id) => setSelectedRange(rangesArray.find((record) => record._id===id))}
@@ -116,7 +116,7 @@ export default function BacktestPatternsEditor() {
           </Button>
         </Popconfirm>
       </Space>
-      <RangesEditor ranges={{...selectedRange}}/>
+      <RangesEditor ranges={selectedRange}/>
     </div>
   );
 }

@@ -113,6 +113,12 @@ interface IBacktestSummary {
   averageWinsDurationMin: number,
   averageLossesDurationMin: number,
   totalNumberOfTrades: number,
+  dailyWinRate: number,
+  mondayWinRate: number,
+  tuesdayWinRate: number,
+  wednesdayWinRate: number,
+  thursdayWinRate: number,
+  fridayWinRate: number,
 }
 
 const DefaultIBacktestSummary: IBacktestSummary = {
@@ -138,6 +144,12 @@ const DefaultIBacktestSummary: IBacktestSummary = {
   gainLossTotal: 0,
   winRate: 0,
   lossRate: 0,
+  dailyWinRate: 0,
+  mondayWinRate: 0,
+  tuesdayWinRate: 0,
+  wednesdayWinRate: 0,
+  thursdayWinRate: 0,
+  fridayWinRate: 0,
 };
 
 interface IBacktestingData {

@@ -7,7 +7,7 @@ import {IBacktestSummary} from "../../Interfaces/ITradeSettings.ts";
 import {Table} from "antd";
 import BacktestSummaryView from "./BacktestSummaryView.tsx";
 
-const columnWidth = 1;
+const columnWidth = 0;
 
 const columns: ColumnsType<IBacktestSummary> = [
   {
@@ -50,7 +50,7 @@ const columns: ColumnsType<IBacktestSummary> = [
     sorter: (a, b) => a.wins > b.wins ? 1:-1,
   },
   {
-    title: 'Avg. Duration (min)',
+    title: 'Avg. (min)',
     dataIndex: 'averageDurationMin',
     key: 'averageDurationMin',
     width: columnWidth,
@@ -63,6 +63,84 @@ const columns: ColumnsType<IBacktestSummary> = [
     sorter: (a, b) => a.winRate > b.winRate ? 1:-1,
   },
   {
+    title: 'Daily %',
+    dataIndex: 'dailyWinRate',
+    key: 'dailyWinRate',
+    width: columnWidth,
+    render: (item, record, index) => {
+      const text = `${(item * 100).toFixed(0)}%`;
+      return (
+        <span key={index}>{text}</span>
+      );
+    },
+    sorter: (a, b) => a.dailyWinRate > b.dailyWinRate ? 1:-1,
+  },
+  {
+    title: 'M %',
+    dataIndex: 'dailyWinRate',
+    key: 'dailyWinRate',
+    width: columnWidth,
+    render: (item, record, index) => {
+      const wd = `${(record.mondayWinRate*100).toFixed(0)}`;
+      return (
+        <span key={index}>{wd}</span>
+      );
+    },
+    sorter: (a, b) => a.mondayWinRate - b.mondayWinRate,
+  },
+  {
+    title: 'T %',
+    dataIndex: 'dailyWinRate',
+    key: 'dailyWinRate',
+    width: columnWidth,
+    render: (item, record, index) => {
+      const wd = `${(record.tuesdayWinRate*100).toFixed(0)}`;
+      return (
+        <span key={index}>{wd}</span>
+      );
+    },
+    sorter: (a, b) => a.tuesdayWinRate - b.tuesdayWinRate,
+  },
+  {
+    title: 'W %',
+    dataIndex: 'dailyWinRate',
+    key: 'dailyWinRate',
+    width: columnWidth,
+    render: (item, record, index) => {
+      const wd = `${(record.wednesdayWinRate*100).toFixed(0)}`;
+      return (
+        <span key={index}>{wd}</span>
+      );
+    },
+    sorter: (a, b) => a.wednesdayWinRate - b.wednesdayWinRate,
+  },
+  {
+    title: 'Th %',
+    dataIndex: 'dailyWinRate',
+    key: 'dailyWinRate',
+    width: columnWidth,
+    render: (item, record, index) => {
+      const wd = `${(record.thursdayWinRate*100).toFixed(0)}`;
+      return (
+        <span key={index}>{wd}</span>
+      );
+    },
+    sorter: (a, b) => a.thursdayWinRate - b.thursdayWinRate,
+  },
+  {
+    title: 'F %',
+    dataIndex: 'dailyWinRate',
+    key: 'dailyWinRate',
+    width: columnWidth,
+    render: (item, record, index) => {
+      const wd = `${(record.fridayWinRate*100).toFixed(0)}`;
+      return (
+        <span key={index}>{wd}</span>
+      );
+    },
+    sorter: (a, b) => a.fridayWinRate - b.fridayWinRate,
+  },
+  {
     title: 'Gain Limit',
     dataIndex: 'gainLimit',
     key: 'gainLimit',
@@ -70,7 +148,7 @@ const columns: ColumnsType<IBacktestSummary> = [
     render: (limit, record) => {
       const prefix = record.isGainLimitDollar ? '$':'';
       const postfix = record.isGainLimitDollar ? '':'%';
-      const multiplier = record.isGainLimitDollar ? 1:100;
+      const multiplier = record.isGainLimitDollar ? 100:100;
       const text = `${prefix}${(limit * multiplier).toFixed(2)}${postfix}`;
       return (
         <span>{text}</span>
@@ -86,7 +164,7 @@ const columns: ColumnsType<IBacktestSummary> = [
     render: (limit, record) => {
       const prefix = record.isLossLimitDollar ? '$':'';
       const postfix = record.isLossLimitDollar ? '':'%';
-      const multiplier = record.isGainLimitDollar ? 1:100;
+      const multiplier = record.isGainLimitDollar ? 100:100;
       const text = `${prefix}${(limit * multiplier).toFixed(2)}${postfix}`;
       return (
         <span>{text}</span>
@@ -95,7 +173,7 @@ const columns: ColumnsType<IBacktestSummary> = [
     sorter: (a, b) => a.lossLimit > b.lossLimit ? 1:-1,
   },
   {
-    title: 'Entry Hour',
+    title: 'Entry',
     dataIndex: 'entryHour',
     key: 'entryHour',
     width: columnWidth,
@@ -108,7 +186,7 @@ const columns: ColumnsType<IBacktestSummary> = [
     sorter: (a, b) => a.entryHour > b.entryHour ? 1:-1,
   },
   {
-    title: 'Exit Hour',
+    title: 'Exit',
     dataIndex: 'exitHour',
     key: 'exitHour',
     width: columnWidth,
@@ -137,7 +215,7 @@ const columns: ColumnsType<IBacktestSummary> = [
 function title(record: IBacktest) {
   if (!record) return (<h1>Backtest: No record</h1>);
 
-  if (record.loadingHistoricalData) return (<h1>{record.loadingHistoricalData}</h1>);
+  if (record.isLoadingHistoricalData) return (<h1>{record.loadingHistoricalData}</h1>);
 
   if (!record.isOkToRun) return (
     <h1 style={{color: 'red'}}>Backtest: It is not OK to run with {record.estimatedSummariesCount} summaries
@@ -146,8 +224,11 @@ function title(record: IBacktest) {
 
   const doneTextSpan = record.isDone ? <span style={{color: 'green'}}> (Finished)</span>:<></>;
   return (
-    <h1>TotalTrades: {record.totalTradesCount},
-      Summaries: {record.totalSummariesCount} / {record.estimatedSummariesCount}{doneTextSpan}</h1>
+    <div>
+      <h1 key={1}>{record.loadingHistoricalData}</h1>
+      <h1 key={2}>TotalTrades: {record.totalTradesCount},
+        Summaries: {record.totalSummariesCount} / {record.estimatedSummariesCount}{doneTextSpan}</h1>
+    </div>
   );
 }
 

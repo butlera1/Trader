@@ -44,9 +44,13 @@ function calculateSummary(backtestSummary: IBacktestSummary) {
   let averageWinsDurationMin = 0;
   let averageLossesDurationMin = 0;
   let totalNumberOfTrades = 0;
+  let countOfWinningDays = 0;
+  const weekDayWinRates = [0, 0, 0, 0, 0, 0, 0];
+  const weekDayTotalCounts = [0, 0, 0, 0, 0, 0, 0];
 
   // Loop through each day's trades.
   for (const dayResult of backtestSummary.resultsPerDay) {
+    let dailyTotalGainLoss = 0;
     for (const tradeId of dayResult.trades) {
       const trade = Backtests.findOne(tradeId);
       if (!trade) {
@@ -61,15 +65,20 @@ function calculateSummary(backtestSummary: IBacktestSummary) {
       const duration = dayjs(trade.whenClosed).diff(dayjs(trade.whenOpened), 'minute');
       averageDurationMin += duration;
 
+      dailyTotalGainLoss += trade.gainLoss;
+      totalGain += trade.gainLoss;
       if (trade.gainLoss > 0) {
-        totalGain += trade.gainLoss;
         wins++;
         averageWinsDurationMin += duration;
       } else {
-        totalLoss += trade.gainLoss;
         losses++;
         averageLossesDurationMin += duration;
       }
+    }
+    weekDayTotalCounts[dayResult.when.getDay()]++;
+    if (dailyTotalGainLoss > 0) {
+      countOfWinningDays++;
+      weekDayWinRates[dayResult.when.getDay()]++;
     }
   }
 
@@ -86,6 +95,16 @@ function calculateSummary(backtestSummary: IBacktestSummary) {
   backtestSummary.averageDurationMin = averageDurationMin;
   backtestSummary.averageWinsDurationMin = averageWinsDurationMin;
   backtestSummary.averageLossesDurationMin = averageLossesDurationMin;
+  backtestSummary.dailyWinRate = countOfWinningDays / backtestSummary.resultsPerDay.length;
+  for (let i = 0; i < weekDayTotalCounts.length; i++) {
+    if (weekDayTotalCounts[i] > 0) {
+      weekDayWinRates[i] /= weekDayTotalCounts[i];}
+  }
+  backtestSummary.mondayWinRate = weekDayWinRates[1];
+  backtestSummary.tuesdayWinRate = weekDayWinRates[2];
+  backtestSummary.wednesdayWinRate = weekDayWinRates[3];
+  backtestSummary.thursdayWinRate = weekDayWinRates[4];
+  backtestSummary.fridayWinRate = weekDayWinRates[5];
 }
 
 function getStartIndex(tradeSetting: ITradeSettings): number {
@@ -167,6 +186,8 @@ async function loadHistoricalData(ranges: IRanges, userId: string, symbol: strin
   const end = dayjs(ranges.endDate);
   const daysCount = end.diff(start, 'day') + 1;
 
+  Backtests.upsert({_id: userId}, {$set: {isLoadingHistoricalData: true}});
+
   // Get all the day's data for the Backtest.
   for (let date: Dayjs = start; date.isBefore(end); date = date.add(1, 'day')) {
     const loadingHistoricalData = `Loading historical data for ${symbol} on ${date.format('YYYY-MM-DD')}: ${dataSet.length + 1}/${daysCount}`;
@@ -177,7 +198,9 @@ async function loadHistoricalData(ranges: IRanges, userId: string, symbol: strin
     });
     dataSet.push(data || []);
   }
-  Backtests.upsert({_id: userId}, {$unset: {loadingHistoricalData: ''}});
+  const loadingHistoricalData = `Loaded historical data for ${symbol}: ${dataSet.length}/${daysCount}`;
+  Backtests.upsert({_id: userId}, {$unset: {isLoadingHistoricalData: ''}});
+  Backtests.upsert({_id: userId}, {$set: {loadingHistoricalData}});
   return dataSet;
 }
 

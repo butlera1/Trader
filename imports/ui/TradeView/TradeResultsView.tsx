@@ -121,7 +121,7 @@ function TradeResultsView() {
     setWarningText('');
     records.forEach(cleanupTrade);
 
-    setFilteredRecords([...records]);
+    setFilteredRecords([...records.sort((a, b) => a.whenClosed.getTime() - b.whenClosed.getTime())]);
   }, [Trades, isRealTradesOnly, startDate, endDate, selectedNames, isPrerunTradesOnly, startHour, startMinute, endHour, endMinute]);
 
   const NamesSelector = ({names}: { names: string[] }) => {
