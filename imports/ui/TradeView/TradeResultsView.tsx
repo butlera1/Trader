@@ -1,4 +1,4 @@
-import React, {useEffect} from 'react';
+import React from 'react';
 import {useTracker} from 'meteor/react-meteor-data';
 import TradeResultsTable from './TradeResultsTable';
 import ChartResults from './ChartResults';
@@ -139,7 +139,6 @@ function TradeResultsView() {
         <h2>
           Real Trades Only:
           <Checkbox
-            size={'large'}
             style={{marginLeft: '20px'}}
             onChange={(e: CheckboxChangeEvent) => setIsRealTradesOnly(e.target.checked)}
             checked={isRealTradesOnly}
@@ -148,7 +147,6 @@ function TradeResultsView() {
         <h2>
           Prerun Trades Only:
           <Checkbox
-            size={'large'}
             style={{marginLeft: '20px'}}
             onChange={(e: CheckboxChangeEvent) => setIsPrerunTradesOnly(e.target.checked)}
             checked={isPrerunTradesOnly}
