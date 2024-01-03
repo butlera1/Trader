@@ -186,6 +186,7 @@ async function loadHistoricalData(ranges: IRanges, userId: string, symbol: strin
   const end = dayjs(ranges.endDate);
   const daysCount = end.diff(start, 'day') + 1;
 
+  console.log(`Loading historical data for ${symbol} from ${start.format('YYYY-MM-DD')} to ${end.format('YYYY-MM-DD')}`);
   Backtests.upsert({_id: userId}, {$set: {isLoadingHistoricalData: true}});
 
   // Get all the day's data for the Backtest.
@@ -201,6 +202,7 @@ async function loadHistoricalData(ranges: IRanges, userId: string, symbol: strin
   const loadingHistoricalData = `Loaded historical data for ${symbol}: ${dataSet.length}/${daysCount}`;
   Backtests.upsert({_id: userId}, {$unset: {isLoadingHistoricalData: ''}});
   Backtests.upsert({_id: userId}, {$set: {loadingHistoricalData}});
+  console.log(`Loaded historical data.`);
   return dataSet;
 }
 
@@ -390,6 +392,7 @@ async function checkIfNotTooManyLoops(ranges: IRanges, dataSet: ICandle[][], tra
 
 async function BacktestTradeSetMethod(ranges: IRanges) {
   try {
+    console.log(`Entering BacktestTradeSetMethod for ${ranges.name}`);
     let tradesSet: ITradeSettingsSet = TradeSettingsSets.findOne(ranges.tradeSettingsSetId);
     // Preload the tradeSettings for this tradeSettingsSetId.
     const tradeSettingsArray: ITradeSettings[] = [];
