@@ -2,6 +2,7 @@ import {IBacktestSummary} from "./ITradeSettings.ts";
 
 interface IBacktest {
     _id?: string,
+    backtestingIsOff?: boolean,
     isDone?: boolean,
     totalTradesCount?: number,
     totalSummariesCount?: number,
@@ -15,6 +16,7 @@ interface IBacktest {
 
 const DefaultIBacktest: IBacktest = {
     isDone: false,
+    backtestingIsOff: false,
     totalTradesCount: 0,
     totalSummariesCount: 0,
     summaries: [],

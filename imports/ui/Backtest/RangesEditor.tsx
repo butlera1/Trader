@@ -9,6 +9,8 @@ import {useTracker} from "meteor/react-meteor-data";
 import TradeSettingsSets from '../../Collections/TradeSettingsSets';
 import TradeSettingsSetView from "./TradeSettingsSetView.tsx";
 import moment from "moment";
+import {DefaultIBacktest, IBacktest} from "../../Interfaces/IBacktest.ts";
+import Backtests from "../../Collections/Backtests.js";
 
 const hours = [
   <Select.Option key={1} value={9}>9</Select.Option>,
@@ -24,8 +26,13 @@ const hours = [
 const SetNameSelector = ({width, setSelectedName}) => {
   const sets: ITradeSettingsSet[] = useTracker(() => TradeSettingsSets.find().fetch(), [TradeSettingsSets]);
   const options = sets.map(({_id, name}) => <Select.Option key={_id} value={_id}>{name}</Select.Option>);
+  const defaultValue = sets.find((set) => set.isDefault)?._id;
+  if (!defaultValue) {
+    return <div>No Trade Pattern Groups Found</div>;
+  }
+  setSelectedName(defaultValue);
   return (
-    <Select style={{width: width}} onChange={setSelectedName}>
+    <Select style={{width: width}} onChange={setSelectedName} defaultValue={defaultValue}>
       {options}
     </Select>);
 };
@@ -149,8 +156,30 @@ function save(ranges: IRanges) {
   ranges._id = _id;
 }
 
-function RangesEditor({ranges}: { ranges: IRanges }) {
+function toggleBacktest(record: IBacktest) {
+  Meteor.call('ToggleBacktestingIsOn', record._id, (error) => {
+    if (error) {
+      alert(error);
+    }
+  });
+}
+
+function ToggleBacktestingButton({record}: { record: IBacktest }) {
+  const text = (record?.backtestingIsOff===true) ? 'Enable Backtesting':'Disable Backtesting';
+  const colorText = (record?.backtestingIsOff===true) ? 'green':'red';
+  return (
+    <div>
+      <Button style={{backgroundColor: colorText}} type="primary" shape="round"
+              onClick={() => toggleBacktest(record)}>{text}</Button>
+    </div>
+  );
+}
+
+function RangesEditor({ranges}: { ranges: IRanges } ) {
   const [selectedSetId, setSelectedSetId] = React.useState(null);
+
+  const record: IBacktest = useTracker(() => Backtests.findOne({_id: Meteor.userId()}) ?? {...DefaultIBacktest}, [Backtests]);
+
   if (selectedSetId===null && ranges) {
     ranges.tradeSettingsSetId = null;
   }
@@ -158,7 +187,7 @@ function RangesEditor({ranges}: { ranges: IRanges }) {
   const runBacktest = () => {
     ranges.tradeSettingsSetId = selectedSetId;
     ranges.countOnly = false;
-    Meteor.call('BacktestTradeSetMethod', ranges, (error) => {
+    Meteor.call('BacktestMethodEntryPoint', ranges, (error) => {
       if (error) {
         alert(`Error running backtest: ${error}`);
       }
@@ -179,8 +208,10 @@ function RangesEditor({ranges}: { ranges: IRanges }) {
     return moment();
   };
 
+  const disableRunButton = (selectedSetId===null) || (record.backtestingIsOff===true) || (record.isDone!==true) || (!ranges.name);
+
   return (
-    <div style={{padding: 25, marginBottom: 25}}>
+    <div style={{padding: 10}}>
       <Space direction={'vertical'} size={30}>
         <GainLossEditor label={'Gain range:'} ranges={ranges} isGain={true}/>
         <GainLossEditor label={'Loss range:'} ranges={ranges} isGain={false}/>
@@ -203,9 +234,9 @@ function RangesEditor({ranges}: { ranges: IRanges }) {
             value={ranges.exitHours}
             style={{width: 220}}
             onChange={(values) => {
-            ranges.exitHours = values;
-            save(ranges);
-          }}>
+              ranges.exitHours = values;
+              save(ranges);
+            }}>
             {hours}
           </Select>
         </Space>
@@ -224,9 +255,10 @@ function RangesEditor({ranges}: { ranges: IRanges }) {
           <SetNameSelector width={400} setSelectedName={setSelectedSetId}/>
         </Space>
         <TradeSettingsSetView setId={selectedSetId}/>
-        <Button disabled={(selectedSetId===null)} type="primary" shape="round" onClick={runBacktest}>
+        <Button disabled={disableRunButton} type="primary" shape="round" onClick={runBacktest}>
           Run Backtest
         </Button>
+        <ToggleBacktestingButton record={record}/>
       </Space>
     </div>
   );

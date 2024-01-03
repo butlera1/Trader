@@ -3,7 +3,7 @@ import './collections/stockData';
 import './collections/straddleData';
 import './collections/Backtests';
 import './collections/TradeSettingsSets';
-import './collections/Ranges'
+import './collections/Ranges';
 import {
   DeleteUserTradeSettingsRecord,
   GetNewUserTradeSettingsRecord,
@@ -41,7 +41,7 @@ import {DefaultAppSettings} from '../imports/Interfaces/IAppSettings';
 import {GetSPXData, StartBackgroundPolling} from './BackgroundPolling';
 import ScheduleEndOfDayWork from './ScheduleEndOfDayWork';
 import ScheduleStartOfDayWork from './ScheduleStartOfDayWork';
-import {BackTestCallPut, BacktestTradeSetMethod} from "./Backtest/SingleCallPutBacktest";
+import {BackTestCallPut, BacktestMethodEntryPoint, ToggleBacktestingIsOn} from "./Backtest/SingleCallPutBacktest";
 import PerformSystemMaintenance from "./PerformSystemMaintenance";
 import {GetTradeSettingsInfoFromSetId} from './collections/TradeSettingsSets';
 import {GetBacktestTradesFromIds} from './collections/Backtests';
@@ -101,9 +101,10 @@ Meteor.methods({
     ResetUsersMaxDailyGainSettings,
     GetSPXData,
     BackTestCallPut,
-    BacktestTradeSetMethod,
+    BacktestMethodEntryPoint,
     GetTradeSettingsInfoFromSetId,
     GetBacktestTradesFromIds,
+    ToggleBacktestingIsOn,
   }
 );
 

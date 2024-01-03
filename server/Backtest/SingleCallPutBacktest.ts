@@ -30,7 +30,7 @@ import {DefaultIBacktest} from "../../imports/Interfaces/IBacktest.ts";
 import {PrepareDailyTradeSummariesFor} from "../collections/DailyTradeSummaries.ts";
 
 const startOfTradeTime = GetNewYorkTimeAt(9, 30);
-
+let backTestingIsOn = true;
 
 function calculateSummary(backtestSummary: IBacktestSummary) {
   if (!backtestSummary || backtestSummary.resultsPerDay.length===0) {
@@ -98,7 +98,8 @@ function calculateSummary(backtestSummary: IBacktestSummary) {
   backtestSummary.dailyWinRate = countOfWinningDays / backtestSummary.resultsPerDay.length;
   for (let i = 0; i < weekDayTotalCounts.length; i++) {
     if (weekDayTotalCounts[i] > 0) {
-      weekDayWinRates[i] /= weekDayTotalCounts[i];}
+      weekDayWinRates[i] /= weekDayTotalCounts[i];
+    }
   }
   backtestSummary.mondayWinRate = weekDayWinRates[1];
   backtestSummary.tuesdayWinRate = weekDayWinRates[2];
@@ -176,7 +177,7 @@ async function backTestLoop(tradeSettings: ITradeSettings, allTradesForOneDay: s
       currentSample = nextBacktestPrice(tradeSettings);
       tradeSettings.monitoredPrices.push(currentSample);
     }
-  } while (closeTradeInfo.isClosed===false);
+  } while (closeTradeInfo.isClosed===false && backTestingIsOn);
   return closeTradeInfo;
 }
 
@@ -198,6 +199,9 @@ async function loadHistoricalData(ranges: IRanges, userId: string, symbol: strin
       throw error;
     });
     dataSet.push(data || []);
+    if (backTestingIsOn===false) {
+      break;
+    }
   }
   const loadingHistoricalData = `Loaded historical data for ${symbol}: ${dataSet.length}/${daysCount}`;
   Backtests.upsert({_id: userId}, {$unset: {isLoadingHistoricalData: ''}});
@@ -207,40 +211,42 @@ async function loadHistoricalData(ranges: IRanges, userId: string, symbol: strin
 }
 
 async function mainBacktestTradeLoop(tradeSetting: ITradeSettings, allTradesForOneDay: string[]) {
-  // Assign historical minute data to backtestingData within the tradeSetting object.
-  const endIndex = Math.min(getEndIndex(tradeSetting), tradeSetting.backtestingData.minuteData.length - 1);
-  tradeSetting.backtestingData.index = getStartIndex(tradeSetting);
+  if (backTestingIsOn) {
+    // Assign historical minute data to backtestingData within the tradeSetting object.
+    const endIndex = Math.min(getEndIndex(tradeSetting), tradeSetting.backtestingData.minuteData.length - 1);
+    tradeSetting.backtestingData.index = getStartIndex(tradeSetting);
 
-  let lastCloseTradeInfo = {...DefaultClosedTradeInfo};
-  lastCloseTradeInfo.nowPrerunning = tradeSetting.isPrerun;
-  lastCloseTradeInfo.nowPrerunningVIXSlope = tradeSetting.isPrerunVIXSlope;
-  lastCloseTradeInfo.nowPrerunningGainLimit = tradeSetting.isPrerunGainLimit;
+    let lastCloseTradeInfo = {...DefaultClosedTradeInfo};
+    lastCloseTradeInfo.nowPrerunning = tradeSetting.isPrerun;
+    lastCloseTradeInfo.nowPrerunningVIXSlope = tradeSetting.isPrerunVIXSlope;
+    lastCloseTradeInfo.nowPrerunningGainLimit = tradeSetting.isPrerunGainLimit;
 
-  // Loop to get all the trades for this day with this one tradeSetting.
-  do {
-    const isTradeReadyToRun = IsTradeReadyToRun(tradeSetting, false, lastCloseTradeInfo.nowPrerunning, lastCloseTradeInfo.nowPrerunningVIXSlope, lastCloseTradeInfo.nowPrerunningGainLimit);
-    if (isTradeReadyToRun) {
-      // Set the opening price to the open price of the current minute data (means long the trade).
-      const {minuteData, index} = tradeSetting.backtestingData;
-      tradeSetting.openingPrice = minuteData[index].open;
-      tradeSetting.csvSymbols = Constants.SPXSymbol;
-      tradeSetting.openingShortOnlyPrice = 0;
-      tradeSetting.whenOpened = new Date(minuteData[index].datetime);
-      if (tradeSetting.backtestingData.tradeType===OptionType.PUT) {
-        // If PUT, then openingPrice is flipped since PUT implies short (i.e. credit received).
-        tradeSetting.openingPrice = -tradeSetting.openingPrice;
+    // Loop to get all the trades for this day with this one tradeSetting.
+    do {
+      const isTradeReadyToRun = IsTradeReadyToRun(tradeSetting, false, lastCloseTradeInfo.nowPrerunning, lastCloseTradeInfo.nowPrerunningVIXSlope, lastCloseTradeInfo.nowPrerunningGainLimit);
+      if (isTradeReadyToRun) {
+        // Set the opening price to the open price of the current minute data (means long the trade).
+        const {minuteData, index} = tradeSetting.backtestingData;
+        tradeSetting.openingPrice = minuteData[index].open;
+        tradeSetting.csvSymbols = Constants.SPXSymbol;
+        tradeSetting.openingShortOnlyPrice = 0;
+        tradeSetting.whenOpened = new Date(minuteData[index].datetime);
+        if (tradeSetting.backtestingData.tradeType===OptionType.PUT) {
+          // If PUT, then openingPrice is flipped since PUT implies short (i.e. credit received).
+          tradeSetting.openingPrice = -tradeSetting.openingPrice;
+        }
+        // Perform all trades for the current day (attached to the tradeSetting object).
+        PrepareTradeForStartOfTrade(tradeSetting);
+        lastCloseTradeInfo = await backTestLoop(tradeSetting, allTradesForOneDay).catch(reason => {
+          LogData(tradeSetting, `Failed backTestLoop ${reason}`, new Error(reason));
+          return {...DefaultClosedTradeInfo, isClosed: true, isRepeat: false};
+        });
+      } else {
+        // Could be that we hit daily gain or loss limit.
+        tradeSetting.backtestingData.index = endIndex; // Force exit of the loop.
       }
-      // Perform all trades for the current day (attached to the tradeSetting object).
-      PrepareTradeForStartOfTrade(tradeSetting);
-      lastCloseTradeInfo = await backTestLoop(tradeSetting, allTradesForOneDay).catch(reason => {
-        LogData(tradeSetting, `Failed backTestLoop ${reason}`, new Error(reason));
-        return {...DefaultClosedTradeInfo, isClosed: true, isRepeat: false};
-      });
-    } else {
-      // Could be that we hit daily gain or loss limit.
-      tradeSetting.backtestingData.index = endIndex; // Force exit of the loop.
-    }
-  } while (tradeSetting.isRepeat && tradeSetting.backtestingData.index < endIndex);
+    } while (tradeSetting.isRepeat && tradeSetting.backtestingData.index < endIndex && backTestingIsOn);
+  }
 }
 
 export async function BackTestCallPut(ranges: IRanges, dataSet: ICandle[][], tradeSettingsArray: ITradeSettings[], userId: string): Promise<any> {
@@ -379,6 +385,7 @@ async function checkIfNotTooManyLoops(ranges: IRanges, dataSet: ICandle[][], tra
   const modifier = {
     $set: {
       ...DefaultIBacktest,
+      backtestingIsOff: !backTestingIsOn,
       resultsPerDay: [],
       estimatedSummariesCount: ranges.estimatedSummariesCount,
       estimatedTotalDaysTraded: ranges.estimatedDaysCount,
@@ -390,32 +397,54 @@ async function checkIfNotTooManyLoops(ranges: IRanges, dataSet: ICandle[][], tra
   return isOkToRun;
 }
 
-async function BacktestTradeSetMethod(ranges: IRanges) {
+function ToggleBacktestingIsOn() {
+  backTestingIsOn = !backTestingIsOn;
+  Backtests.upsert({_id: Meteor.userId()}, {$set: {backtestingIsOff: !backTestingIsOn}});
+  console.log(`Backtesting is now ${backTestingIsOn ? 'ON' : 'OFF'}.`);
+}
+
+async function PerformBacktest(ranges: IRanges) {
   try {
-    console.log(`Entering BacktestTradeSetMethod for ${ranges.name}`);
+    console.log(`Entering BacktestTradeSetMethod for ${ranges.name} with backtesting ${backTestingIsOn ? 'ON' : 'OFF'}...`);
     let tradesSet: ITradeSettingsSet = TradeSettingsSets.findOne(ranges.tradeSettingsSetId);
-    // Preload the tradeSettings for this tradeSettingsSetId.
-    const tradeSettingsArray: ITradeSettings[] = [];
-    for (let j = 0; j < tradesSet.tradeSettingIds.length; j++) {
-      const tradeSetting = TradeSettings.findOne(tradesSet.tradeSettingIds[j]);
-      if (tradeSetting) {
-        tradeSettingsArray.push(tradeSetting);
+    if (backTestingIsOn) {
+      // Preload the tradeSettings for this tradeSettingsSetId.
+      const tradeSettingsArray: ITradeSettings[] = [];
+      for (let j = 0; j < tradesSet.tradeSettingIds.length; j++) {
+        const tradeSetting = TradeSettings.findOne(tradesSet.tradeSettingIds[j]);
+        if (tradeSetting) {
+          tradeSettingsArray.push(tradeSetting);
+        }
       }
-    }
-    Backtests.remove({_id: tradesSet.userId}); // Remove main backtest record
-    Backtests.remove({userId: tradesSet.userId}); // Remove all Trade records associated with the main backtest record.
-    if (tradeSettingsArray.length===0) {
-      return;
-    }
-    const dataSet = await loadHistoricalData(ranges, tradesSet.userId, Constants.SPXSymbol);
-    const isOkToModel = await checkIfNotTooManyLoops(ranges, dataSet, tradeSettingsArray, tradesSet.userId);
-    if (isOkToModel) {
-      let results = await BackTestCallPut(ranges, dataSet, tradeSettingsArray, tradesSet.userId);
-      console.log(results.sumText);
+      Backtests.remove({_id: tradesSet.userId}); // Remove main backtest record
+      Backtests.remove({userId: tradesSet.userId}); // Remove all Trade records associated with the main backtest record.
+      if (tradeSettingsArray.length===0) {
+        return;
+      }
+      const dataSet = await loadHistoricalData(ranges, tradesSet.userId, Constants.SPXSymbol);
+      const isOkToModel = await checkIfNotTooManyLoops(ranges, dataSet, tradeSettingsArray, tradesSet.userId);
+      if (isOkToModel) {
+        let results = await BackTestCallPut(ranges, dataSet, tradeSettingsArray, tradesSet.userId);
+        console.log(results.sumText);
+      }
+    } else {
+      console.log(`Attempting Backtesting while it is turned off.`);
+      Backtests.remove({_id: tradesSet.userId}); // Remove main backtest record
+      Backtests.upsert({_id: tradesSet.userId}, {$set: {backtestingIsOff: true}});
     }
   } catch (error) {
     console.error(`BacktestTradeSetMethod failed with: ${error.message}`, error);
     throw new Meteor.Error(error.message);
+  }
+}
+
+function BacktestMethodEntryPoint(ranges: IRanges) {
+  if (ranges?.tradeSettingsSetId) {
+    PerformBacktest(ranges).then(r => {}).catch(err => {
+      console.error(`BacktestTradeSetMethod failed with: ${err.message}`, err);
+    });
+  } else {
+    console.error(`BacktestMethodEntryPoint failed with: ${ranges.name} has no tradeSettingsSetId.`);
   }
 }
 
@@ -510,5 +539,6 @@ async function TestBackTestCode(): Promise<void> {
 
 export {
   TestBackTestCode,
-  BacktestTradeSetMethod,
+  BacktestMethodEntryPoint,
+  ToggleBacktestingIsOn,
 }

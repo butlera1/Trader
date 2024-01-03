@@ -212,12 +212,12 @@ const columns: ColumnsType<IBacktestSummary> = [
   },
 ];
 
-function title(record: IBacktest) {
+function Title({record}: { record: IBacktest }) {
   if (!record) return (<h1>Backtest: No record</h1>);
 
   if (record.isLoadingHistoricalData) return (<h1>{record.loadingHistoricalData}</h1>);
 
-  if (!record.isOkToRun) return (
+  if (record.isOkToRun === false) return (
     <h1 style={{color: 'red'}}>Backtest: It is not OK to run with {record.estimatedSummariesCount} summaries
       estimated.</h1>
   );
@@ -237,9 +237,9 @@ export function BasicBacktestView() {
 
   return (
     <div>
+      <Title record={record}/>
       <Table
         style={{border: 'solid 1px red'}}
-        title={() => title(record)}
         size="small"
         columns={columns}
         dataSource={record.summaries}

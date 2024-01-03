@@ -8,24 +8,28 @@ import {DeleteOutlined, QuestionCircleOutlined} from "@ant-design/icons";
 import RangesEditor from "./RangesEditor.tsx";
 import IRanges, {GetDefaultRanges} from "../../Interfaces/IRanges.ts";
 
-const defaultRanges = GetDefaultRanges();
-
 function getName(range: IRanges) {
   return `${range.name || 'No name'}${range.isDefault ? ' *':''}`
 }
 
-function getDefault() : IRanges {
+function getDefault(): IRanges {
   const rangesArray = Ranges.find().fetch() ?? [];
   let record = rangesArray.find((range: IRanges) => range.isDefault) ?? rangesArray[0];
-  return record || {};
+  return record || null;
 }
 
 export default function BacktestPatternsEditor() {
-  const rangesArray = useTracker(() => Ranges.find().fetch(), [Ranges]) as IRanges[];
   const [selectedRange, setSelectedRange] = React.useState(getDefault());
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [editName, setEditName] = useState('');
 
+  const rangesArray = useTracker(() => {
+    const rangesArray = Ranges.find().fetch();
+    if (selectedRange===null) {
+      setSelectedRange(getDefault());
+    }
+    return rangesArray;
+  }, [Ranges]) as IRanges[];
 
   const showEditNameModal = () => {
     setEditName(selectedRange.name);
@@ -78,7 +82,8 @@ export default function BacktestPatternsEditor() {
           defaultValue={selectedRange?._id}
           value={selectedRange?._id}
         >
-          {rangesArray.map((record) => <Select.Option key={record._id} value={record._id}>{getName(record)}</Select.Option>)}
+          {rangesArray.map((record) => <Select.Option key={record._id}
+                                                      value={record._id}>{getName(record)}</Select.Option>)}
         </Select>
         <Button disabled={!selectedRange || selectedRange.isDefault} type="primary"
                 shape="round" onClick={setDefault} style={{marginTop: 5}}>Default</Button>
@@ -116,7 +121,7 @@ export default function BacktestPatternsEditor() {
           </Button>
         </Popconfirm>
       </Space>
-      <RangesEditor ranges={selectedRange}/>
+      <RangesEditor ranges={selectedRange || {}}/>
     </div>
   );
 }
