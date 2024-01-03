@@ -17,9 +17,9 @@ Trades.createIndex({userId: 1});
 
 /******************* Publish liveTrades **********************************/
 function publishLiveTrades() {
-  return Trades.find();
   // const query = {userId: this.userId, whyClosed: {$exists: false}};
-  // return Trades.find(query);
+  const query = {userId: this.userId};
+  return Trades.find(query);
 }
 
 Meteor.publish('liveTrades', publishLiveTrades);
