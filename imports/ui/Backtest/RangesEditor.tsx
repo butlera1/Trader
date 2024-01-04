@@ -208,7 +208,7 @@ function RangesEditor({ranges}: { ranges: IRanges } ) {
     return moment();
   };
 
-  const disableRunButton = (selectedSetId===null) || (record.backtestingIsOff===true) || (record.isDone!==true) || (!ranges.name);
+  const disableRunButton = (selectedSetId===null) || (record.backtestingIsOff===true) || (record.isDone === false) || (!ranges.name);
 
   return (
     <div style={{padding: 10}}>
