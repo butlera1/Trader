@@ -198,6 +198,7 @@ async function loadHistoricalData(ranges: IRanges, userId: string, symbol: strin
       console.error(`GetHistoricalData failed with: ${error.message}`, error);
       throw error;
     });
+    console.log(`Loaded historical data for ${symbol} on ${date.format('YYYY-MM-DD')} of length ${data.length}.`);
     dataSet.push(data || []);
     if (backTestingIsOn===false) {
       break;

@@ -804,6 +804,9 @@ function IsTradeReadyToRun(
   }
   let now = null;
   if (tradeSettings.isBacktesting) {
+    if (!tradeSettings.backtestingData.minuteData[tradeSettings.backtestingData.index]) {
+      console.error(`IsTradeReadyToRun: backtestingData.index ${tradeSettings.backtestingData.index} is out of range for array size ${tradeSettings.backtestingData.minuteData.length}`);
+    }
     now = dayjs(tradeSettings.backtestingData.minuteData[tradeSettings.backtestingData.index].datetime);
     if (IsDailyGainOrLossLimitReached(tradeSettings, now)) {
       return false;
