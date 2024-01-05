@@ -26,13 +26,9 @@ const hours = [
 const SetNameSelector = ({width, setSelectedName}) => {
   const sets: ITradeSettingsSet[] = useTracker(() => TradeSettingsSets.find().fetch(), [TradeSettingsSets]);
   const options = sets.map(({_id, name}) => <Select.Option key={_id} value={_id}>{name}</Select.Option>);
-  const defaultValue = sets.find((set) => set.isDefault)?._id;
-  if (!defaultValue) {
-    return <div>No Trade Pattern Groups Found</div>;
-  }
-  setSelectedName(defaultValue);
+
   return (
-    <Select style={{width: width}} onChange={setSelectedName} defaultValue={defaultValue}>
+    <Select style={{width: width}} onChange={setSelectedName} >
       {options}
     </Select>);
 };
