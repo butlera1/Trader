@@ -41,7 +41,12 @@ import {DefaultAppSettings} from '../imports/Interfaces/IAppSettings';
 import {GetSPXData, StartBackgroundPolling} from './BackgroundPolling';
 import ScheduleEndOfDayWork from './ScheduleEndOfDayWork';
 import ScheduleStartOfDayWork from './ScheduleStartOfDayWork';
-import {BackTestCallPut, BacktestMethodEntryPoint, ToggleBacktestingIsOn} from "./Backtest/SingleCallPutBacktest";
+import {
+    BackTestCallPut,
+    BacktestMethodEntryPoint,
+    ResetBacktester,
+    ToggleBacktestingIsOn
+} from "./Backtest/SingleCallPutBacktest";
 import PerformSystemMaintenance from "./PerformSystemMaintenance";
 import {GetTradeSettingsInfoFromSetId} from './collections/TradeSettingsSets';
 import {GetBacktestTradesFromIds} from './collections/Backtests';
@@ -120,6 +125,8 @@ AppSettings.upsert(Constants.appSettingsId, settings);
 PerformSystemMaintenance();
 
 // TestBackTestCode().then(r => console.log(r));
+
+ResetBacktester();
 
 StartBackgroundPolling();
 ScheduleStartOfDayWork();
