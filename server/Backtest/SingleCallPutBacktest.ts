@@ -390,7 +390,7 @@ async function checkIfNotTooManyLoops(ranges: IRanges, dataSet: ICandle[][], tra
       resultsPerDay: [],
       estimatedSummariesCount: ranges.estimatedSummariesCount,
       estimatedTotalDaysTraded: ranges.estimatedDaysCount,
-      isDone: false,
+      isDone: true,
       isOkToRun,
     }
   };
