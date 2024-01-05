@@ -110,6 +110,7 @@ Meteor.methods({
     GetTradeSettingsInfoFromSetId,
     GetBacktestTradesFromIds,
     ToggleBacktestingIsOn,
+    ResetBacktester,
   }
 );
 

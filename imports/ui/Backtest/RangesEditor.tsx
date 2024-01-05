@@ -28,7 +28,7 @@ const SetNameSelector = ({width, setSelectedName}) => {
   const options = sets.map(({_id, name}) => <Select.Option key={_id} value={_id}>{name}</Select.Option>);
 
   return (
-    <Select style={{width: width}} onChange={setSelectedName} >
+    <Select style={{width: width}} onChange={setSelectedName}>
       {options}
     </Select>);
 };
@@ -171,7 +171,15 @@ function ToggleBacktestingButton({record}: { record: IBacktest }) {
   );
 }
 
-function RangesEditor({ranges}: { ranges: IRanges } ) {
+function resetBacktester() {
+  Meteor.call('ResetBacktester', (error) => {
+    if (error) {
+      alert(error);
+    }
+  });
+}
+
+function RangesEditor({ranges}: { ranges: IRanges }) {
   const [selectedSetId, setSelectedSetId] = React.useState(null);
 
   const record: IBacktest = useTracker(() => Backtests.findOne({_id: Meteor.userId()}) ?? {...DefaultIBacktest}, [Backtests]);
@@ -204,7 +212,7 @@ function RangesEditor({ranges}: { ranges: IRanges } ) {
     return moment();
   };
 
-  const disableRunButton = (selectedSetId===null) || (record.backtestingIsOff===true) || (record.isDone === false) || (!ranges.name);
+  const disableRunButton = (selectedSetId===null) || (record.backtestingIsOff===true) || (record.isDone===false) || (!ranges.name);
 
   return (
     <div style={{padding: 10}}>
@@ -255,6 +263,9 @@ function RangesEditor({ranges}: { ranges: IRanges } ) {
           Run Backtest
         </Button>
         <ToggleBacktestingButton record={record}/>
+          <Button type="primary" shape="round" onClick={resetBacktester}>
+              Reset Backtester
+          </Button>
       </Space>
     </div>
   );

@@ -574,7 +574,7 @@ async function CheckForTradeCompletion(liveTrade: ITradeSettings, currentSampleP
 }
 
 function runMonitorMethod(monitorMethod) {
-  const settings :IAppSettings = AppSettings.findOne(Constants.appSettingsId);
+  const settings: IAppSettings = AppSettings.findOne(Constants.appSettingsId);
   // Sync with the background polling interval speed.
   Meteor.setTimeout(monitorMethod, settings.backgroundPollingIntervalMillisecs ?? Constants.ThreeSeconds * 2);
 }

@@ -15,7 +15,7 @@ interface IBacktest {
 }
 
 const DefaultIBacktest: IBacktest = {
-    isDone: false,
+    isDone: true,
     backtestingIsOff: false,
     totalTradesCount: 0,
     totalSummariesCount: 0,

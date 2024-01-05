@@ -542,15 +542,9 @@ function ResetBacktester() {
   const modifier = {
     $set: {
       ...DefaultIBacktest,
-      backtestingIsOff: true,
-      resultsPerDay: [],
-      estimatedSummariesCount: 0,
-      estimatedTotalDaysTraded: 0,
-      isDone: true,
-      isOkToRun: true,
     }
   };
-  Backtests.upsert({}, modifier);
+  Backtests.upsert({}, modifier, {multi: true});
 }
 
 export {
