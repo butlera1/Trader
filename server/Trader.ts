@@ -160,6 +160,10 @@ async function CloseTrade(tradeSettings: ITradeSettings, currentPrice: IPrice): 
         gainLoss: tradeSettings.gainLoss,
       }
     });
+    const message = `${tradeSettings.userName}: Trade closed (${tradeSettings.whyClosed}): Entry: $${openingPrice.toFixed(2)}, ` +
+      `Exit: $${tradeSettings.closingPrice?.toFixed(2)}, ` +
+      `G/L $${tradeSettings.gainLoss?.toFixed(2)} at ${tradeSettings.whenClosed} NY, _ID: ${tradeSettings._id}`;
+    LogData(tradeSettings, message);
   }
   const isEmergencyClose = SaveTradeToDailySummaryAndIsEmergencyClose(tradeSettings, currentPrice.whenNY);
   if (isEmergencyClose && !isBacktesting) {
