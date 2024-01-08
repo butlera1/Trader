@@ -836,21 +836,12 @@ function IsTradeReadyToRun(
   const notTooLateToTrade = now.isBefore(justBeforeClose) || tradeSettings.isBacktesting;
   const tradePatternIncludesThisDayOfTheWeek = tradeSettings.days?.includes(currentDayOfTheWeek);
   const hasLegsInTrade = tradeSettings.legs.length > 0;
-  const tradeIsNotADuplicate = tradeSettings.isBacktesting || IsNotDuplicateTrade(tradeSettings);
-  const isADuplicateTrade = !tradeIsNotADuplicate;
   let performTheTrade = (
     tradeSettings.isActive &&
     notTooLateToTrade &&
     tradePatternIncludesThisDayOfTheWeek &&
-    hasLegsInTrade &&
-    tradeIsNotADuplicate
+    hasLegsInTrade
   );
-  if (isADuplicateTrade && !forceTheTrade) {
-    // Write logs indicating that this happened and is not desired.
-    const msg = `IsTradeReadyToRun: Duplicated trade for ${tradeSettings.userName} with trade ${tradeSettings.description}. Skipping this additional trade.`;
-    LogData(tradeSettings, msg);
-    return false;
-  }
   performTheTrade = performTheTrade || forceTheTrade;
   if (!performTheTrade) {
     const msg = `Skipping a trade setting for ${tradeSettings.userName} @ ${nowNYText} (NY). \
