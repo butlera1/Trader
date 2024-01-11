@@ -8,6 +8,7 @@ import IStreamerData from "../imports/Interfaces/IStreamData";
 import ITradeSettings, {BadDefaultIPrice, IPrice} from "../imports/Interfaces/ITradeSettings.ts";
 import {Trades} from "./collections/Trades";
 import {IAppSettings} from "../imports/Interfaces/IAppSettings.ts";
+import {MonitorTradeToCloseIt} from "./Trader.ts";
 
 
 let csvSymbols: string = '$VIX.X,$SPX.X';
@@ -52,9 +53,12 @@ function getAngleOfSlope(slope) {
   return angle;
 }
 
-function gatherUpSymbolsNeeded() {
+function GetLiveTrades() : ITradeSettings[] {
+  return Trades.find({whyClosed: {$exists: false}}).fetch();
+}
+
+function gatherUpSymbolsNeeded(liveTrades?: ITradeSettings[]) {
   let symbolsNeeded = [Constants.SPXSymbol, Constants.VIXSymbol];
-  const liveTrades = Trades.find({whyClosed: {$exists: false}});
   liveTrades.forEach((liveTrade: ITradeSettings) => {
     const symbols = liveTrade.csvSymbols.split(',');
     symbols.forEach((symbol) => {
@@ -74,7 +78,8 @@ async function poll() {
   }
   const releaseFunc = await PollingMutex();
   try {
-    csvSymbols = gatherUpSymbolsNeeded();
+    const liveTrades = GetLiveTrades();
+    csvSymbols = gatherUpSymbolsNeeded(liveTrades);
     const results = await GetPriceForSymbols(userId, csvSymbols).catch(err => {
       console.error(err);
       return [];
@@ -96,6 +101,7 @@ async function poll() {
         currentQuote.slopeAngle = getAngleOfSlope(currentQuote.slope);
       }
     });
+    liveTrades.forEach((liveTrade: ITradeSettings) => MonitorTradeToCloseIt(liveTrade).catch(err => console.error(err)));
   } catch (err) {
     console.error(err);
   }

@@ -33,20 +33,11 @@ import PollingMutex from './PollingMutex';
 import {CalculateGain, CalculateLimitsAndFees, GetNewYorkTimeAt} from '../imports/Utils';
 import Semaphore from 'semaphore';
 import IUserSettings from '../imports/Interfaces/IUserSettings';
-import {
-  AddSymbolsToPolling,
-  GetTradePriceViaBackgroundPolling,
-  GetVIXMark,
-  GetVIXSlope,
-  GetVIXSlopeAngle
-} from "./BackgroundPolling";
+import {GetTradePriceViaBackgroundPolling, GetVIXMark, GetVIXSlope, GetVIXSlopeAngle} from "./BackgroundPolling";
 import {DirectionUp} from '../imports/Interfaces/IPrerunVIXSlopeValue';
 import {DefaultClosedTradeInfo, IClosedTradeInfo} from '../imports/Interfaces/IClosedTradeInfo';
 import {TradeSettingsSets} from "./collections/TradeSettingsSets";
 import ITradeSettingsSet, {DefaultTradeSettingsSets} from "../imports/Interfaces/ITradeSettingsSet";
-import Constants from "../imports/Constants.ts";
-import {AppSettings} from "./collections/AppSettings.js";
-import {IAppSettings} from "../imports/Interfaces/IAppSettings.ts";
 
 dayjs.extend(duration);
 dayjs.extend(isoWeek);
@@ -577,53 +568,39 @@ async function CheckForTradeCompletion(liveTrade: ITradeSettings, currentSampleP
   return {...DefaultClosedTradeInfo, isClosed: false, isRepeat: false};
 }
 
-function runMonitorMethod(monitorMethod) {
-  const settings: IAppSettings = AppSettings.findOne(Constants.appSettingsId);
-  // Sync with the background polling interval speed.
-  Meteor.setTimeout(monitorMethod, settings.backgroundPollingIntervalMillisecs ?? Constants.ThreeSeconds * 2);
-}
-
-function MonitorTradeToCloseItOut(liveTrade: ITradeSettings) {
-  AddSymbolsToPolling(liveTrade.csvSymbols);
-  const monitorMethod = async () => {
+async function MonitorTradeToCloseIt(liveTrade: ITradeSettings) {
+  try {
     const localEarlyExitTime = GetNewYorkTimeAt(liveTrade.exitHour, liveTrade.exitMinute);
-    try {
-      // The latestActiveTradeRecord can be updated via an 'Emergency Exit' call so check it along with the liveTrade.
-      const latestActiveTradeRecord = Trades.findOne(liveTrade._id) ?? {};
-      const isClosedAlready = !!(latestActiveTradeRecord.whyClosed || liveTrade.whyClosed);
-      if (isClosedAlready) {
-        // trade has been completed already (probably emergency exit) so stop the interval timer and exit.
-        return;
-      }
-      // Get the current price for the trade.
-      const currentSamplePrice: IPrice = GetTradePriceViaBackgroundPolling(liveTrade);
-      if (currentSamplePrice.price===Number.NaN || currentSamplePrice.price===0) {
-        runMonitorMethod(monitorMethod);
-        return; // Try again on next interval timeout.
-      }
-      liveTrade.monitoredPrices.push(currentSamplePrice);
-
-      const closedInfo: IClosedTradeInfo = await CheckForTradeCompletion(liveTrade, currentSamplePrice, localEarlyExitTime);
-      if (!closedInfo.isClosed) {
-        // Loop again waiting for one of the close patterns to get hit.
-        runMonitorMethod(monitorMethod);
-      } else {
-        if (closedInfo.isRepeat) {
-          // Start another trade if IsRepeat.
-          const {nowPrerunning, nowPrerunningVIXSlope, nowPrerunningGainLimit} = closedInfo;
-          // Get fresh copy of the settings without values for whyClosed, openingPrice, closingPrice, gainLoss, etc.
-          const settings = TradeSettings.findOne(liveTrade.originalTradeSettingsId);
-          ExecuteTrade(settings, false, nowPrerunning, nowPrerunningVIXSlope, nowPrerunningGainLimit)
-            .catch((reason) => LogData(settings, `Failed doing a repeat ExecuteTrade ${reason}`, new Error(reason)));
-        }
-      }
-    } catch (ex) {
-      // We have an emergency if this happens, so send communications.
-      const message = `Trader has an exception in MonitorTradeToCloseItOut.`;
-      LogData(liveTrade, message, ex);
+    // The latestActiveTradeRecord can be updated via an 'Emergency Exit' call so check it along with the liveTrade.
+    const latestActiveTradeRecord = Trades.findOne(liveTrade._id) ?? {};
+    const isClosedAlready = !!(latestActiveTradeRecord.whyClosed || liveTrade.whyClosed);
+    if (isClosedAlready) {
+      // trade has been completed already (probably emergency exit) so stop the interval timer and exit.
+      return;
     }
-  };
-  runMonitorMethod(monitorMethod);
+    // Get the current price for the trade.
+    const currentSamplePrice: IPrice = GetTradePriceViaBackgroundPolling(liveTrade);
+    if (currentSamplePrice.price===Number.NaN || currentSamplePrice.price===0) {
+      return; // Try again on next interval timeout.
+    }
+    liveTrade.monitoredPrices.push(currentSamplePrice);
+
+    const closedInfo: IClosedTradeInfo = await CheckForTradeCompletion(liveTrade, currentSamplePrice, localEarlyExitTime);
+    if (closedInfo.isClosed) {
+      if (closedInfo.isRepeat) {
+        // Start another trade if IsRepeat.
+        const {nowPrerunning, nowPrerunningVIXSlope, nowPrerunningGainLimit} = closedInfo;
+        // Get fresh copy of the settings without values for whyClosed, openingPrice, closingPrice, gainLoss, etc.
+        const settings = TradeSettings.findOne(liveTrade.originalTradeSettingsId);
+        ExecuteTrade(settings, false, nowPrerunning, nowPrerunningVIXSlope, nowPrerunningGainLimit)
+          .catch((reason) => LogData(settings, `Failed doing a repeat ExecuteTrade ${reason}`, new Error(reason)));
+      }
+    }
+  } catch (ex) {
+    // We have an emergency if this happens, so send communications.
+    const message = `Trader has an exception in MonitorTradeToCloseItOut.`;
+    LogData(liveTrade, message, ex);
+  }
 }
 
 function CalculateGrossOrderBuysAndSells(order) {
@@ -771,7 +748,7 @@ async function PlaceOpeningOrderAndMonitorToClose(tradeSettings: ITradeSettings)
     LogData(tradeSettings, `Error: Opening order for trade: ${tradeSettings._id}, ${tradeSettings.userName} has bad opening price.`, null);
     return;
   }
-  MonitorTradeToCloseItOut(tradeSettings);
+  // Background polling will see this trade and monitor it for close each polling cycle.
   return;
 }
 
@@ -964,7 +941,7 @@ function PerformTradeForAllUsers() {
 
 export {
   WaitForOrderCompleted,
-  MonitorTradeToCloseItOut,
+  MonitorTradeToCloseIt,
   GetNewYorkTime24HourNow,
   GetNewYorkTimeNowAsText,
   PerformTradeForAllUsers,

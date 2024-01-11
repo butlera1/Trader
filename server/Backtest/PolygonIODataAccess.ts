@@ -3,16 +3,104 @@
  */
 import {StraddleData} from '../collections/straddleData.js';
 import {StockData} from '../collections/stockData.js';
-import {IAggs, restClient} from '@polygon.io/client-js';
+import {IAggs, IForexQuotes, ITradesQuotesQuery, restClient} from '@polygon.io/client-js';
 import dayjs, {Dayjs} from 'dayjs'
+import {GetNewYorkTimeAsText, GetNewYorkTimeAt} from "../../imports/Utils.ts";
+import ICandle, {DefaultCandle} from "../../imports/Interfaces/ICandle.ts";
 
-const rest = restClient('CYBLK7kpM0FSCqMVn7auHmAdpFeuvm5s');
 let straddleCache = null;
 let stockCache = null;
 
+const globalFetchOptions = {
+  pagination: false,
+};
+const rest = restClient('CYBLK7kpM0FSCqMVn7auHmAdpFeuvm5s', "https://api.polygon.io", globalFetchOptions);
+
+async function getTickForUnixNanoTime(symbol: string, timeText: string): Promise<ICandle> {
+  try {
+    const query: ITradesQuotesQuery = {'timestamp.lte': timeText, limit: 1};
+    let tickData: IForexQuotes = await rest.forex.quotes(symbol, query);
+    if (tickData?.results?.length > 0) {
+      const tick = tickData.results[0];
+      const lastTick = tickData.results[tickData.results.length - 1];
+      const d1 = GetNewYorkTimeAsText(new Date(tick.participant_timestamp / 1000000));
+      const d2 = GetNewYorkTimeAsText(new Date(lastTick.participant_timestamp / 1000000));
+      // console.log(`First tick time: participant_ts: ${d1} to ${d2}`);
+      return {
+        open: tick.bid_price,
+        high: tick.ask_price,
+        low: tick.bid_price,
+        close: tick.bid_price,
+        volume: 0,
+        datetime: tick.participant_timestamp / 1000000,
+      };
+    }
+  } catch (error) {
+    console.error('Error fetching tick data:', error);
+  }
+  return {...DefaultCandle};
+}
+
+export async function GetTickDataForDay(symbol: string, date: Dayjs) {
+  try {
+    let startTime = dayjs(`${date.format("YYYY-MM-DD")} 14:30:00.00Z`);
+    const candles: ICandle[] = [];
+    let count = 0;
+    console.log(`Starting time NY: ${GetNewYorkTimeAsText(startTime.toDate())}`);
+    const clockStart = dayjs();
+    while (count < 4680) {
+      const startTimeNanosecs = (startTime.unix() * 1000000000).toString(10);
+      const result = await getTickForUnixNanoTime(symbol, startTimeNanosecs);
+      if (count % 250===0) {
+        console.log(`Looping time NY: ${GetNewYorkTimeAsText(startTime.toDate())}, count: ${count}`);
+      }
+      if (result) {
+        candles.push(result);
+      }
+      count++;
+      startTime = startTime.add(5, 'seconds');
+      // console.log(`Looping time NY: ${GetNewYorkTimeAsText(startTime.toDate())}`);
+    }
+    console.log(`Done in ${dayjs().diff(clockStart, 'second')} seconds.`);
+    console.log(`Ending time NY: ${GetNewYorkTimeAsText(startTime.toDate())}`);
+    return candles;
+  } catch (error) {
+    console.error('Error fetching tick data:', error);
+  }
+  return [];
+}
+
+export async function GetSPYTickDataForDayWorks(date: Dayjs) {
+  try {
+    const startTime = dayjs(`${date.format("YYYY-MM-DD")} 16:30:00.00Z`);
+    const startTimeNanosecs = (startTime.unix() * 1000000000).toString(10);
+    const nyStart = (GetNewYorkTimeAt(9, 30).year(2023).month(12).day(17).unix() * 1000000).toString(10);
+    const nyEnd = (GetNewYorkTimeAt(11, 0).year(2023).month(12).day(17).unix() * 1000000).toString(10);
+    const validTS = '1702947598496106496';
+    console.log(`UTC: ${nyStart} to ${nyEnd}`);
+    console.log(`Valid: ${validTS}, ${startTimeNanosecs}`);
+    const dateTry = (new Date('2023-12-18 16:30:00.00Z').getTime() * 1000000).toString(10);
+    console.log(`Date: ${dateTry}`);
+
+    //const query: ITradesQuotesQuery = {'timestamp.lte': '1702947598496106496', limit: 10000};
+    const query: ITradesQuotesQuery = {'timestamp.lte': dateTry, limit: 10000};
+    const ticker = 'SPY';
+    let tickData: IForexQuotes = await rest.forex.quotes(ticker, query);
+    if (tickData?.results?.length > 0) {
+      const tick = tickData.results[0];
+      const lastTick = tickData.results[tickData.results.length - 1];
+      const d1 = GetNewYorkTimeAsText(new Date(tick.participant_timestamp / 1000000));
+      const d2 = GetNewYorkTimeAsText(new Date(lastTick.participant_timestamp / 1000000));
+      console.log(`First tick time: participant_ts: ${d1} to ${d2}`);
+    }
+    console.log('Done');
+  } catch (error) {
+    console.error('Error fetching tick data:', error);
+  }
+}
 
 
-export async function GetOptionData(ticker: string = 'QQQ', date: Dayjs = dayjs('2022-09-29'), price:number): Promise<any> {
+export async function GetOptionData(ticker: string = 'QQQ', date: Dayjs = dayjs('2022-09-29'), price: number): Promise<any> {
   try {
     const dateStr = date.format('YYYY-MM-DD');
     // Get underlying strike price first and use it to get options data.
@@ -27,7 +115,8 @@ export async function GetOptionData(ticker: string = 'QQQ', date: Dayjs = dayjs(
     const callOptionsTicker = `O:${ticker}${optionDate.format('YYMMDD')}C${strikePrice}`;
     const calls = await rest.options.aggregates(callOptionsTicker, 1, 'minute', from, to, {sort: 'asc', limit: 1000});
     const puts = await rest.options.aggregates(putOptionsTicker, 1, 'minute', from, to, {sort: 'asc', limit: 1000});
-    if (puts.resultsCount === 0 || calls.resultsCount === 0) {
+
+    if (puts.resultsCount===0 || calls.resultsCount===0) {
       return null;
     }
     const firstPutTime = dayjs(puts.results[0].t).format('hh:mm:ss');
@@ -74,27 +163,27 @@ function MergePutsAndCalls(putData: IAggs, callData: IAggs) {
   const puts = putData.results;
   let pCnt = 0;
   let cCnt = 0;
-  
+
   // TODO (AWB) Redo this to extrapolate the missing data such that normalized array has every minute of the day.
-  
+
   // Loop over all the bars.
   while (pCnt < puts.length && cCnt < calls.length) {
     // Loop over the bars until we get ones where the timestamps match
-    while ((pCnt < puts.length && cCnt < calls.length) && (puts[pCnt].t !== calls[cCnt].t)) {
+    while ((pCnt < puts.length && cCnt < calls.length) && (puts[pCnt].t!==calls[cCnt].t)) {
       // Move puts to match calls if put's time is less.
       while (pCnt < puts.length && puts[pCnt].t < calls[cCnt].t) {
         pCnt++
       }
-      if (pCnt === puts.length) break;
-      
+      if (pCnt===puts.length) break;
+
       // Move calls if call's Time is less than put's.
       while (cCnt < calls.length && calls[cCnt].t < puts[pCnt].t) {
         cCnt++
       }
-      if (cCnt === calls.length) break;
+      if (cCnt===calls.length) break;
     }
-    if ((cCnt === calls.length) || (pCnt === puts.length)) break;
-    
+    if ((cCnt===calls.length) || (pCnt===puts.length)) break;
+
     // Now we have matching timestamps so we record the set as a straddle.
     const call = calls[cCnt];
     const put = puts[pCnt];
@@ -118,7 +207,7 @@ function MergePutsAndCallsInterpolated(putData: IAggs, callData: IAggs) {
     let time = dayjs(Math.min(put.t, call.t));
     let nextTime = dayjs(Math.max(put.t, call.t));
     while (time.isBefore(nextTime) || time.isSame(nextTime)) {
-      if (results.length > 0 && results[results.length - 1].time === time.valueOf()) {
+      if (results.length > 0 && results[results.length - 1].time===time.valueOf()) {
         // Remove previously created element to recreate it with the newer put & call.
         results.pop();
       } else {
@@ -187,7 +276,7 @@ export async function GetDaysStraddleValues(ticker = 'QQQ', date: Dayjs = dayjs(
       stockCache[stockId] = result;
       StockData.upsert({_id: stockId}, {stocks: result});
     }
-    if (!result?.results || result.results.length === 0) {
+    if (!result?.results || result.results.length===0) {
       return null;
     }
     const price = getOpeningStrikePrice(minutesDelay, isUseDelay, result.results);
@@ -207,7 +296,7 @@ export async function GetDaysStraddleValues(ticker = 'QQQ', date: Dayjs = dayjs(
       sort: 'asc',
       limit: 1000
     });
-    if (puts.resultsCount === 0 || calls.resultsCount === 0) {
+    if (puts.resultsCount===0 || calls.resultsCount===0) {
       // Cache no straddle data for a holiday.
       StraddleData.upsert({_id: optionsTicker}, {straddles: null});
       straddleCache[optionsTicker] = null;
@@ -236,7 +325,7 @@ export async function GetDaysOptionValues(ticker = 'QQQ', optionType, date: Dayj
       stockCache[stockId] = result;
       StockData.upsert({_id: stockId}, {stocks: result});
     }
-    if (!result?.results || result.results.length === 0) {
+    if (!result?.results || result.results.length===0) {
       return null;
     }
     const price = getOpeningStrikePrice(minutesDelay, isUseDelay, result.results);
@@ -256,7 +345,7 @@ export async function GetDaysOptionValues(ticker = 'QQQ', optionType, date: Dayj
       sort: 'asc',
       limit: 1000
     });
-    if (puts.resultsCount === 0 || calls.resultsCount === 0) {
+    if (puts.resultsCount===0 || calls.resultsCount===0) {
       // Cache no straddle data for a holiday.
       StraddleData.upsert({_id: optionsTicker}, {straddles: null});
       straddleCache[optionsTicker] = null;

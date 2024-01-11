@@ -11,7 +11,7 @@
   "dependencies": {
     "@babel/runtime": "^7.17.9",
     "@marknokes/tdameritrade": "^1.2.12",
-    "@polygon.io/client-js": "^6.0.4",
+    "@polygon.io/client-js": "^7.3.2",
     "@types/meteor": "^2.9.7",
     "@types/node": "^18.11.9",
     "antd": "^4.23.6",

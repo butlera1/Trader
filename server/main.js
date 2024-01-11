@@ -24,10 +24,8 @@ import {
   SellStraddle,
   SetUserAccessInfo
 } from './TDAApi/TDAApi';
-import {EmergencyCloseAllTrades, EmergencyCloseSingleTrade, ExecuteTrade, MonitorTradeToCloseItOut} from './Trader';
+import {EmergencyCloseAllTrades, EmergencyCloseSingleTrade, ExecuteTrade} from './Trader';
 import {WebApp} from 'meteor/webapp';
-import {Trades} from './collections/Trades';
-import {LogData} from './collections/Logs';
 import {AppSettings, GetAppSettings, SetAppSettings} from './collections/AppSettings';
 import Constants from '../imports/Constants';
 
@@ -42,14 +40,17 @@ import {GetSPXData, StartBackgroundPolling} from './BackgroundPolling';
 import ScheduleEndOfDayWork from './ScheduleEndOfDayWork';
 import ScheduleStartOfDayWork from './ScheduleStartOfDayWork';
 import {
-    BackTestCallPut,
-    BacktestMethodEntryPoint,
-    ResetBacktester,
-    ToggleBacktestingIsOn
+  BackTestCallPut,
+  BacktestMethodEntryPoint,
+  ResetBacktester,
+  ToggleBacktestingIsOn
 } from "./Backtest/SingleCallPutBacktest";
 import PerformSystemMaintenance from "./PerformSystemMaintenance";
 import {GetTradeSettingsInfoFromSetId} from './collections/TradeSettingsSets';
 import {GetBacktestTradesFromIds} from './collections/Backtests';
+
+import './EODHdApi/ConvertTickDataToCandle.ts';
+
 
 dayjs.extend(utc);
 dayjs.extend(timezone);
@@ -68,17 +69,6 @@ function TestStrategy(tradeSettingsId) {
   const forceTheTrade = true;
   const tradeSettings = TradeSettings.findOne(tradeSettingsId);
   ExecuteTrade(tradeSettings, forceTheTrade, tradeSettings.isPrerun, tradeSettings.isPrerunVIXSlope, tradeSettings.isPrerunGainLimit).then();
-}
-
-function CheckForAnyExistingTradesAndMonitorThem() {
-  console.log(`Checking for existing trades...`);
-  // Find all live trades for this user.
-  const liveTrades = Trades.find({whyClosed: {$exists: false}}).fetch();
-  console.log(`Found ${liveTrades.length} existing trades. Monitoring each...`);
-  liveTrades.forEach((tradeSettings) => {
-    LogData(tradeSettings, `BootTime: Start monitoring existing trade ${tradeSettings._id} for ${tradeSettings.userName}.`);
-    MonitorTradeToCloseItOut(tradeSettings);
-  });
 }
 
 Meteor.methods({
@@ -125,13 +115,11 @@ delete settings._id;
 AppSettings.upsert(Constants.appSettingsId, settings);
 PerformSystemMaintenance();
 
-// TestBackTestCode().then(r => console.log(r));
+// GetTickDataForDay('SPY', dayjs('2023-12-18')).catch((e) => console.log(e));
 
 ResetBacktester();
-
 StartBackgroundPolling();
 ScheduleStartOfDayWork();
 ScheduleEndOfDayWork();
-CheckForAnyExistingTradesAndMonitorThem();
 
 
