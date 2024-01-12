@@ -49,7 +49,7 @@ function AdditionalLines(vixMarkMin: number, vixMarkMax: number) {
 function GraphTrade({liveTrade}: {
   liveTrade: ITradeSettings
 }) {
-  let initialTime = liveTrade.monitoredPrices[0] ? dayjs(liveTrade.monitoredPrices[0].whenNY) : dayjs();
+  let initialTime = liveTrade.monitoredPrices[0] ? dayjs(liveTrade.monitoredPrices[0].whenNY):dayjs();
   let underlyingMin = Number.MAX_VALUE;
   let underlyingMax = Number.MIN_VALUE;
   let vixMarkMin = Number.MAX_VALUE;
@@ -70,10 +70,10 @@ function GraphTrade({liveTrade}: {
     return Math.round(num * 100) / 100;
   };
 
-  let gainLine = calculateGainGraphLine(liveTrade, liveTrade.gainLimit);
-  let lossLine = calculateGainGraphLine(liveTrade, liveTrade.lossLimit);
-  let maxLossRange = Math.min(lossLine, -gainLine) - 100;
-  let maxGainRange = Math.max(gainLine, -lossLine) + 100; // Make the chart symmetrical around zero.
+  const gainLine = calculateGainGraphLine(liveTrade, liveTrade.gainLimit);
+  const lossLine = calculateGainGraphLine(liveTrade, liveTrade.lossLimit);
+  const maxLossRange = lossLine - lossLine * .1;
+  const maxGainRange = gainLine - gainLine * .1;
   const monitoredPrices = liveTrade.monitoredPrices || [];
 
   const getGain = (price) => round(price.gain);
@@ -83,8 +83,8 @@ function GraphTrade({liveTrade}: {
   vixMarkMin = clipNumber(vixMarkMin);
   vixMarkMax = clipNumber(vixMarkMax);
 
-  const chartWidth = liveTrade.whyClosed ? 900 : 400;
-  const chartHeight = liveTrade.whyClosed ? 500 : 200;
+  const chartWidth = liveTrade.whyClosed ? 900:400;
+  const chartHeight = liveTrade.whyClosed ? 500:200;
 
   return (
     <LineChart

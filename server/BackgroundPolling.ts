@@ -195,4 +195,5 @@ export {
   GetSPXData,
   AddSymbolsToPolling,
   GetTradePriceViaBackgroundPolling,
+  GetLiveTrades,
 };

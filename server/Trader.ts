@@ -583,7 +583,7 @@ async function MonitorTradeToCloseIt(liveTrade: ITradeSettings) {
     const latestActiveTradeRecord = Trades.findOne(liveTrade._id) ?? {};
     const isClosedAlready = !!(latestActiveTradeRecord.whyClosed || liveTrade.whyClosed);
     if (isClosedAlready) {
-      // trade has been completed already (probably emergency exit) so stop the interval timer and exit.
+      // trade has been completed already (probably emergency exit) so exit.
       return;
     }
     // Get the current price for the trade.

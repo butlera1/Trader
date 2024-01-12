@@ -6,6 +6,7 @@ import Constants from '../imports/Constants';
 import {EraseAllStreamedData, StopDataStreaming} from './TDAApi/StreamEquities';
 import {GetNewYorkTimeAt} from '../imports/Utils';
 import {StopBackgroundPolling} from "./BackgroundPolling";
+import {DownSampleMultiDayTradeRecords} from "./DownSampleMultiDayTradeRecords.ts";
 
 function ScheduleEndOfDayWork() {
   try {
@@ -23,6 +24,7 @@ function ScheduleEndOfDayWork() {
         StopBackgroundPolling();
         StopDataStreaming();
         EraseAllStreamedData();
+        DownSampleMultiDayTradeRecords();
         ScheduleEndOfDayWork();
       } catch (ex) {
         LogData(null, `Failed inside timeOut loop for 'EndOfDayWord' and 'ScheduleEndOfDayWork'.`, ex);

@@ -51,7 +51,6 @@ import {GetBacktestTradesFromIds} from './collections/Backtests';
 
 import './EODHdApi/ConvertTickDataToCandle.ts';
 
-
 dayjs.extend(utc);
 dayjs.extend(timezone);
 
