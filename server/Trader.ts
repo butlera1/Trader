@@ -476,7 +476,17 @@ function calculateVariousValues(liveTrade: ITradeSettings, currentSample: IPrice
   }
 }
 
-function isExitTimeBeforeSampleTime(exitTime: dayjs.Dayjs, currentSampleTime: dayjs.Dayjs, liveTrade: ITradeSettings) {
+function isExitTimeBeforeSampleTime(currentSamplePrice :IPrice, liveTrade: ITradeSettings) {
+  const currentSampleTime = dayjs(currentSamplePrice.whenNY);
+  let exitTime = GetNewYorkTimeAt(liveTrade.exitHour, liveTrade.exitMinute);
+  if (liveTrade.isMultiDay) {
+    const daysInTrade = dayjs(currentSamplePrice.whenNY).diff(dayjs(liveTrade.whenOpened), 'day');
+    if (daysInTrade >= liveTrade.exitDaysFromOpen) {
+      exitTime = dayjs(currentSamplePrice.whenNY).subtract(1, 'hour'); // Force trade close.
+    } else {
+      exitTime = dayjs(currentSamplePrice.whenNY).add(1, 'hour'); // Still not time to close the trade.
+    }
+  }
   // With back testing we can have different dates for the current sample so compare only the hours and minutes.
   if (exitTime.hour() < currentSampleTime.hour()) {
     return true;
@@ -491,10 +501,9 @@ function isExitTimeBeforeSampleTime(exitTime: dayjs.Dayjs, currentSampleTime: da
   return false;
 }
 
-async function CheckForTradeCompletion(liveTrade: ITradeSettings, currentSamplePrice: IPrice, exitTime: dayjs.Dayjs): Promise<IClosedTradeInfo> {
+async function CheckForTradeCompletion(liveTrade: ITradeSettings, currentSamplePrice: IPrice): Promise<IClosedTradeInfo> {
   calculateVariousValues(liveTrade, currentSamplePrice);
-  const sampleTime = dayjs(currentSamplePrice.whenNY);
-  const isEndOfDay = isExitTimeBeforeSampleTime(exitTime, sampleTime, liveTrade);
+  const isEndOfDay = isExitTimeBeforeSampleTime(currentSamplePrice, liveTrade);
   const absAveragePrice = Math.abs(getAveragePrice(liveTrade.monitoredPrices, 2));
   const absCurrentPrice = Math.abs(currentSamplePrice.price);
   let isGainLimit = (absCurrentPrice <= liveTrade.gainLimit);
@@ -570,7 +579,6 @@ async function CheckForTradeCompletion(liveTrade: ITradeSettings, currentSampleP
 
 async function MonitorTradeToCloseIt(liveTrade: ITradeSettings) {
   try {
-    const localEarlyExitTime = GetNewYorkTimeAt(liveTrade.exitHour, liveTrade.exitMinute);
     // The latestActiveTradeRecord can be updated via an 'Emergency Exit' call so check it along with the liveTrade.
     const latestActiveTradeRecord = Trades.findOne(liveTrade._id) ?? {};
     const isClosedAlready = !!(latestActiveTradeRecord.whyClosed || liveTrade.whyClosed);
@@ -585,7 +593,7 @@ async function MonitorTradeToCloseIt(liveTrade: ITradeSettings) {
     }
     liveTrade.monitoredPrices.push(currentSamplePrice);
 
-    const closedInfo: IClosedTradeInfo = await CheckForTradeCompletion(liveTrade, currentSamplePrice, localEarlyExitTime);
+    const closedInfo: IClosedTradeInfo = await CheckForTradeCompletion(liveTrade, currentSamplePrice);
     if (closedInfo.isClosed) {
       if (closedInfo.isRepeat) {
         // Start another trade if IsRepeat.

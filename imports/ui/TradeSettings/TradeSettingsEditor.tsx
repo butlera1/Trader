@@ -50,6 +50,8 @@ export const TradeSettingsEditor = ({tradeSettings, changeCallback}: Props) => {
   const [exitHour, setExitHour] = React.useState(tradeSettings.exitHour);
   const [exitMinute, setExitMinute] = React.useState(tradeSettings.exitMinute);
   const [exitAmPm, setExitAmPm] = React.useState(tradeSettings.exitHour > 11 ? 'pm':'am');
+  const [isMultiDay, setisMultiDay] = React.useState(tradeSettings.isMultiDay ?? false);
+  const [exitDaysFromOpen, setExitDaysFromOpen] = React.useState(tradeSettings.exitDaysFromOpen ?? 0);
   const [percentGain, setPercentGain] = React.useState(tradeSettings.percentGain);
   const [percentLoss, setPercentLoss] = React.useState(tradeSettings.percentLoss);
   const [commissionPerContract, setCommissionPerContract] = React.useState(tradeSettings.commissionPerContract || 0);
@@ -97,6 +99,8 @@ export const TradeSettingsEditor = ({tradeSettings, changeCallback}: Props) => {
     exitHour: setExitHour,
     exitMinute: setExitMinute,
     exitAmPm: setExitAmPm,
+    isMultiDay: setisMultiDay,
+    exitDaysFromOpen: setExitDaysFromOpen,
     percentGain: setPercentGain,
     percentLoss: setPercentLoss,
     commissionPerContract: setCommissionPerContract,
@@ -151,6 +155,8 @@ export const TradeSettingsEditor = ({tradeSettings, changeCallback}: Props) => {
         entryMinute,
         exitHour,
         exitMinute,
+        isMultiDay,
+        exitDaysFromOpen,
         percentGain,
         percentLoss,
         commissionPerContract,
@@ -197,7 +203,7 @@ export const TradeSettingsEditor = ({tradeSettings, changeCallback}: Props) => {
         }
       });
     }, 1000);
-  }, [isActive, isMocked, symbol, days, entryHour, entryMinute, exitHour, exitMinute, percentGain,
+  }, [isActive, isMocked, symbol, days, entryHour, entryMinute, exitHour, exitMinute, isMultiDay, exitDaysFromOpen, percentGain,
     percentLoss, commissionPerContract, legs, tradeType, isRepeat, repeatStopHour, useShortOnlyForLimits,
     isRule1, isRule2, isRule3, isRule4, isRule5, isRule6, isRule7, isPrerun, prerunValue, rule1Value, rule2Value, rule3Value, rule4Value,
     rule5Value, rule6Value, rule7Value, name, slope1Samples, isPrerunVIXSlope, isPrerunGainLimit, prerunGainLimitValue, prerunVIXSlopeValue,
@@ -352,7 +358,7 @@ export const TradeSettingsEditor = ({tradeSettings, changeCallback}: Props) => {
               size="large"
               use12Hours
               format="h:mm a"
-              style={{width: '120px'}}
+              style={{width: '130px'}}
               defaultValue={moment(`${entryHour}:${entryMinute} ${entryAmPm}`, 'h:mm a')}
               onChange={(value) => {
                 onChange('entryHour', value.hour());
@@ -363,10 +369,11 @@ export const TradeSettingsEditor = ({tradeSettings, changeCallback}: Props) => {
             />
             <span style={{marginLeft: 50}}>Exit Time (NY):</span>
             <TimePicker
+              disabled={isMultiDay}
               size="large"
               use12Hours
               format="h:mm a"
-              style={{width: '120px'}}
+              style={{width: '130px'}}
               defaultValue={moment(`${exitHour}:${exitMinute} ${exitAmPm}`, 'h:mm a')}
               onChange={(value) => {
                 onChange('exitHour', value.hour());
@@ -374,6 +381,28 @@ export const TradeSettingsEditor = ({tradeSettings, changeCallback}: Props) => {
                 onChange('exitAmPm', value.hour() < 11 ? 'am':'pm');
               }
               }
+            />
+          </Space>
+        </Col>
+      </Row>
+      <Row style={{margin: generalMargins}}>
+        <Col span={24}>
+          <Space>
+          <Checkbox
+              onChange={(e: CheckboxChangeEvent) => onChange('isMultiDay', e.target.checked)}
+              checked={isMultiDay}
+            >
+              Multi-Day Trade
+            </Checkbox>
+            <span>Close trade after </span>
+            <InputNumber
+              addonAfter={'days'}
+              min={0}
+              step="1"
+              defaultValue={exitDaysFromOpen}
+              max={100}
+              style={{width: '140px'}}
+              onChange={(value) => onChange('exitDaysFromOpen', value)}
             />
           </Space>
         </Col>

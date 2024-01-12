@@ -157,7 +157,7 @@ async function backTestLoop(tradeSettings: ITradeSettings, allTradesForOneDay: s
     currentSample.price = Math.abs(tradeSettings.openingPrice);
   }
   do {
-    closeTradeInfo = await CheckForTradeCompletion(tradeSettings, currentSample, exitTime).catch(reason => {
+    closeTradeInfo = await CheckForTradeCompletion(tradeSettings, currentSample).catch(reason => {
       LogData(tradeSettings, `Failed CheckForTradeCompletion inside backTestLoop ${reason}`, new Error(reason));
       return {...DefaultClosedTradeInfo, isClosed: true, isRepeat: false};
     });
