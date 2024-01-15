@@ -272,14 +272,14 @@ const DefaultIronCondorLegsSettings = [
   {
     buySell: BuySell.BUY,
     callPut: OptionType.CALL,
-    delta: 0.05,
+    delta: 0.48,
     dte: 45,
     quantity: 10,
   },
   {
     buySell: BuySell.BUY,
     callPut: OptionType.PUT,
-    delta: 0.05,
+    delta: 0.48,
     dte: 45,
     quantity: 10,
   },
