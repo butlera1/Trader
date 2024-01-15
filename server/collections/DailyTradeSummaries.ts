@@ -48,10 +48,10 @@ function getDefaultIDailyTradeSummary(userId:string, date: Date): IDailyTradeSum
 }
 
 const DailyTradeSummaries: Mongo.Collection<IDailyTradeSummary> = new Mongo.Collection('dailyTradeSummaries');
-
-function createDateText(date: Date) {
-  return dayjs(date).format('YYYY-MM-DD');
-}
+// Define indexes for the collection to aid with searching the data.
+DailyTradeSummaries.createIndex({userId: 1});
+DailyTradeSummaries.createIndex({dayDate: 1});
+DailyTradeSummaries.createIndex({userId: 1, dayDate: 1});
 
 function GetDailyTradeSummaryFor(tradeSettings: ITradeSettings, date: Date): IDailyTradeSummary {
   const {userId, accountNumber} = tradeSettings;
@@ -132,6 +132,7 @@ function GetDailyTradeSummariesForUserAndDayRange(from: Date, to: Date): IDailyT
 
 export {
   DailyTradeSummaries,
+  ITradeSummary,
   IDailyTradeSummary,
   SaveTradeToDailySummaryAndIsEmergencyClose,
   GetDailyTradeSummaryFor,
@@ -139,3 +140,18 @@ export {
   IsDailyGainOrLossLimitReached,
   GetDailyTradeSummariesForUserAndDayRange,
 };
+
+
+const record = DailyTradeSummaries.findOne('QZQTZYfzZNew5eE3D');
+const trades = [] as ITradeSummary[];
+for (let i = 0; i < 10; i++) {
+  trades.push({
+    gainLoss: i*12,
+    tradeId: 'tradeId',
+    description: 'description',
+    whenOpened: record.dayDate,
+    whenClosed: record.dayDate,
+    whyClosed: whyClosedEnum.gainLimit,
+  });
+}
+DailyTradeSummaries.upsert('QZQTZYfzZNew5eE3D', {$set: {trades}});
