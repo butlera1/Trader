@@ -8,6 +8,7 @@ import {Button, Space, Spin} from 'antd';
 import {BrowserRouter, Link, Outlet, Route, Routes} from "react-router-dom";
 import {BacktestingPage} from './Backtest/BacktestingPage';
 import HeaderLine from './HeaderLine';
+import {DailySummaries} from './DailySummaries/DailySummaries';
 
 function NoMatch() {
   return (
@@ -36,6 +37,9 @@ function Layout() {
             </Button>
             <Button>
               <Link to="/backtesting">Backtesting</Link>
+            </Button>
+            <Button>
+              <Link to="/dailySummaries">Daily Summaries</Link>
             </Button>
           </Space>
           <hr/>
@@ -77,6 +81,7 @@ export const App = () => {
           <Route path="/" element={<Layout/>}>
             <Route index element={<Home/>}/>
             <Route path="backtesting" element={<BacktestingPage/>}/>
+            <Route path="dailySummaries" element={<DailySummaries/>}/>
             <Route path="*" element={<NoMatch/>}/>
           </Route>
         </Routes>

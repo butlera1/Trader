@@ -4,10 +4,14 @@ import {Trades} from "./collections/Trades.js";
 
 function downSampleTrade(liveTrade: ITradeSettings) {
   const today = new Date();
+  const todayMonth = today.getMonth();
+  const todayYear = today.getFullYear();
+  const todayDate = today.getDate();
+
   const startingIndex = liveTrade.monitoredPrices.findIndex((price) => {
-    return (price.whenNY.getDate()===today.getDate() &&
-      price.whenNY.getMonth()===today.getMonth() &&
-      price.whenNY.getFullYear()===today.getFullYear());
+    return (price?.whenNY?.getDate()===todayDate &&
+      price?.whenNY?.getMonth()===todayMonth &&
+      price?.whenNY?.getFullYear()===todayYear);
   });
   const samplesFromToday = liveTrade.monitoredPrices.splice(startingIndex);
   const chunkSize = Math.floor(samplesFromToday.length / 10);

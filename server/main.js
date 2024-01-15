@@ -50,6 +50,7 @@ import {GetTradeSettingsInfoFromSetId} from './collections/TradeSettingsSets';
 import {GetBacktestTradesFromIds} from './collections/Backtests';
 
 import './EODHdApi/ConvertTickDataToCandle.ts';
+import {GetDailyTradeSummariesForUserAndDayRange} from './collections/DailyTradeSummaries';
 
 dayjs.extend(utc);
 dayjs.extend(timezone);
@@ -100,6 +101,7 @@ Meteor.methods({
     GetBacktestTradesFromIds,
     ToggleBacktestingIsOn,
     ResetBacktester,
+    GetDailyTradeSummariesForUserAndDayRange,
   }
 );
 

@@ -28,7 +28,7 @@ function ScheduleStartOfDayWork() {
         Trades.remove({
           whyClosed: {$exists: true},
           whenClosed: {$lte: SetStartOfDay(dayjs()).toDate()},
-        }); // Clear out any completed trades, leaving live trades from today.
+        }); // Clear out any completed trades, leaving live trades.
         StartBackgroundPolling();
         ResetUsersMaxDailyGainSettings();
         PerformTradeForAllUsers();

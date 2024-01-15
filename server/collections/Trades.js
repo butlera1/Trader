@@ -12,8 +12,9 @@ dayjs.extend(locale);
 export const Trades = new Mongo.Collection('trades');
 
 // Define indexes for the collection to aid with searching the data.
-Trades.createIndex({userId: 1, whyClosed: 1});
 Trades.createIndex({userId: 1});
+Trades.createIndex({whyClosed: 1});
+Trades.createIndex({userId: 1, whyClosed: 1});
 
 /******************* Publish liveTrades **********************************/
 function publishLiveTrades() {
