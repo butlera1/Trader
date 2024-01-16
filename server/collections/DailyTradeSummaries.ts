@@ -140,18 +140,3 @@ export {
   IsDailyGainOrLossLimitReached,
   GetDailyTradeSummariesForUserAndDayRange,
 };
-
-
-const record = DailyTradeSummaries.findOne('QZQTZYfzZNew5eE3D');
-const trades = [] as ITradeSummary[];
-for (let i = 0; i < 10; i++) {
-  trades.push({
-    gainLoss: i*12,
-    tradeId: 'tradeId',
-    description: 'description',
-    whenOpened: record.dayDate,
-    whenClosed: record.dayDate,
-    whyClosed: whyClosedEnum.gainLimit,
-  });
-}
-DailyTradeSummaries.upsert('QZQTZYfzZNew5eE3D', {$set: {trades}});
