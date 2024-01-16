@@ -561,7 +561,7 @@ export function CreateOpenAndCloseOrders(chains, tradeSettings) {
   tradeSettings.openingPrice = openingPrice; // Expected openingPrice. Will be used if isMocked. Order filled replaces.
   tradeSettings.openingShortOnlyPrice = shortOnlyPrice;
   if (tradeSettings.tradeType?.length > 0) {
-    if (tradeSettings.tradeType[0] === 'IC') {
+    if (tradeSettings.tradeType[0] === 'IC' || tradeSettings.tradeType[0] === 'IFly') {
       // Create Iron Condor orders to open and to close.
       tradeSettings.openingOrder = IronCondorMarketOrder(tradeSettings, true);
       tradeSettings.closingOrder = IronCondorMarketOrder(tradeSettings, false);

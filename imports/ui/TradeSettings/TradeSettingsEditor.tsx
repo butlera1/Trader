@@ -4,7 +4,7 @@ import {Alert, Button, Checkbox, Col, InputNumber, Popconfirm, Row, Select, Spac
 import moment from 'moment';
 import ITradeSettings, {
   DefaultCalendarSpreadLegsSettings,
-  DefaultIronCondorLegsSettings,
+  DefaultIronCondorLegsSettings, DefaultIronFlyLegsSettings,
   GetDescription
 } from '../../Interfaces/ITradeSettings';
 import './TradeSettings.css';
@@ -242,6 +242,10 @@ export const TradeSettingsEditor = ({tradeSettings, changeCallback}: Props) => {
       if (value[0]==='CS') {
         // Special case for Calendar Spread
         setLegs([...DefaultCalendarSpreadLegsSettings]);
+      }
+      if (value[0]==='IFly') {
+        // Special case for IronFly
+        setLegs([...DefaultIronFlyLegsSettings]);
       }
     }
     setTradeType(value);
@@ -618,9 +622,9 @@ export const TradeSettingsEditor = ({tradeSettings, changeCallback}: Props) => {
       </Row>
 
       <Row style={{margin: generalMargins}}>
-        <Col span={5}>
+        <Col span={12}>
           <CheckboxGroup
-            options={['IC', 'CS']}
+            options={['IC', 'CS', 'IFly']}
             onChange={onChangeTradeType}
             value={tradeType}
           />

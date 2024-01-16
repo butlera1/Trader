@@ -272,6 +272,37 @@ const DefaultIronCondorLegsSettings = [
   {
     buySell: BuySell.BUY,
     callPut: OptionType.CALL,
+    delta: 0.05,
+    dte: 45,
+    quantity: 10,
+  },
+  {
+    buySell: BuySell.BUY,
+    callPut: OptionType.PUT,
+    delta: 0.05,
+    dte: 45,
+    quantity: 10,
+  },
+];
+
+const DefaultIronFlyLegsSettings = [
+  {
+    buySell: BuySell.SELL,
+    callPut: OptionType.CALL,
+    delta: 0.5,
+    dte: 45,
+    quantity: 10,
+  },
+  {
+    buySell: BuySell.SELL,
+    callPut: OptionType.PUT,
+    delta: 0.5,
+    dte: 45,
+    quantity: 10,
+  },
+  {
+    buySell: BuySell.BUY,
+    callPut: OptionType.CALL,
     delta: 0.48,
     dte: 45,
     quantity: 10,
@@ -399,6 +430,7 @@ export {
   IDailyResult,
   DefaultTradeSettings,
   DefaultIronCondorLegsSettings,
+  DefaultIronFlyLegsSettings,
   DefaultCalendarSpreadLegsSettings,
   BadDefaultIPrice,
   DefaultIPrice,
