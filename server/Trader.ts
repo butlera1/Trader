@@ -139,7 +139,7 @@ async function CloseTrade(tradeSettings: ITradeSettings, currentPrice: IPrice): 
     tradeSettings.closingPrice = openingPrice;
     tradeSettings.isCopiedOpenPriceToClosePrice = true;
   }
-  tradeSettings.whenClosed = currentPrice.whenNY;
+  tradeSettings.whenClosed = currentPrice.whenNY ?? new Date();
   tradeSettings.gainLoss = CalculateGain(tradeSettings, tradeSettings.closingPrice);
   if (!isBacktesting) {
     Trades.update(tradeSettings._id, {
@@ -760,14 +760,14 @@ async function PlaceOpeningOrderAndMonitorToClose(tradeSettings: ITradeSettings)
   return;
 }
 
-function IsNotDuplicateTrade(tradeSettings: ITradeSettings) {
+function IsDuplicateTrade(tradeSettings: ITradeSettings) {
   const existingTrade = Trades.findOne({
     userName: tradeSettings.userName,
     symbol: tradeSettings.symbol,
     originalTradeSettingsId: tradeSettings._id,
-    whenClosed: {$exists: false},
+    whyClosed: {$exists: false},
   });
-  return !existingTrade;
+  return existingTrade?.originalTradeSettingsId===tradeSettings._id;
 }
 
 function IsTradeReadyToRun(
@@ -789,6 +789,10 @@ function IsTradeReadyToRun(
   }
   if (userSettings?.isMaxGainAllowedMet) {
     LogData(tradeSettings, `IsTradeReadyToRun called for ${tradeSettings.userName} but Max Daily Gain has been met.`, null);
+    return false;
+  }
+  if (IsDuplicateTrade(tradeSettings)) {
+    LogData(tradeSettings, `IsTradeReadyToRun called for ${tradeSettings.userName} but ${tradeSettings._id} is already running (duplicate trade).`, null);
     return false;
   }
   let now = null;
