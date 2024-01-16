@@ -361,7 +361,7 @@ export async function BackTestCallPut(ranges: IRanges, dataSet: ICandle[][], tra
       duration = end.diff(start, 'minutes', true);
       resolutionText = 'minutes';
     }
-    const durationText = duration.toFixed(3) + ' ' + resolutionText;
+    const durationText = duration?.toFixed(3) + ' ' + resolutionText;
     if (ranges.countOnly) {
       const sumText = `BacktestLoop: ${durationText}, for ${ranges.estimatedDaysCount.toLocaleString()} estimated days traded.`;
       return {sumText, summaries};

@@ -51,7 +51,7 @@ function calculateGainLossAndPriceDiff(record: ITradeSettings) {
   let priceDiff = '0';
   if (monitoredPrices?.length > 0) {
     gainLoss = (monitoredPrices[monitoredPrices.length - 1].gain);
-    priceDiff = (monitoredPrices[monitoredPrices.length - 1].price - record.openingPrice).toFixed(3);
+    priceDiff = (monitoredPrices[monitoredPrices.length - 1].price - record.openingPrice)?.toFixed(3);
   }
   return {gainLoss, priceDiff};
 }
@@ -86,9 +86,9 @@ const columns: ColumnsType<ITradeSettings> = [
       return (
         <Space direction="vertical">
           <span key={0}>{GetNewYorkTimeAsText(record.whenOpened)}</span>
-          <span key={1}>Opened: ${record.openingPrice.toFixed(2)}</span>
-          <span key={2}>Current: ${currentPrice.toFixed(2)}</span>
-          <span key={3}>Diff: ${priceDiff.toFixed(2)}</span>
+          <span key={1}>Opened: ${record.openingPrice?.toFixed(2)}</span>
+          <span key={2}>Current: ${currentPrice?.toFixed(2)}</span>
+          <span key={3}>Diff: ${priceDiff?.toFixed(2)}</span>
         </Space>
       );
     }
@@ -107,14 +107,14 @@ const columns: ColumnsType<ITradeSettings> = [
       if (monitoredPrices?.length > 0) {
         currentUnderlyingPrice = (monitoredPrices[monitoredPrices.length - 1].underlyingPrice);
         initialUnderlyingPrice = monitoredPrices[0].underlyingPrice;
-        priceDiff = (currentUnderlyingPrice - initialUnderlyingPrice).toFixed(3);
+        priceDiff = (currentUnderlyingPrice - initialUnderlyingPrice)?.toFixed(3);
         dateTimeText = GetNewYorkTimeAsText(monitoredPrices[monitoredPrices.length - 1].when);
       }
       return (
         <Space direction={'vertical'}>
           <span key={0}>{dateTimeText}</span>
-          <span key={1}>UOpened: ${initialUnderlyingPrice.toFixed(2)}</span>
-          <span key={2}>UCurrent: ${currentUnderlyingPrice.toFixed(2)}</span>
+          <span key={1}>UOpened: ${initialUnderlyingPrice?.toFixed(2)}</span>
+          <span key={2}>UCurrent: ${currentUnderlyingPrice?.toFixed(2)}</span>
           <span key={3}>UDiff: ${priceDiff}</span>
         </Space>
       );
@@ -143,7 +143,7 @@ const columns: ColumnsType<ITradeSettings> = [
       let {gainLoss, priceDiff} = calculateGainLossAndPriceDiff(record);
       const resultGainLoss = gainLoss - (record.totalFees ?? 0);
       let color = (resultGainLoss < 0) ? 'red' : 'green';
-      const gainLossStr = `${gainLoss.toFixed(2)} - ${record.totalFees.toFixed(0)} = ${resultGainLoss.toFixed(2)}`;
+      const gainLossStr = `${gainLoss?.toFixed(2)} - ${record.totalFees?.toFixed(0)} = ${resultGainLoss?.toFixed(2)}`;
       return (
         <span key={1} style={{color: color}}>{`${gainLossStr}`}</span>
       );

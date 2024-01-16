@@ -34,9 +34,9 @@ function GraphUnderlying({symbol}: { symbol: string }) {
     <>
       <br/>
       <Space direction={'horizontal'}>
-        <p><b>Open: </b>{initialMark.toFixed(2)}</p>
-        <p><b>Current: </b>{currentMark.toFixed(2)}</p>
-        <p><b>Diff: </b>{diff.toFixed(3)}</p>
+        <p><b>Open: </b>{initialMark?.toFixed(2)}</p>
+        <p><b>Current: </b>{currentMark?.toFixed(2)}</p>
+        <p><b>Diff: </b>{diff?.toFixed(3)}</p>
       </Space>
       <LineChart
         width={1500}

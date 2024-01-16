@@ -63,7 +63,7 @@ function GraphTrade({liveTrade}: {
   });
 
   const getTime = (price: IPrice) => {
-    return dayjs(price.whenNY).diff(initialTime, 'minute', true).toFixed(1);
+    return dayjs(price.whenNY).diff(initialTime, 'minute', true)?.toFixed(1);
   };
 
   const round = (num: number) => {

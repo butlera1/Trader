@@ -78,11 +78,11 @@ export async function SingleOption(ticker, startDate: Dayjs, gainLimit, lossLimi
         tradeDate = moveToNextTradeDay(tradeDate);
     }
     const out = `${ticker} ${startDate.format('ddd YY-MM-DD')} ` +
-        `gainLimit: ${gainLimit.toFixed(2)} lossLimit: ${lossLimit.toFixed(1)} minutesDelay: ${minutesDelay} ` +
-        `minutesEarlyExit: ${minutesEarlyExit} gainLoss: ${results.gainLoss.toFixed(2)}`;
+        `gainLimit: ${gainLimit?.toFixed(2)} lossLimit: ${lossLimit?.toFixed(1)} minutesDelay: ${minutesDelay} ` +
+        `minutesEarlyExit: ${minutesEarlyExit} gainLoss: ${results.gainLoss?.toFixed(2)}`;
     const out2 = `${ticker},${startDate.format('ddd YY-MM-DD')},` +
-        `${gainLimit.toFixed(2)},${lossLimit.toFixed(1)},${minutesDelay},` +
-        `${minutesEarlyExit},${results.gainLoss.toFixed(2)}`;
+        `${gainLimit?.toFixed(2)},${lossLimit?.toFixed(1)},${minutesDelay},` +
+        `${minutesEarlyExit},${results.gainLoss?.toFixed(2)}`;
     console.log(out2);
     return results;
 }
@@ -127,11 +127,11 @@ export async function StraddleDailyOpenCloseModelWithLimits(ticker = 'QQQ', star
         tradeDate = moveToNextTradeDay(tradeDate);
     }
     const out = `${ticker} ${startDate.format('ddd YY-MM-DD')} ` +
-        `gainLimit: ${gainLimit.toFixed(2)} lossLimit: ${lossLimit.toFixed(1)} minutesDelay: ${minutesDelay} ` +
-        `minutesEarlyExit: ${minutesEarlyExit} gainLoss: ${results.gainLoss.toFixed(2)}`;
+        `gainLimit: ${gainLimit?.toFixed(2)} lossLimit: ${lossLimit?.toFixed(1)} minutesDelay: ${minutesDelay} ` +
+        `minutesEarlyExit: ${minutesEarlyExit} gainLoss: ${results.gainLoss?.toFixed(2)}`;
     const out2 = `${ticker},${startDate.format('ddd YY-MM-DD')},` +
-        `${gainLimit.toFixed(2)},${lossLimit.toFixed(1)},${minutesDelay},` +
-        `${minutesEarlyExit},${results.gainLoss.toFixed(2)}`;
+        `${gainLimit?.toFixed(2)},${lossLimit?.toFixed(1)},${minutesDelay},` +
+        `${minutesEarlyExit},${results.gainLoss?.toFixed(2)}`;
     console.log(out2);
     return results;
 }
@@ -144,7 +144,7 @@ export async function OneStraddleExecution(ticker) {
     for (let i = 0; i < results.dailyResults.length; i++) {
         const item = results.dailyResults[i];
         totalGainLoss += item.gainLoss;
-        const line = `${results.ticker},${item.tradeDate.format('YYYY-MM-DD')},${item.buyPrice.toFixed(2)},${item.sellPrice.toFixed(2)},${item.gainLoss.toFixed(2)},${totalGainLoss.toFixed(2)}\n`;
+        const line = `${results.ticker},${item.tradeDate.format('YYYY-MM-DD')},${item.buyPrice?.toFixed(2)},${item.sellPrice?.toFixed(2)},${item.gainLoss?.toFixed(2)},${totalGainLoss?.toFixed(2)}\n`;
         fs.appendFileSync(fileName, line);
     }
     return results;
@@ -166,8 +166,8 @@ export async function ExhaustiveStraddleExecution(ticker) {
                     const loopResult = await StraddleDailyOpenCloseModelWithLimits(ticker, startDate, gainLimit, lossLimit, minutesDelay, minutesEarlyExit, false);
                     results.push(loopResult.dailyResults);
                     const dataStr = `${ticker},${startDate.format('ddd YY-MM-DD')},` +
-                        `${gainLimit.toFixed(2)},${lossLimit.toFixed(1)},${minutesDelay},` +
-                        `${minutesEarlyExit},${loopResult.gainLoss.toFixed(2)}\n`;
+                        `${gainLimit?.toFixed(2)},${lossLimit?.toFixed(1)},${minutesDelay},` +
+                        `${minutesEarlyExit},${loopResult.gainLoss?.toFixed(2)}\n`;
                     fs.appendFileSync(fileName, dataStr);
                     if (loopCount === 1) {
                         const now = dayjs();

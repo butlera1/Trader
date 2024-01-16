@@ -41,9 +41,9 @@ interface ITotalsProps {
 
 function Totals({numberOfTrades, winnings, losses, totalGains}: ITotalsProps) {
   const color = totalGains >= 0 ? 'green':'red';
-  const ColoredStuff = <span>Result: ${totalGains.toFixed(2)}</span>;
-  return <span style={{color}}>{numberOfTrades} trades, Wins: ${winnings.toFixed(2)} - Losses:
-    ${Math.abs(losses).toFixed(2)} = {ColoredStuff}</span>;
+  const ColoredStuff = <span>Result: ${totalGains?.toFixed(2)}</span>;
+  return <span style={{color}}>{numberOfTrades} trades, Wins: ${winnings?.toFixed(2)} - Losses:
+    ${Math.abs(losses)?.toFixed(2)} = {ColoredStuff}</span>;
 }
 
 function getSPXMinMax(spxData) {
@@ -173,10 +173,10 @@ function ChartResults({records, isGraphPrerunningTrades, skipSPXChart}: {
     }
     return sum;
   }, 0.0);
-  const avgLossText = losses ? ((avgLossTmp / losses).toFixed(2)):'0.00';
-  const avgWinText = wins ? ((avgWinTmp / wins).toFixed(2)):'0.00';
-  const winRate = sumResults.length ? (((wins / sumResults.length) * 100).toFixed(1)):'0.0';
-  const lossRate = sumResults.length ? (((losses / sumResults.length) * 100).toFixed(1)):'0.0';
+  const avgLossText = losses ? ((avgLossTmp / losses)?.toFixed(2)):'0.00';
+  const avgWinText = wins ? ((avgWinTmp / wins)?.toFixed(2)):'0.00';
+  const winRate = sumResults.length ? (((wins / sumResults.length) * 100)?.toFixed(1)):'0.0';
+  const lossRate = sumResults.length ? (((losses / sumResults.length) * 100)?.toFixed(1)):'0.0';
   avgDuration = wins + losses ? avgDuration / (wins + losses):0;
   avgLossDuration = losses ? avgLossDuration / losses:0;
   avgWinDuration = wins ? avgWinDuration / wins:0;
@@ -186,11 +186,11 @@ function ChartResults({records, isGraphPrerunningTrades, skipSPXChart}: {
     const className = isScaled ? "scaledTextSummary":"";
     return (
       <div className={className}>
-        <p>Wins:{wins}/{sumResults.length} for {winRate}% win rate. Avg: ${avgWinText} Max: ${maxWin.toFixed(2)} Avg
-          Time: {avgWinDuration.toFixed(1)} min Total: ${sumWins.toFixed(2)}</p>
+        <p>Wins:{wins}/{sumResults.length} for {winRate}% win rate. Avg: ${avgWinText} Max: ${maxWin?.toFixed(2)} Avg
+          Time: {avgWinDuration?.toFixed(1)} min Total: ${sumWins?.toFixed(2)}</p>
         <p>Losses: {losses}/{sumResults.length} for {lossRate}% loss rate. Avg: ${avgLossText} Max:
-          ${maxLoss.toFixed(2)} Avg Time: {avgLossDuration.toFixed(1)} min Total: ${sumLosses.toFixed(2)}</p>
-        <p>Average Duration: {avgDuration.toFixed(1)} min</p>
+          ${maxLoss?.toFixed(2)} Avg Time: {avgLossDuration?.toFixed(1)} min Total: ${sumLosses?.toFixed(2)}</p>
+        <p>Average Duration: {avgDuration?.toFixed(1)} min</p>
         <p>Totals: <Totals numberOfTrades={sumResults.length} winnings={sumWins} losses={sumLosses}
                            totalGains={resultSum}/></p>
       </div>

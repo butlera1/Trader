@@ -64,7 +64,7 @@ const columns: ColumnsType<ITradeSettings> = [
     },
     render: (when, record) => {
       const under = record.monitoredPrices.length > 0 ? record.monitoredPrices[0]?.underlyingPrice ?? 0:0;
-      return RenderOpenOrClosedData(when, record.openingPrice.toFixed(2), under.toFixed(2), '');
+      return RenderOpenOrClosedData(when, record.openingPrice?.toFixed(2), under?.toFixed(2), '');
     },
   },
   {
@@ -82,8 +82,8 @@ const columns: ColumnsType<ITradeSettings> = [
       const initialUnder = record.monitoredPrices.length > 0 ? record.monitoredPrices[0]?.underlyingPrice ?? 0:0;
       const under = record.monitoredPrices.length > 0 ? record.monitoredPrices[record.monitoredPrices.length - 1]?.underlyingPrice ?? 0:0;
       const priceDiff = record.gainLoss;
-      const priceDiffAll = `${record.closingPrice?.toFixed(2)} (${(priceDiff).toFixed(3)})`;
-      const underDiff = `${under.toFixed(2)} (${(under - initialUnder).toFixed(3)})`;
+      const priceDiffAll = `${record.closingPrice?.toFixed(2)} (${(priceDiff)?.toFixed(3)})`;
+      const underDiff = `${under?.toFixed(2)} (${(under - initialUnder)?.toFixed(3)})`;
       return RenderOpenOrClosedData(when, priceDiffAll, underDiff, record.whyClosed);
     },
   },
@@ -118,7 +118,7 @@ const columns: ColumnsType<ITradeSettings> = [
       CleanupGainLossWhenFailedClosingTrade(record);
       let gainLoss = record.gainLoss - totalFees;
       let color = (gainLoss < 0) ? 'red':'green';
-      const gainLossStr = `${record.gainLoss.toFixed(2)} - ${record.totalFees.toFixed(0)} = ${gainLoss.toFixed(2)}`;
+      const gainLossStr = `${record.gainLoss?.toFixed(2)} - ${record.totalFees?.toFixed(0)} = ${gainLoss?.toFixed(2)}`;
       return (
         <span style={{color: color}} key={gainLoss}>{gainLossStr}</span>
       );
