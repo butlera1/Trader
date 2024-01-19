@@ -513,6 +513,8 @@ async function CheckForTradeCompletion(liveTrade: ITradeSettings, currentSampleP
     isGainLimit = (absCurrentPrice >= liveTrade.gainLimit);
     isLossLimit = (absAveragePrice <= liveTrade.lossLimit);
   }
+  // Only count lossLimit if not turned off.
+  isLossLimit = isLossLimit && !liveTrade.isNoLossLimit;
   const isRule1Exit = checkRule1Exit(liveTrade, currentSamplePrice);
   const isRule2Exit = checkRule2Exit(liveTrade, currentSamplePrice);
   const isRule3Exit = checkRule3Exit(liveTrade, currentSamplePrice);

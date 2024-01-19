@@ -70,10 +70,12 @@ function GraphTrade({liveTrade}: {
     return Math.round(num * 100) / 100;
   };
 
-  const gainLine = calculateGainGraphLine(liveTrade, liveTrade.gainLimit);
-  const lossLine = calculateGainGraphLine(liveTrade, liveTrade.lossLimit);
-  const maxLossRange = lossLine - lossLine * .1;
-  const maxGainRange = gainLine - gainLine * .1;
+  let gainLine = calculateGainGraphLine(liveTrade, liveTrade.gainLimit);
+  let lossLine = calculateGainGraphLine(liveTrade, liveTrade.lossLimit);
+  let maxLossRange = Math.min(lossLine, -gainLine) - 100;
+  maxLossRange = maxLossRange - maxLossRange * 0.1; // Add 10% to the loss range.
+  let maxGainRange = Math.max(gainLine, -lossLine) + 100; // Make the chart symmetrical around zero.
+  maxGainRange = maxGainRange + maxGainRange * 0.1; // Add 10% to the gain range.
   const monitoredPrices = liveTrade.monitoredPrices || [];
 
   const getGain = (price) => round(price.gain);
@@ -83,8 +85,8 @@ function GraphTrade({liveTrade}: {
   vixMarkMin = clipNumber(vixMarkMin);
   vixMarkMax = clipNumber(vixMarkMax);
 
-  const chartWidth = liveTrade.whyClosed ? 900:400;
-  const chartHeight = liveTrade.whyClosed ? 500:200;
+  const chartWidth = liveTrade.whyClosed ? 900 : 400;
+  const chartHeight = liveTrade.whyClosed ? 500 : 200;
 
   return (
     <LineChart
@@ -128,8 +130,13 @@ function GraphTrade({liveTrade}: {
         :
         null
       }
-      <Line type="monotone" dataKey={() => lossLine} name={'Max Loss'} stroke="cyan" dot={false}
-            isAnimationActive={false} yAxisId="gainAxis"/>;
+      {liveTrade.isNoLossLimit
+        ?
+        null
+        :
+        <Line type="monotone" dataKey={() => lossLine} name={'Max Loss'} stroke="cyan" dot={false}
+              isAnimationActive={false} yAxisId="gainAxis"/>
+      }
     </LineChart>
   );
 }

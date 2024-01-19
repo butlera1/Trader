@@ -182,6 +182,7 @@ interface ITradeSettings {
   isActive: boolean,
   isMocked: boolean,
   percentGain: number,
+  isNoLossLimit?: boolean,
   percentGainIsDollar?: boolean,
   percentLossIsDollar?: boolean,
   percentLoss: number,

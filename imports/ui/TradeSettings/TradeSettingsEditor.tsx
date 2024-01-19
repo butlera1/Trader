@@ -54,6 +54,7 @@ export const TradeSettingsEditor = ({tradeSettings, changeCallback}: Props) => {
   const [exitDaysFromOpen, setExitDaysFromOpen] = React.useState(tradeSettings.exitDaysFromOpen ?? 0);
   const [percentGain, setPercentGain] = React.useState(tradeSettings.percentGain);
   const [percentLoss, setPercentLoss] = React.useState(tradeSettings.percentLoss);
+  const [isNoLossLimit, setIsNoLossLimit] = React.useState(tradeSettings.isNoLossLimit ?? false);
   const [commissionPerContract, setCommissionPerContract] = React.useState(tradeSettings.commissionPerContract || 0);
   const [legs, setLegs] = React.useState(tradeSettings.legs);
   const [errorText, setErrorText] = React.useState(null);
@@ -103,6 +104,7 @@ export const TradeSettingsEditor = ({tradeSettings, changeCallback}: Props) => {
     exitDaysFromOpen: setExitDaysFromOpen,
     percentGain: setPercentGain,
     percentLoss: setPercentLoss,
+    isNoLossLimit: setIsNoLossLimit,
     commissionPerContract: setCommissionPerContract,
     legs: setLegs,
     tradeType: setTradeType,
@@ -159,6 +161,7 @@ export const TradeSettingsEditor = ({tradeSettings, changeCallback}: Props) => {
         exitDaysFromOpen,
         percentGain,
         percentLoss,
+        isNoLossLimit,
         commissionPerContract,
         legs,
         tradeType,
@@ -204,7 +207,7 @@ export const TradeSettingsEditor = ({tradeSettings, changeCallback}: Props) => {
       });
     }, 1000);
   }, [isActive, isMocked, symbol, days, entryHour, entryMinute, exitHour, exitMinute, isMultiDay, exitDaysFromOpen, percentGain,
-    percentLoss, commissionPerContract, legs, tradeType, isRepeat, repeatStopHour, useShortOnlyForLimits,
+    percentLoss, isNoLossLimit, commissionPerContract, legs, tradeType, isRepeat, repeatStopHour, useShortOnlyForLimits,
     isRule1, isRule2, isRule3, isRule4, isRule5, isRule6, isRule7, isPrerun, prerunValue, rule1Value, rule2Value, rule3Value, rule4Value,
     rule5Value, rule6Value, rule7Value, name, slope1Samples, isPrerunVIXSlope, isPrerunGainLimit, prerunGainLimitValue, prerunVIXSlopeValue,
     slope2Samples, percentGainIsDollar,
@@ -457,17 +460,24 @@ export const TradeSettingsEditor = ({tradeSettings, changeCallback}: Props) => {
             <span style={{marginLeft: 50}}>Loss:</span>
             <InputNumber
               min={0}
+              disabled={isNoLossLimit}
               step="0.01"
               max={100000}
               defaultValue={Math.round(percentLoss * 100000) / 1000}
               style={{width: '100px'}}
               onChange={(value) => onChange('percentLoss', (value) / 100)}
             />
-            <Select defaultValue={percentLossIsDollar} style={{width: 60}}
+            <Select defaultValue={percentLossIsDollar} style={{width: 60}} disabled={isNoLossLimit}
                     onChange={(value) => onChange('percentLossIsDollar', value)}>
               <Select.Option value={false}>%</Select.Option>
               <Select.Option value={true}>$</Select.Option>
             </Select>
+            <Checkbox
+              onChange={(e: CheckboxChangeEvent) => onChange('isNoLossLimit', e.target.checked)}
+              checked={isNoLossLimit}
+            >
+              No Loss Limit
+            </Checkbox>
           </Space>
         </Col>
       </Row>
