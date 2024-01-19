@@ -72,9 +72,9 @@ function GraphTrade({liveTrade}: {
 
   let gainLine = calculateGainGraphLine(liveTrade, liveTrade.gainLimit);
   let lossLine = calculateGainGraphLine(liveTrade, liveTrade.lossLimit);
-  let maxLossRange = Math.min(lossLine, -gainLine) - 100;
+  let maxLossRange = Math.min(lossLine, -gainLine);
   maxLossRange = maxLossRange - maxLossRange * 0.1; // Add 10% to the loss range.
-  let maxGainRange = Math.max(gainLine, -lossLine) + 100; // Make the chart symmetrical around zero.
+  let maxGainRange = Math.max(gainLine, -lossLine); // Make the chart symmetrical around zero.
   maxGainRange = maxGainRange + maxGainRange * 0.1; // Add 10% to the gain range.
   const monitoredPrices = liveTrade.monitoredPrices || [];
 
