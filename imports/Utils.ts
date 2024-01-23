@@ -110,8 +110,8 @@ function CalculateLimitsAndFees(tradeSettings: ITradeSettings) {
     percentGain,
     percentLoss,
     isNoLossLimit,
+    openingPrice,
   } = tradeSettings;
-  let {openingPrice} = tradeSettings;
 
   tradeSettings.totalFees = CalculateTotalFees(tradeSettings);
 
@@ -124,7 +124,7 @@ function CalculateLimitsAndFees(tradeSettings: ITradeSettings) {
   }
 
   if (isNoLossLimit) {
-    // When there is not loss limit, make the loss limit calculation symmetrical to the gain limit.
+    // When there is no loss limit, make the loss limit calculation symmetrical to the gain limit.
     percentLoss = percentGain;
   }
   // Important to be aware that openingPrice is 1/100th the actual since these are options. So the

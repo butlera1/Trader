@@ -203,6 +203,7 @@ interface ITradeSettings {
   closingOrder?: any,
   whenOpened?: Date,
   whenClosed?: Date,
+  isBusyClosingTrade?: boolean,
   whyClosed?: whyClosedEnum,
   gainLoss?: number,
   openingOrderId?: string,

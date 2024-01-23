@@ -141,6 +141,7 @@ async function CloseTrade(tradeSettings: ITradeSettings, currentPrice: IPrice): 
   }
   tradeSettings.whenClosed = currentPrice.whenNY ?? new Date();
   tradeSettings.gainLoss = CalculateGain(tradeSettings, tradeSettings.closingPrice);
+  tradeSettings.isBusyClosingTrade = false;
   if (!isBacktesting) {
     Trades.update(tradeSettings._id, {
       $set: {
@@ -149,6 +150,7 @@ async function CloseTrade(tradeSettings: ITradeSettings, currentPrice: IPrice): 
         whyClosed: tradeSettings.whyClosed,
         whenClosed: tradeSettings.whenClosed,
         gainLoss: tradeSettings.gainLoss,
+        isBusyClosingTrade: tradeSettings.isBusyClosingTrade,
       }
     });
     const message = `${tradeSettings.userName}: Trade closed (${tradeSettings.whyClosed}): Entry: $${openingPrice.toFixed(2)}, ` +
@@ -588,6 +590,12 @@ async function MonitorTradeToCloseIt(liveTrade: ITradeSettings) {
       // trade has been completed already (probably emergency exit) so exit.
       return;
     }
+    if (liveTrade.isBusyClosingTrade) {
+      return; // Already busy closing this trade.
+    }
+    liveTrade.isBusyClosingTrade = true; // Prevent re-entry.
+    Trades.upsert(liveTrade._id, {$set: {isBusyClosingTrade: true}});
+
     // Get the current price for the trade.
     const currentSamplePrice: IPrice = GetTradePriceViaBackgroundPolling(liveTrade);
     if (currentSamplePrice.price===Number.NaN || currentSamplePrice.price===0) {
@@ -820,6 +828,7 @@ function IsTradeReadyToRun(
   tradeSettings.description = GetDescription(tradeSettings);
   tradeSettings.gainLoss = 0;
   delete tradeSettings.whyClosed;
+  delete tradeSettings.isBusyClosingTrade;
 
   const nowNYText = now.toDate().toLocaleString('en-US', {timeZone: 'America/New_York'});
   const currentDayOfTheWeek = isoWeekdayNames[now.isoWeekday()];
