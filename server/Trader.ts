@@ -603,7 +603,12 @@ async function MonitorTradeToCloseIt(liveTrade: ITradeSettings) {
     }
     liveTrade.monitoredPrices.push(currentSamplePrice);
 
-    const closedInfo: IClosedTradeInfo = await CheckForTradeCompletion(liveTrade, currentSamplePrice);
+    const closedInfo: IClosedTradeInfo = await CheckForTradeCompletion(liveTrade, currentSamplePrice)
+      .catch(reason => {
+        const msg = `Exception with MonitorTradeToCloseIt in CheckForTradeCompletion: ${reason}.`;
+        LogData(liveTrade, msg, new Meteor.Error(reason, msg));
+        return {...DefaultClosedTradeInfo, isClosed: true, isRepeat: false};
+      });
     if (closedInfo.isClosed) {
       if (closedInfo.isRepeat) {
         // Start another trade if IsRepeat.
@@ -748,9 +753,14 @@ function PrepareTradeForStartOfTrade(tradeSettings: ITradeSettings) {
 async function PlaceOpeningOrderAndMonitorToClose(tradeSettings: ITradeSettings) {
   tradeSettings.openingOrderId = Random.id() + '_faked'; // Fake an order id for backtesting or mocked mode.
   if (!tradeSettings.isMocked) {
-    tradeSettings.openingOrderId = await PlaceOrder(tradeSettings.userId, tradeSettings.accountNumber, tradeSettings.openingOrder);
+    tradeSettings.openingOrderId = await PlaceOrder(tradeSettings.userId, tradeSettings.accountNumber, tradeSettings.openingOrder)
+      .catch(reason => {
+        LogData(tradeSettings, `Failed in PlaceOpeningOrderAndMonitorToClose to place opening order: ${reason}`, new Error(reason));
+        return {orderPrice: 0, shortOnlyPrice: 0};
+      });
     const priceResults = await WaitForOrderCompleted(tradeSettings.userId, tradeSettings.accountNumber, tradeSettings.openingOrderId)
-      .catch(() => {
+      .catch((reason) => {
+        LogData(tradeSettings, `Failed in PlaceOpeningOrderAndMonitorToClose to WaitForOrderCompleted on opening order: ${reason}`, new Error(reason));
         return {orderPrice: 0, shortOnlyPrice: 0};
       });
     if (priceResults?.orderPrice) {

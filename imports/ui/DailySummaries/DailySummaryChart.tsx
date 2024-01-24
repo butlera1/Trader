@@ -8,6 +8,7 @@ import {
   GetNewYorkTimeAsText
 } from "../../Utils.ts";
 import {ISumResults} from "../TradeView/ChartResults.tsx";
+import _ from "lodash";
 
 function getDateTime(record: ITradeSummary) {
   return GetNewYorkTimeAsText(record.whenClosed);
@@ -15,7 +16,13 @@ function getDateTime(record: ITradeSummary) {
 
 const CustomTooltip = ({active, payload, label}) => {
   if (active && payload && payload.length) {
-    const items = payload.map((item, index) => <span style={{color: item.color, display: 'block'}} key={index}>{`${item.name} : ${item.value}`}</span>);
+    const items = payload.map((item, index) => {
+      let valueText = item.value;
+      if (_.isNumber(item.value)) {
+        valueText = item.value.toFixed(1);
+      }
+      return <span style={{color: item.color, display: 'block'}} key={index}>{`${item.name} : ${valueText}`}</span>;
+    });
     const tradePatternName = payload[0].payload.description.split(':')[0];
     return (
       <div style={{backgroundColor: 'rgba(100, 100, 100, 0.1)'}}>
