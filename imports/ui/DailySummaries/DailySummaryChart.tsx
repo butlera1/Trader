@@ -1,12 +1,7 @@
 import React from "react";
 import {ITradeSummary} from "../../../server/collections/DailyTradeSummaries.ts";
 import {CartesianGrid, Label, Line, LineChart, Tooltip, XAxis, YAxis} from "recharts";
-import {
-  AnyPrerunningOn,
-  CalculateTotalFees,
-  CleanupGainLossWhenFailedClosingTrade,
-  GetNewYorkTimeAsText
-} from "../../Utils.ts";
+import {GetNewYorkTimeAsText} from "../../Utils.ts";
 import {ISumResults} from "../TradeView/ChartResults.tsx";
 import _ from "lodash";
 
@@ -34,12 +29,17 @@ const CustomTooltip = ({active, payload, label}) => {
   return null;
 };
 
-function DailySummaryChart({trades}:{trades: ITradeSummary[]}) {
+function isAPrerun(record: ITradeSummary) {
+  return record.description?.includes('Prerun');
+}
+
+function DailySummaryChart({trades}: { trades: ITradeSummary[] }) {
 
   const sumResults: ISumResults[] = [];
   let sum = 0.0;
 
   trades.reduce((sum, record) => {
+    if (!isAPrerun(record)) {
       sum = sum + record.gainLoss;
       sumResults.push({
         description: record.description,
@@ -47,6 +47,7 @@ function DailySummaryChart({trades}:{trades: ITradeSummary[]}) {
         sum,
         gainLoss: record.gainLoss,
       });
+    }
     return sum;
   }, 0.0);
 
@@ -65,7 +66,7 @@ function DailySummaryChart({trades}:{trades: ITradeSummary[]}) {
           fontSize={14}
         />
       </YAxis>
-      <Tooltip content={<CustomTooltip />} />
+      <Tooltip content={<CustomTooltip/>}/>
     </LineChart>
   );
 }
