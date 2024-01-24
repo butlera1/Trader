@@ -12,7 +12,7 @@ import {
 import {Meteor} from 'meteor/meteor';
 import './CssScaleForChartResults.css';
 
-interface ISumResults {
+export interface ISumResults {
   description: string,
   whenClosed: Date,
   gainLoss: number,

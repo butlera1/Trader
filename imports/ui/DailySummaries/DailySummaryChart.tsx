@@ -1,7 +1,13 @@
 import React from "react";
 import {ITradeSummary} from "../../../server/collections/DailyTradeSummaries.ts";
 import {CartesianGrid, Label, Line, LineChart, Tooltip, XAxis, YAxis} from "recharts";
-import {GetNewYorkTimeAsText} from "../../Utils.ts";
+import {
+  AnyPrerunningOn,
+  CalculateTotalFees,
+  CleanupGainLossWhenFailedClosingTrade,
+  GetNewYorkTimeAsText
+} from "../../Utils.ts";
+import {ISumResults} from "../TradeView/ChartResults.tsx";
 
 function getDateTime(record: ITradeSummary) {
   return GetNewYorkTimeAsText(record.whenClosed);
@@ -22,9 +28,25 @@ const CustomTooltip = ({active, payload, label}) => {
 };
 
 function DailySummaryChart({trades}:{trades: ITradeSummary[]}) {
+
+  const sumResults: ISumResults[] = [];
+  let sum = 0.0;
+
+  trades.reduce((sum, record) => {
+      sum = sum + record.gainLoss;
+      sumResults.push({
+        description: record.description,
+        whenClosed: record.whenClosed,
+        sum,
+        gainLoss: record.gainLoss,
+      });
+    return sum;
+  }, 0.0);
+
   return (
-    <LineChart width={1200} height={200} data={trades ?? []} margin={{top: 5, right: 20, bottom: 5, left: 0}}>
+    <LineChart width={1200} height={200} data={sumResults ?? []} margin={{top: 5, right: 20, bottom: 5, left: 0}}>
       <Line type="monotone" dataKey="gainLoss" stroke="red" dot={false} strokeWidth={1}/>
+      <Line type="monotone" dataKey="sum" stroke="blue" dot={false} strokeWidth={1}/>
       <CartesianGrid stroke="#ccc" strokeDasharray="5 5"/>
       <XAxis dataKey={getDateTime}/>
       <YAxis width={90} tick={{fontSize: 10}} allowDecimals={false}>
