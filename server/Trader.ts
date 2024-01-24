@@ -151,6 +151,7 @@ async function CloseTrade(tradeSettings: ITradeSettings, currentPrice: IPrice): 
         whenClosed: tradeSettings.whenClosed,
         gainLoss: tradeSettings.gainLoss,
         isBusyClosingTrade: tradeSettings.isBusyClosingTrade,
+        totalFees: tradeSettings.totalFees,
       }
     });
     const message = `${tradeSettings.userName}: Trade closed (${tradeSettings.whyClosed}): Entry: $${openingPrice.toFixed(2)}, ` +

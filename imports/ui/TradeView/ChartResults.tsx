@@ -200,7 +200,10 @@ function ChartResults({records, isGraphPrerunningTrades, skipSPXChart}: {
   const CustomTooltip = ({active, payload, label}) => {
     if (active && payload && payload.length) {
         const items = payload.map((item, index) => <span style={{color: item.color, display: 'block'}} key={index}>{`${item.name} : ${item.value}`}</span>);
-        const tradePatternName = payload[0].payload.description.split(':')[0];
+        let tradePatternName = payload[0].payload.description.split(':')[0];
+        if (payload[0].payload.description.includes('Prerun')) {
+          tradePatternName += ' (Prerun)';
+        }
       return (
         <div style={{backgroundColor: 'rgba(100, 100, 100, 0.1)'}}>
           <span key={-1}>{label} ({tradePatternName})</span>

@@ -17,7 +17,7 @@ interface ITradeSummary {
 
 function createTradeSummary(trade: ITradeSettings): ITradeSummary {
   return {
-    gainLoss: trade.gainLoss,
+    gainLoss: trade.gainLoss - trade.totalFees,
     tradeId: trade._id,
     description: trade.description,
     whenOpened: trade.whenOpened,
