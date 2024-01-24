@@ -72,7 +72,7 @@ function TestStrategy(tradeSettingsId) {
 }
 
 function ResetAnyLiveTradesWithIsBusyClosingTradeFlag() {
-  const liveTrades = TradeSettings.find({userId: Meteor.userId(), isBusyClosingTrade: true}).fetch();
+  const liveTrades = TradeSettings.find({isBusyClosingTrade: true}).fetch();
   liveTrades.forEach((trade) => {
     TradeSettings.update(trade._id, {$set: {isBusyClosingTrade: false}});
   });
