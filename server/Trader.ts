@@ -582,6 +582,7 @@ async function CheckForTradeCompletion(liveTrade: ITradeSettings, currentSampleP
 }
 
 async function MonitorTradeToCloseIt(liveTrade: ITradeSettings) {
+  let didSetBusyClosingTrade = false;
   try {
     // The latestActiveTradeRecord can be updated via an 'Emergency Exit' call so check it along with the liveTrade.
     const latestActiveTradeRecord = Trades.findOne(liveTrade._id) ?? {};
@@ -593,6 +594,7 @@ async function MonitorTradeToCloseIt(liveTrade: ITradeSettings) {
     if (liveTrade.isBusyClosingTrade) {
       return; // Already busy closing this trade.
     }
+    didSetBusyClosingTrade = true;
     liveTrade.isBusyClosingTrade = true; // Prevent re-entry.
     Trades.upsert(liveTrade._id, {$set: {isBusyClosingTrade: true}});
 
@@ -623,6 +625,11 @@ async function MonitorTradeToCloseIt(liveTrade: ITradeSettings) {
     // We have an emergency if this happens, so send communications.
     const message = `Trader has an exception in MonitorTradeToCloseItOut.`;
     LogData(liveTrade, message, ex);
+  } finally {
+    if (didSetBusyClosingTrade) {
+      liveTrade.isBusyClosingTrade = false;
+      Trades.upsert(liveTrade._id, {$set: {isBusyClosingTrade: false}});
+    }
   }
 }
 
@@ -756,8 +763,11 @@ async function PlaceOpeningOrderAndMonitorToClose(tradeSettings: ITradeSettings)
     tradeSettings.openingOrderId = await PlaceOrder(tradeSettings.userId, tradeSettings.accountNumber, tradeSettings.openingOrder)
       .catch(reason => {
         LogData(tradeSettings, `Failed in PlaceOpeningOrderAndMonitorToClose to place opening order: ${reason}`, new Error(reason));
-        return {orderPrice: 0, shortOnlyPrice: 0};
+        return 'PlaceOrderException';
       });
+    if (tradeSettings.openingOrderId==='PlaceOrderException') {
+      return;
+    }
     const priceResults = await WaitForOrderCompleted(tradeSettings.userId, tradeSettings.accountNumber, tradeSettings.openingOrderId)
       .catch((reason) => {
         LogData(tradeSettings, `Failed in PlaceOpeningOrderAndMonitorToClose to WaitForOrderCompleted on opening order: ${reason}`, new Error(reason));
