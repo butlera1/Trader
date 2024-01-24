@@ -71,6 +71,13 @@ function TestStrategy(tradeSettingsId) {
   ExecuteTrade(tradeSettings, forceTheTrade, tradeSettings.isPrerun, tradeSettings.isPrerunVIXSlope, tradeSettings.isPrerunGainLimit).then();
 }
 
+function ResetAnyLiveTradesWithIsBusyClosingTradeFlag() {
+  const liveTrades = TradeSettings.find({userId: Meteor.userId(), isBusyClosingTrade: true}).fetch();
+  liveTrades.forEach((trade) => {
+    TradeSettings.update(trade._id, {$set: {isBusyClosingTrade: false}});
+  });
+}
+
 Meteor.methods({
     SetUserAccessInfo,
     GetAccessToken,
@@ -115,6 +122,7 @@ const settings = {
 delete settings._id;
 AppSettings.upsert(Constants.appSettingsId, settings);
 PerformSystemMaintenance();
+ResetAnyLiveTradesWithIsBusyClosingTradeFlag();
 
 // GetTickDataForDay('SPY', dayjs('2023-12-18')).catch((e) => console.log(e));
 
