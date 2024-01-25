@@ -11,6 +11,7 @@ import {
 } from '../../Utils';
 import {Meteor} from 'meteor/meteor';
 import './CssScaleForChartResults.css';
+import Constants from "../../Constants.ts";
 
 export interface ISumResults {
   description: string,
@@ -199,11 +200,12 @@ function ChartResults({records, isGraphPrerunningTrades, skipSPXChart}: {
 
   const CustomTooltip = ({active, payload, label}) => {
     if (active && payload && payload.length) {
-        const items = payload.map((item, index) => <span style={{color: item.color, display: 'block'}} key={index}>{`${item.name} : ${item.value}`}</span>);
-        let tradePatternName = payload[0].payload.description.split(':')[0];
-        if (payload[0].payload.description.includes('Prerun')) {
-          tradePatternName += ' (Prerun)';
-        }
+      const items = payload.map((item, index) => <span style={{color: item.color, display: 'block'}}
+                                                       key={index}>{`${item.name} : ${item.value}`}</span>);
+      let tradePatternName = payload[0].payload.description.split(':')[0];
+      if (payload[0].payload.description.includes(Constants.Prerun)) {
+        tradePatternName += ` (${Constants.Prerun})`;
+      }
       return (
         <div style={{backgroundColor: 'rgba(100, 100, 100, 0.1)'}}>
           <span key={-1}>{label} ({tradePatternName})</span>
@@ -229,7 +231,7 @@ function ChartResults({records, isGraphPrerunningTrades, skipSPXChart}: {
             fontSize={14}
           />
         </YAxis>
-        <Tooltip content={<CustomTooltip />} />
+        <Tooltip content={<CustomTooltip/>}/>
       </LineChart>
     );
   };

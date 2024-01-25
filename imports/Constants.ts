@@ -1,5 +1,5 @@
 const Constants = {
-  version: '9.57',
+  version: '9.58',
   appSettingsId: 'AppSettings',
   defaultCommission: 0.50,
   streamedDataId: 'StreamedData',
@@ -13,6 +13,7 @@ const Constants = {
   backtestPublishedName: 'backtestData',
   rangesCollectionName: 'ranges',
   rangesPublishedName: 'ranges',
+  Prerun: 'Prerun',
 };
 
 export default Constants;

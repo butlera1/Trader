@@ -240,8 +240,8 @@ function CalculateTradePrice(tradeSettings: ITradeSettings, quotes) {
 }
 
 function AnyPrerunningOn(tradeSettings: ITradeSettings) {
-  const {isPrerunning, isPrerunningVWAPSlope, isPrerunningVIXSlope, isPrerunningGainLimit} = tradeSettings;
-  return isPrerunning || isPrerunningVWAPSlope || isPrerunningVIXSlope || isPrerunningGainLimit;
+  const {isPrerunning, isPrerunningVWAPSlope, isPrerunningVIXSlope, isPrerunningGainLimit, description} = tradeSettings;
+  return isPrerunning || isPrerunningVWAPSlope || isPrerunningVIXSlope || isPrerunningGainLimit || description.includes(Constants.Prerun);
 }
 
 function GetDayOfTheWeek(date: Date) {

@@ -4,6 +4,7 @@ import {CartesianGrid, Label, Line, LineChart, Tooltip, XAxis, YAxis} from "rech
 import {GetNewYorkTimeAsText} from "../../Utils.ts";
 import {ISumResults} from "../TradeView/ChartResults.tsx";
 import _ from "lodash";
+import Constants from "../../Constants.ts";
 
 function getDateTime(record: ITradeSummary) {
   return GetNewYorkTimeAsText(record.whenClosed);
@@ -18,7 +19,10 @@ const CustomTooltip = ({active, payload, label}) => {
       }
       return <span style={{color: item.color, display: 'block'}} key={index}>{`${item.name} : ${valueText}`}</span>;
     });
-    const tradePatternName = payload[0].payload.description.split(':')[0];
+    let tradePatternName = payload[0].payload.description.split(':')[0];
+    if (payload[0].payload.description.includes(Constants.Prerun)) {
+      tradePatternName += ' (Prerun)';
+    }
     return (
       <div style={{backgroundColor: 'rgba(100, 100, 100, 0.1)'}}>
         <span key={-1}>{label} ({tradePatternName})</span>
@@ -30,7 +34,7 @@ const CustomTooltip = ({active, payload, label}) => {
 };
 
 function isAPrerun(record: ITradeSummary) {
-  return record.description?.includes('Prerun');
+  return record.description?.includes(Constants.Prerun);
 }
 
 function DailySummaryChart({trades}: { trades: ITradeSummary[] }) {
