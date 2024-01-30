@@ -36,7 +36,7 @@ interface IDailyTradeSummary {
   isDailyGainLimitReached?: boolean,
 }
 
-function getDefaultIDailyTradeSummary(userId:string, date: Date): IDailyTradeSummary {
+function getDefaultIDailyTradeSummary(userId: string, date: Date): IDailyTradeSummary {
   return {
     gainLoss: 0,
     dayDate: date,
@@ -54,12 +54,12 @@ DailyTradeSummaries.createIndex({dayDate: 1});
 DailyTradeSummaries.createIndex({userId: 1, dayDate: 1});
 
 function GetDailyTradeSummaryFor(tradeSettings: ITradeSettings, date: Date): IDailyTradeSummary {
-  const {userId, accountNumber} = tradeSettings;
+  const {userId} = tradeSettings;
   const startOfDate = SetStartOfDay(dayjs(date)).toDate();
   const endOfDate = SetEndOfDay(dayjs(date)).toDate();
   const query = {
     userId,
-    dayDate: {$gte:startOfDate,$lt:endOfDate},
+    dayDate: {$gte: startOfDate, $lt: endOfDate},
   };
   const summary: IDailyTradeSummary = DailyTradeSummaries.findOne(query) ||
     getDefaultIDailyTradeSummary(userId, date);
@@ -84,30 +84,30 @@ function SaveTradeToDailySummaryAndIsEmergencyClose(tradeSettings: ITradeSetting
 
   const id = summary._id;
   delete summary._id;
+  let isEmergencyCloseAllTrades = false;
   if (!AnyPrerunningOn(tradeSettings)) {
     // Don't record any pre-running trades.
-    summary.gainLoss += tradeSettings.gainLoss;
-  }
-  let isEmergencyCloseAllTrades = false;
-  summary.trades.push(createTradeSummary(tradeSettings));
-  const userSettings: IUserSettings = UserSettings.findOne({_id: userId});
-  if (summary.gainLoss < -Math.abs(userSettings.maxAllowedDailyLoss)) {
-    summary.isDailyLossLimitReached = true;
-    if (!isBacktesting) {
-      // User has lost too much money today.  Disable user's account.
-      UserSettings.update({_id: userId}, {$set: {accountIsActive: false}});
+    summary.gainLoss += tradeSettings.gainLoss - tradeSettings.totalFees;
+    summary.trades.push(createTradeSummary(tradeSettings));
+    const userSettings: IUserSettings = UserSettings.findOne({_id: userId});
+    if (summary.gainLoss < -Math.abs(userSettings.maxAllowedDailyLoss)) {
+      summary.isDailyLossLimitReached = true;
+      if (!isBacktesting) {
+        // User has lost too much money today.  Disable user's account.
+        UserSettings.update({_id: userId}, {$set: {accountIsActive: false}});
+      }
+      isEmergencyCloseAllTrades = true;
     }
-    isEmergencyCloseAllTrades = true;
-  }
-  if (summary.gainLoss > Math.abs(userSettings.maxAllowedDailyGain)) {
-    summary.isDailyGainLimitReached = true;
-    if (!isBacktesting) {
-      // User has gained enough money today.
-      UserSettings.update({_id: userId}, {$set: {isMaxGainAllowedMet: true}});
+    if (summary.gainLoss > Math.abs(userSettings.maxAllowedDailyGain)) {
+      summary.isDailyGainLimitReached = true;
+      if (!isBacktesting) {
+        // User has gained enough money today.
+        UserSettings.update({_id: userId}, {$set: {isMaxGainAllowedMet: true}});
+      }
+      isEmergencyCloseAllTrades = true;
     }
-    isEmergencyCloseAllTrades = true;
+    DailyTradeSummaries.upsert(id, summary);
   }
-  DailyTradeSummaries.upsert(id, summary);
   return isEmergencyCloseAllTrades;
 }
 
@@ -125,7 +125,7 @@ function GetDailyTradeSummariesForUserAndDayRange(from: Date, to: Date): IDailyT
   const endOfDate = SetEndOfDay(dayjs(to)).toDate();
   const query = {
     userId,
-    dayDate: {$gte:startOfDate,$lt:endOfDate},
+    dayDate: {$gte: startOfDate, $lt: endOfDate},
   };
   return DailyTradeSummaries.find(query).fetch();
 }
