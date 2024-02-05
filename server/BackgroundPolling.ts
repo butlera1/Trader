@@ -1,7 +1,7 @@
 import {Meteor} from 'meteor/meteor';
 import PollingMutex from './PollingMutex';
 import {GetPriceForSymbols} from './TDAApi/TDAApi';
-import {CalculateTradePrice, InTradeHours} from "../imports/Utils";
+import {InTradeHours} from "../imports/Utils";
 import Constants from "../imports/Constants";
 import {AppSettings} from './collections/AppSettings';
 import IStreamerData from "../imports/Interfaces/IStreamData";
@@ -9,6 +9,7 @@ import ITradeSettings, {BadDefaultIPrice, IPrice} from "../imports/Interfaces/IT
 import {Trades} from "./collections/Trades";
 import {IAppSettings} from "../imports/Interfaces/IAppSettings.ts";
 import {MonitorTradeToCloseIt} from "./Trader.ts";
+import CalculateTradePrice from "./CalculateTradePrice.ts";
 
 
 let csvSymbols: string = '$VIX.X,$SPX.X';
@@ -53,7 +54,7 @@ function getAngleOfSlope(slope) {
   return angle;
 }
 
-function GetLiveTrades() : ITradeSettings[] {
+function GetLiveTrades(): ITradeSettings[] {
   return Trades.find({whyClosed: {$exists: false}}).fetch();
 }
 

@@ -1,4 +1,4 @@
-import ITradeSettings, {BadDefaultIPrice, IPrice} from './Interfaces/ITradeSettings';
+import ITradeSettings, {IPrice} from './Interfaces/ITradeSettings';
 import dayjs, {Dayjs} from 'dayjs';
 import utc from 'dayjs/plugin/utc';
 import timezone from 'dayjs/plugin/timezone';
@@ -8,8 +8,6 @@ import customParseFormat from 'dayjs/plugin/customParseFormat';
 import weekday from 'dayjs/plugin/weekday';
 import locale from 'dayjs/plugin/localeData';
 import Constants from "./Constants.ts";
-import {BuySell} from "./Interfaces/ILegSettings.ts";
-import CalculateOptionsPricing from "./CalculateOptionsPricing.ts";
 
 dayjs.extend(utc);
 dayjs.extend(timezone);
@@ -87,7 +85,7 @@ function CleanupGainLossWhenFailedClosingTrade(record: ITradeSettings) {
 }
 
 function CalculateGain(tradeSettings, currentPrice) {
-  const {openingPrice, whyClosed, gainLimit} = tradeSettings;
+  const {openingPrice} = tradeSettings;
   // Logic to handle failed closing trade, leaving currentPrice as NaN.
   const isClosed = !!tradeSettings.whyClosed;
   if (!_.isFinite(currentPrice) && isClosed) {
@@ -200,45 +198,6 @@ function SetStartOfDay(date: Dayjs) {
   return date.set('hour', 0).set('minute', 0).set('second', 0);
 }
 
-function CalculateTradePrice(tradeSettings: ITradeSettings, quotes) {
-  let countFoundQuotes = 0; // must end up equal to the legs.length.
-  // Now scan the quotes and add/subtract up the price.
-  let result: IPrice = {...BadDefaultIPrice, price: 0, whenNY: new Date()};
-  quotes.forEach((quote) => {
-    const leg = tradeSettings.legs.find((leg) => leg.option.symbol===quote.symbol);
-    // if leg not found, then something is wrong.
-    if (!leg) {
-      const msg = `GetPriceForOptions: leg not found for quote symbol: ${quote.symbol}`;
-      throw new Error(msg);
-    }
-    // The quotes include the underlying stock price.
-    result.underlyingPrice = quote.underlyingPrice;
-    let price = 0;
-    // We have tried using the mark price or the bidPrice/askPrice this IF statement
-    // is used to keep both chunks of code logic, so we can easily switch back and forth.
-    if (Constants.usingMarkPrice) {
-      price = quote.mark;
-    } else {
-      // Base price on the lower value relative to the opposite desired entry buySell direction.
-      // This is because entry is simply a time point while exit is based on value and the legs
-      // define the buySell direction based on trade entry. So, do the opposite for exit.
-      price = quote.bidPrice;
-      if (leg.buySell===BuySell.SELL) {
-        // Means we are buying this leg now to exit the trade.
-        price = quote.askPrice;
-      }
-    }
-    result = CalculateOptionsPricing(result, leg, price);
-    countFoundQuotes++;
-  });
-  if (countFoundQuotes!==tradeSettings.legs.length) {
-    const msg = `CalculateTradePrice: countFoundQuotes: ${countFoundQuotes} !== tradeSettings.legs.length: ${tradeSettings.legs.length}`;
-    console.error(msg);
-    return {...BadDefaultIPrice};
-  }
-  return result;
-}
-
 function AnyPrerunningOn(tradeSettings: ITradeSettings) {
   const {isPrerunning, isPrerunningVWAPSlope, isPrerunningVIXSlope, isPrerunningGainLimit, description} = tradeSettings;
   return isPrerunning || isPrerunningVWAPSlope || isPrerunningVIXSlope || isPrerunningGainLimit || description.includes(Constants.Prerun);
@@ -277,7 +236,6 @@ export {
   InTradeHours,
   SetEndOfDay,
   SetStartOfDay,
-  CalculateTradePrice,
   AnyPrerunningOn,
   GetDayOfTheWeek,
 };

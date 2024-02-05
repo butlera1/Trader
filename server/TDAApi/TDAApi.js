@@ -11,7 +11,9 @@ import {LogData} from '../collections/Logs';
 import {IronCondorMarketOrder} from './Templates/SellIronCondorOrder';
 import {BadDefaultIPrice} from '../../imports/Interfaces/ITradeSettings';
 import Constants from '../../imports/Constants';
-import {CalculateTradePrice, InTradeHours} from '../../imports/Utils';
+import {InTradeHours} from '../../imports/Utils';
+import {AppSettings} from '../collections/AppSettings';
+import CalculateTradePrice from '../CalculateTradePrice.ts';
 
 const clientId = '8MXX4ODNOEKHOU0COANPEZIETKPXJRQZ@AMER.OAUTHAP';
 const redirectUrl = 'https://localhost/traderOAuthCallback';
@@ -519,6 +521,7 @@ export function CreateOpenAndCloseOrders(chains, tradeSettings) {
   let csvSymbols = ``;
   let openingPrice = 0.0;
   let shortOnlyPrice = 0.0;
+  const {usingMarkPrice} = AppSettings.findOne(Constants.appSettingsId);
   tradeSettings.openingUnderlyingPrice = chains?.underlying?.mark ?? 0.0;
   // For each leg, find the closest option based on Delta
   tradeSettings.legs.forEach((leg) => {
@@ -536,7 +539,7 @@ export function CreateOpenAndCloseOrders(chains, tradeSettings) {
     let totalMarkPrice = 0;
     // We have tried using the mark price or the bidPrice/askPrice this IF statement
     // is used to keep both chunks of code logic, so we can easily switch back and forth.
-    if (Constants.usingMarkPrice) {
+    if (usingMarkPrice) {
       totalMarkPrice = leg.option.mark * leg.quantity;
     } else {
       // Base price on the lower value relative to the opposite desired entry buySell direction.

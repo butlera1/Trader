@@ -1,9 +1,8 @@
 const Constants = {
-  version: '9.59',
+  version: '9.60',
   appSettingsId: 'AppSettings',
   defaultCommission: 0.50,
   streamedDataId: 'StreamedData',
-  usingMarkPrice : true,
   SPXSymbol: '$SPX.X',
   VIXSymbol: '$VIX.X',
   OneSecond: 1000,

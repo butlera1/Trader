@@ -12,6 +12,7 @@ interface IAppSettings {
   vwapSlopeSamplesRequired?: number,
   maxBacktestSummaries?: number,
   backgroundPollingIntervalMillisecs?: number,
+  usingMarkPrice: boolean,
 }
 
 const DefaultAppSettings: IAppSettings = {
@@ -27,6 +28,7 @@ const DefaultAppSettings: IAppSettings = {
   vwapSlopeSamplesRequired: 10,
   maxBacktestSummaries: 200,
   backgroundPollingIntervalMillisecs: 5000,
+  usingMarkPrice: false,
 };
 
 export {IAppSettings, DefaultAppSettings} ;
